@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <title>Báo Cáo: Hệ Thống Điều Khiển Đèn Thông Minh</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      padding: 30px;
+      max-width: 900px;
+      margin: 0 auto;
+      background-color: #fcfcfc;
+    }
+    h1 {
+      text-align: center;
+      color: #0f172a;
+      border-bottom: 2px solid #3b82f6;
+      padding-bottom: 10px;
+    }
+    h2 {
+      color: #1e293b;
+      margin-top: 30px;
+      border-left: 5px solid #3b82f6;
+      padding-left: 10px;
+    }
+    .info-section {
+      background-color: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      padding: 15px 25px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+    }
+    .info-section table {
+      width: 100%;
+    }
+    .info-section table td {
+      padding: 5px 0;
+      font-size: 15px;
+    }
+    .code-container {
+      background-color: #1e293b;
+      color: #f8fafc;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: Consolas, "Courier New", Courier, monospace;
+      font-size: 13px;
+      overflow-x: auto;
+      margin-bottom: 20px;
+      border: 1px solid #334155;
+    }
+    .file-path {
+      font-weight: bold;
+      color: #3b82f6;
+      margin-top: 25px;
+      margin-bottom: 5px;
+      font-family: Consolas, monospace;
+    }
+    table.screenshot-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #fff;
+    }
+    table.screenshot-table th, table.screenshot-table td {
+      border: 1px solid #cbd5e1;
+      padding: 15px;
+      text-align: left;
+      vertical-align: top;
+    }
+    table.screenshot-table th {
+      background-color: #f1f5f9;
+      color: #0f172a;
+      font-weight: bold;
+    }
+    .screenshot-img {
+      max-width: 260px;
+      height: auto;
+      border-radius: 6px;
+      border: 1px solid #94a3b8;
+      display: block;
+      margin: 10px 0;
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 12px;
+      color: #fff;
+    }
+    .status-on {
+      background-color: #10b981;
+    }
+    .status-off {
+      background-color: #ef4444;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>BÁO CÁO THỰC HÀNH: XÂY DỰNG ỨNG DỤNG DI ĐỘNG</h1>
+  <h3 style="text-align: center; color: #64748b;">ĐỀ TÀI: HỆ THỐNG ĐIỀU KHIỂN ĐÈN THÔNG MINH</h3>
+
+  <div class="info-section">
+    <table>
+      <tr>
+        <td style="width: 15%; font-weight: bold;">Họ và tên:</td>
+        <td style="width: 35%;">...........................................................</td>
+        <td style="width: 15%; font-weight: bold;">Mã số sinh viên:</td>
+        <td style="width: 35%;">...........................................................</td>
+      </tr>
+      <tr>
+        <td style="font-weight: bold;">Lớp:</td>
+        <td>...........................................................</td>
+        <td style="font-weight: bold;">Ngày nộp:</td>
+        <td>27/05/2026</td>
+      </tr>
+    </table>
+  </div>
+
+  <h2>I. Giới thiệu bài toán và Cấu trúc dự án</h2>
+  <p>Yêu cầu thiết kế ứng dụng điều khiển đèn thông minh bằng React Native theo cấu trúc component cha - con (Parent-Child). Trong đó, trạng thái hoạt động của đèn (Bật/Tắt) và độ sáng (0 - 100%) được quản lý tập trung ở Component Cha và truyền xuống Component Con qua Props. Mọi hoạt động tăng giảm độ sáng và bật/tắt từ Component Con được gửi ngược lên để cập nhật thông qua Callback Functions.</p>
+  
+  <p><strong>Cấu trúc tệp tin của ứng dụng:</strong></p>
+  <ul>
+    <li><code>App.tsx</code>: Tệp tin chạy chính ở root, dùng để hiển thị Component Cha.</li>
+    <li><code>components/ParentControl.tsx</code>: Component Cha, quản lý State và hiển thị thông số.</li>
+    <li><code>components/LightControl.tsx</code>: Component Con, chứa các nút tương tác và hiển thị bóng đèn minh họa.</li>
+    <li><code>assets/</code>: Chứa hình ảnh bóng đèn bật và tắt.</li>
+  </ul>
+
+  <h2>II. Mã nguồn chương trình</h2>
+
+  <div class="file-path">1. File: App.tsx</div>
+  <pre class="code-container"><code>import React from 'react';
+import ParentControl from './components/ParentControl';
+
+const App = () => {
+  return (
+    &lt;ParentControl /&gt;
+  );
+};
+
+export default App;</code></pre>
+
+  <div class="file-path">2. File: components/ParentControl.tsx</div>
+  <pre class="code-container"><code>import React, { useState } from 'react';
+import { StyleSheet, Text, View, ScrollView, SafeAreaView, StatusBar } from 'react-native';
+import LightControl from './LightControl';
+
+const ParentControl = () => {
+  // Trạng thái đèn: Bật (true) / Tắt (false)
+  const [isLightOn, setIsLightOn] = useState&lt;boolean&gt;(false);
+  // Độ sáng của đèn: từ 0 -&gt; 100
+  const [brightness, setBrightness] = useState&lt;number&gt;(100);
+
+  // Hàm Callback: Bật / Tắt đèn
+  const handleToggleLight = () => {
+    setIsLightOn((prev) => !prev);
+  };
+
+  // Hàm Callback: Tăng độ sáng (tối đa 100, mỗi lần +10, chỉ khi đèn bật)
+  const handleIncreaseBrightness = () => {
+    if (isLightOn) {
+      setBrightness((prev) => {
+        const newValue = prev + 10;
+        return newValue &gt; 100 ? 100 : newValue;
+      });
+    }
+  };
+
+  // Hàm Callback: Giảm độ sáng (tối thiểu 0, mỗi lần -10, chỉ khi đèn bật)
+  const handleDecreaseBrightness = () => {
+    if (isLightOn) {
+      setBrightness((prev) => {
+        const newValue = prev - 10;
+        return newValue &lt; 0 ? 0 : newValue;
+      });
+    }
+  };
+
+  return (
+    &lt;SafeAreaView style={styles.safeArea}&gt;
+      &lt;StatusBar barStyle="light-content" backgroundColor="#0f172a" /&gt;
+      &lt;ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}&gt;
+
+        {/* HEADER CỦA TOÀN BỘ ỨNG DỤNG */}
+        &lt;View style={styles.header}&gt;
+          &lt;Text style={styles.headerTitle}&gt;Hệ Thống Điều Khiển Đèn Thông Minh&lt;/Text&gt;
+          &lt;Text style={styles.headerSubtitle}&gt;Smart Home IoT Dashboard&lt;/Text&gt;
+        &lt;/View&gt;
+
+        {/* COMPONENT CHA AREA */}
+        &lt;View style={styles.parentBox}&gt;
+          &lt;Text style={styles.title}&gt;===== COMPONENT CHA =====&lt;/Text&gt;
+
+          &lt;View style={styles.telemetryContainer}&gt;
+            &lt;View style={styles.telemetryCard}&gt;
+              &lt;Text style={styles.telemetryLabel}&gt;Trạng Thái Đèn&lt;/Text&gt;
+              &lt;Text style={[
+                styles.telemetryValue,
+                isLightOn ? styles.statusOn : styles.statusOff,
+              ]}&gt;
+                {isLightOn ? 'ĐANG BẬT' : 'ĐANG TẮT'}
+              &lt;/Text&gt;
+            &lt;/View&gt;
+
+            &lt;View style={styles.telemetryCard}&gt;
+              &lt;Text style={styles.telemetryLabel}&gt;Độ Sáng Hiện Tại&lt;/Text&gt;
+              &lt;Text style={[
+                styles.telemetryValue,
+                styles.brightnessColor,
+                !isLightOn && styles.brightnessOff,
+              ]}&gt;
+                {brightness}%
+              &lt;/Text&gt;
+            &lt;/View&gt;
+          </View&gt;
+        &lt;/View&gt;
+
+        {/* COMPONENT CON AREA */}
+        &lt;LightControl
+          isLightOn={isLightOn}
+          brightness={brightness}
+          onToggleLight={handleToggleLight}
+          onIncreaseBrightness={handleIncreaseBrightness}
+          onDecreaseBrightness={handleDecreaseBrightness}
+        /&gt;
+
+      &lt;/ScrollView&gt;
+    &lt;/SafeAreaView&gt;
+  );
+};
+
+const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+  },
+  scrollContainer: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 40,
+  },
+  header: {
+    marginBottom: 24,
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#ffffff',
+    textAlign: 'center',
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: '#64748b',
+    fontWeight: '600',
+    letterSpacing: 1.5,
+    textTransform: 'uppercase',
+  },
+  parentBox: {
+    backgroundColor: '#1e293b',
+    borderRadius: 24,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: '#334155',
+    elevation: 8,
+  },
+  title: {
+    fontSize: 15,
+    fontWeight: '700',
+    textAlign: 'center',
+    color: '#94a3b8',
+    letterSpacing: 2,
+    marginBottom: 20,
+  },
+  telemetryContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  telemetryCard: {
+    flex: 1,
+    backgroundColor: '#0f172a',
+    borderRadius: 16,
+    padding: 16,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#1e293b',
+  },
+  telemetryLabel: {
+    fontSize: 13,
+    color: '#94a3b8',
+    fontWeight: '600',
+    marginBottom: 8,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  telemetryValue: {
+    fontSize: 18,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  statusOn: {
+    color: '#00e676',
+  },
+  statusOff: {
+    color: '#ff1744',
+  },
+  brightnessColor: {
+    color: '#ffeb3b',
+  },
+  brightnessOff: {
+    color: '#64748b',
+  },
+});
+
+export default ParentControl;</code></pre>
+
+  <div class="file-path">3. File: components/LightControl.tsx</div>
+  <pre class="code-container"><code>import React from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+
+interface LightControlProps {
+  isLightOn: boolean;
+  brightness: number;
+  onToggleLight: () => void;
+  onIncreaseBrightness: () => void;
+  onDecreaseBrightness: () => void;
+}
+
+const LightControl: React.FC&lt;LightControlProps&gt; = ({
+  isLightOn,
+  brightness,
+  onToggleLight,
+  onIncreaseBrightness,
+  onDecreaseBrightness,
+}) => {
+  const bulbOn = require('../assets/bulb_on.png');
+  const bulbOff = require('../assets/bulb_off.png');
+
+  const glowOpacity = isLightOn ? brightness / 100 : 0;
+  const bulbScale = isLightOn ? 1 + (brightness / 200) * 0.15 : 1;
+
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Text style={styles.title}&gt;===== COMPONENT CON =====&lt;/Text&gt;
+
+      &lt;View style={styles.imageWrapper}&gt;
+        {isLightOn && (
+          &lt;View
+            style={[
+              styles.glowEffect,
+              {
+                opacity: glowOpacity,
+                transform: [{ scale: bulbScale }],
+              },
+            ]}
+          /&gt;
+        )}
+        &lt;Image
+          source={isLightOn ? bulbOn : bulbOff}
+          style={[
+            styles.image,
+            isLightOn && { transform: [{ scale: bulbScale }] },
+          ]}
+        /&gt;
+      &lt;/View&gt;
+
+      &lt;View style={styles.infoBox}&gt;
+        &lt;View style={styles.infoRow}&gt;
+          &lt;Text style={styles.label}&gt;Trạng thái nhận được:&lt;/Text&gt;
+          &lt;Text
+            style={[
+              styles.statusValue,
+              isLightOn ? styles.statusOn : styles.statusOff,
+            ]}
+          &gt;
+            {isLightOn ? 'BẬT' : 'TẮT'}
+          &lt;/Text&gt;
+        &lt;/View&gt;
+        &lt;View style={styles.infoRow}&gt;
+          &lt;Text style={styles.label}&gt;Độ sáng nhận được:&lt;/Text&gt;
+          &lt;Text
+            style={[
+              styles.brightnessValue,
+              isLightOn ? styles.brightnessOn : styles.brightnessOff,
+            ]}
+          &gt;
+            {brightness}%
+          &lt;/Text&gt;
+        &lt;/View&gt;
+      &lt;/View&gt;
+
+      &lt;View style={styles.buttonContainer}&gt;
+        &lt;TouchableOpacity
+          activeOpacity={0.8}
+          style={[
+            styles.button,
+            styles.toggleButton,
+            isLightOn ? styles.buttonActive : styles.buttonInactive,
+          ]}
+          onPress={onToggleLight}
+        &gt;
+          &lt;Text style={styles.buttonText}&gt;
+            {isLightOn ? 'TẮT ĐÈN' : 'BẬT ĐÈN'}
+          &lt;/Text&gt;
+        &lt;/TouchableOpacity&gt;
+
+        &lt;View style={styles.adjustRow}&gt;
+          &lt;TouchableOpacity
+            activeOpacity={0.7}
+            disabled={!isLightOn || brightness &lt;= 0}
+            style={[
+              styles.button,
+              styles.adjustButton,
+              (!isLightOn || brightness &lt;= 0) && styles.buttonDisabled,
+            ]}
+            onPress={onDecreaseBrightness}
+          &gt;
+            &lt;Text style={styles.buttonText}&gt;Giảm Độ Sáng (-10)&lt;/Text&gt;
+          &lt;/TouchableOpacity>
+
+          &lt;TouchableOpacity
+            activeOpacity={0.7}
+            disabled={!isLightOn || brightness &gt;= 100}
+            style={[
+              styles.button,
+              styles.adjustButton,
+              (!isLightOn || brightness &gt;= 100) && styles.buttonDisabled,
+            ]}
+            onPress={onIncreaseBrightness}
+          &gt;
+            &lt;Text style={styles.buttonText}&gt;Tăng Độ Sáng (+10)&lt;/Text&gt;
+          &lt;/TouchableOpacity&gt;
+        &lt;/View&gt;
+      &lt;/View&gt;
+    &lt;/View&gt;
+  );
+};
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: '#1e293b',
+    borderRadius: 24,
+    padding: 24,
+    borderWidth: 1,
+    borderColor: '#334155',
+    elevation: 8,
+    marginTop: 24,
+  },
+  title: {
+    fontSize: 15,
+    fontWeight: '700',
+    textAlign: 'center',
+    color: '#94a3b8',
+    letterSpacing: 2,
+    marginBottom: 24,
+  },
+  imageWrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: 180,
+    marginBottom: 24,
+  },
+  glowEffect: {
+    position: 'absolute',
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    backgroundColor: 'rgba(255, 235, 59, 0.45)',
+    elevation: 25,
+  },
+  image: {
+    width: 140,
+    height: 140,
+    resizeMode: 'contain',
+  },
+  infoBox: {
+    backgroundColor: '#0f172a',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#1e293b',
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 6,
+  },
+  label: {
+    fontSize: 15,
+    color: '#94a3b8',
+    fontWeight: '500',
+  },
+  statusValue: {
+    fontSize: 16,
+    fontWeight: '800',
+    letterSpacing: 1,
+  },
+  statusOn: {
+    color: '#00e676',
+  },
+  statusOff: {
+    color: '#ff1744',
+  },
+  brightnessValue: {
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  brightnessOn: {
+    color: '#ffeb3b',
+  },
+  brightnessOff: {
+    color: '#b0bec5',
+  },
+  buttonContainer: {
+    width: '100%',
+  },
+  button: {
+    borderRadius: 14,
+    height: 52,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 3,
+  },
+  toggleButton: {
+    marginBottom: 14,
+  },
+  buttonActive: {
+    backgroundColor: '#ef4444',
+  },
+  buttonInactive: {
+    backgroundColor: '#10b981',
+  },
+  adjustRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 12,
+  },
+  adjustButton: {
+    flex: 1,
+    backgroundColor: '#3b82f6',
+  },
+  buttonDisabled: {
+    backgroundColor: '#475569',
+    opacity: 0.5,
+    elevation: 0,
+  },
+  buttonText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+});
+
+export default LightControl;</code></pre>
+
+  <h2>III. Kết quả chạy chương trình (Demo các cấp độ sáng)</h2>
+  <p>Dưới đây là bảng hình ảnh chụp trực tiếp từ máy ảo Pixel 9 Pro thể hiện rõ ràng các trạng thái bật/tắt và điều chỉnh độ sáng từ Cấp tắt đến Cấp 4 (Độ sáng tăng dần):</p>
+
+  <table class="screenshot-table">
+    <thead>
+      <tr>
+        <th style="width: 10%;">STT</th>
+        <th style="width: 25%;">Trạng thái điều khiển</th>
+        <th style="width: 35%;">Hình ảnh chụp màn hình máy ảo</th>
+        <th style="width: 30%;">Phân tích / Nhận xét giao diện</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>1</td>
+        <td>
+          <strong>ĐÈN TẮT</strong><br><br>
+          <span class="status-badge status-off">TẮT (OFF)</span>
+        </td>
+        <td>
+          <img class="screenshot-img" src="file:///C:/Users/Admin/.gemini/antigravity/brain/2cda0173-5e01-4172-a1f5-e9d23230580c/media__1779849149579.png" alt="Đèn Tắt">
+        </td>
+        <td>
+          - Chữ trạng thái hiển thị màu đỏ.<br>
+          - Bóng đèn ở thể tối (màu đen).<br>
+          - Hai nút tăng/giảm độ sáng bị vô hiệu hóa (disabled) mờ đi.
+        </td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>
+          <strong>BẬT - CẤP 1</strong><br><br>
+          <span class="status-badge status-on">BẬT (ON)</span><br>
+          Độ sáng: 10% - 20%
+        </td>
+        <td>
+          <img class="screenshot-img" src="file:///C:/Users/Admin/.gemini/antigravity/brain/2cda0173-5e01-4172-a1f5-e9d23230580c/media__1779849155830.png" alt="Đèn Bật Cấp 1">
+        </td>
+        <td>
+          - Chữ trạng thái chuyển sang xanh lá.<br>
+          - Bóng đèn bật sáng nhẹ.<br>
+          - Có một quầng sáng màu vàng nhạt, nhỏ ở trung tâm sợi đốt.
+        </td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>
+          <strong>BẬT - CẤP 2</strong><br><br>
+          <span class="status-badge status-on">BẬT (ON)</span><br>
+          Độ sáng: 40% - 50%
+        </td>
+        <td>
+          <img class="screenshot-img" src="file:///C:/Users/Admin/.gemini/antigravity/brain/2cda0173-5e01-4172-a1f5-e9d23230580c/media__1779849167791.png" alt="Đèn Bật Cấp 2">
+        </td>
+        <td>
+          - Quầng sáng vàng tỏa rộng hơn bao phủ phần trên của bóng đèn.<br>
+          - Cường độ sáng ở mức trung bình.
+        </td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>
+          <strong>BẬT - CẤP 3</strong><br><br>
+          <span class="status-badge status-on">BẬT (ON)</span><br>
+          Độ sáng: 70% - 80%
+        </td>
+        <td>
+          <img class="screenshot-img" src="file:///C:/Users/Admin/.gemini/antigravity/brain/2cda0173-5e01-4172-a1f5-e9d23230580c/media__1779849173340.png" alt="Đèn Bật Cấp 3">
+        </td>
+        <td>
+          - Quầng sáng vàng bao quanh bóng đèn rộng và rõ rệt.<br>
+          - Cường độ ánh sáng biểu thị ở mức khá lớn.
+        </td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>
+          <strong>BẬT - CẤP 4 (Max)</strong><br><br>
+          <span class="status-badge status-on">BẬT (ON)</span><br>
+          Độ sáng: 100%
+        </td>
+        <td>
+          <img class="screenshot-img" src="file:///C:/Users/Admin/.gemini/antigravity/brain/2cda0173-5e01-4172-a1f5-e9d23230580c/media__1779849179512.png" alt="Đèn Bật Cấp 4">
+        </td>
+        <td>
+          - Bóng đèn phát sáng ở cường độ lớn nhất.<br>
+          - Quầng sáng vàng tỏa rộng tối đa và đậm nét nhất.<br>
+          - Nút "Tăng độ sáng" bị vô hiệu hóa mờ đi vì đã đạt giới hạn 100%.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>IV. Kết luận</h2>
+  <p>Ứng dụng đã giải quyết đầy đủ tất cả các yêu cầu cơ bản và nâng cao của đề bài:</p>
+  <ul>
+    <li>Quản lý State tập trung và truyền nhận Props/Callback chính xác giữa hai component cha-con.</li>
+    <li>Thiết kế giao diện dashboard hiện đại theo phong cách Slate-dark sang trọng.</li>
+    <li>Minh họa trực quan hình ảnh bóng đèn và quầng sáng thay đổi linh hoạt theo độ sáng từ 0% đến 100% (bước nhảy 10%).</li>
+    <li>Khóa các chức năng điều chỉnh độ sáng khi đèn tắt và khóa nút tăng/giảm khi đạt giới hạn cận biên (0% và 100%).</li>
+  </ul>
+
+</body>
+</html>
