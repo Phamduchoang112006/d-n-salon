@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LUMIÈRE Hair Studio - Quản Trị Viên (Admin Dashboard)</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            salon: {
+              bg: '#FBF9F5',
+              surface: '#FFFFFF',
+              card: '#F5F0EB',
+              primary: '#4A6B5D', // Deep sage green
+              primaryHover: '#3D5A4D',
+              secondary: '#C89F82', // Warm taupe/terracotta accent
+              secondaryLight: '#F7F1EC',
+              text: '#1C1917',
+              muted: '#78716C',
+              border: '#E7E0D8'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- React 18 & Babel CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      background-color: #F8F6F0;
+      color: #1C1917;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .font-serif-accent {
+      font-family: 'Playfair Display', serif;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #F8F6F0;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D9D1C7;
+      border-radius: 10px;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-salon-primary/20 selection:text-salon-primary">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    // --- MOCK INITIAL ADMIN DATA ---
+    const INITIAL_APPOINTMENTS = [
+      {
+        id: 'LUMI-8921',
+        customerName: 'Nguyễn Bích Phương',
+        phone: '0912345678',
+        services: ['Uốn Sóng Lơi Hàn Quốc', 'Nhuộm Màu Thời Trang Premium'],
+        hairstyle: 'Uốn Sóng Lơi Sóng Nước',
+        haircolor: 'Nâu Trà Sữa (Milk Tea)',
+        stylist: 'Alex Trần',
+        date: 'Hôm nay, 09/09',
+        time: '09:30',
+        totalPrice: 1400000,
+        status: 'Confirmed',
+        createdTime: '08:15 - 09/09'
+      },
+      {
+        id: 'LUMI-7412',
+        customerName: 'Trần Hoàng Nam',
+        phone: '0987654321',
+        services: ['Cắt & Styling Nam Premium'],
+        hairstyle: 'Side Part 7/3 Hàn Quốc',
+        haircolor: 'Giữ Màu Tóc Tự Nhiên',
+        stylist: 'David Nguyễn',
+        date: 'Hôm nay, 09/09',
+        time: '10:30',
+        totalPrice: 160000,
+        status: 'InProgress',
+        createdTime: '07:45 - 09/09'
+      },
+      {
+        id: 'LUMI-6309',
+        customerName: 'Lê Thảo My',
+        phone: '0933112233',
+        services: ['Cắt & Tạo Kiểu Nữ', 'Phục Hồi Keratin Chuyên Sâu'],
+        hairstyle: 'Cắt Layer Bồng Bềnh',
+        haircolor: 'Nâu Lạnh Khói (Ash Brown)',
+        stylist: 'Minh Anh',
+        date: 'Hôm nay, 09/09',
+        time: '14:30',
+        totalPrice: 770000,
+        status: 'Pending',
+        createdTime: '09:00 - 09/09'
+      },
+      {
+        id: 'LUMI-5120',
+        customerName: 'Phạm Bảo Châu',
+        phone: '0909887766',
+        services: ['Gội Đầu Dưỡng Sinh Thảo Dược'],
+        hairstyle: 'Tư Vấn Trực Tiếp Tại Salon',
+        haircolor: 'Giữ Màu Tóc Tự Nhiên',
+        stylist: 'Elena Vũ',
+        date: 'Hôm nay, 09/09',
+        time: '15:30',
+        totalPrice: 180000,
+        status: 'Confirmed',
+        createdTime: '10:20 - 09/09'
+      },
+      {
+        id: 'LUMI-4411',
+        customerName: 'Vũ Quốc Khánh',
+        phone: '0911223344',
+        services: ['Cắt & Styling Nam Premium', 'Nhuộm Màu Thời Trang Premium'],
+        hairstyle: 'Undercut High Fade Modern',
+        haircolor: 'Xanh Đen Âm Trầm (Blue Black)',
+        stylist: 'David Nguyễn',
+        date: 'Ngày mai, 10/09',
+        time: '11:30',
+        totalPrice: 810000,
+        status: 'Pending',
+        createdTime: '11:00 - 09/09'
+      }
+    ];
+
+    const INITIAL_SERVICES = [
+      { id: 'cut-women', name: 'Cắt & Tạo Kiểu Nữ', duration: '45 phút', price: 250000, category: 'Cắt & Tạo Kiểu', active: true, image: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&q=80&w=400' },
+      { id: 'cut-men', name: 'Cắt & Styling Nam Premium', duration: '30 phút', price: 160000, category: 'Cắt & Tạo Kiểu', active: true, image: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&q=80&w=400' },
+      { id: 'color-premium', name: 'Nhuộm Màu Thời Trang Premium', duration: '120 phút', price: 650000, category: 'Nhuộm Cao Cấp', active: true, image: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&q=80&w=400' },
+      { id: 'perm-korean', name: 'Uốn Sóng Lơi Hàn Quốc', duration: '150 phút', price: 750000, category: 'Uốn & Ép', active: true, image: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&q=80&w=400' },
+      { id: 'straight-silk', name: 'Ép Tóc Lụa Phủ Bóng Organic', duration: '120 phút', price: 680000, category: 'Uốn & Ép', active: true, image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=400' },
+      { id: 'treatment-keratin', name: 'Phục Hồi Keratin Chuyên Sâu', duration: '60 phút', price: 520000, category: 'Phục Hồi', active: true, image: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&q=80&w=400' },
+      { id: 'head-spa', name: 'Gội Đầu Dưỡng Sinh Thảo Dược', duration: '45 phút', price: 180000, category: 'Phục Hồi', active: true, image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&q=80&w=400' }
+    ];
+
+    const INITIAL_STYLISTS = [
+      { id: 'alex-tran', name: 'Alex Trần', role: 'Master Stylist', phone: '0981112233', status: 'Available', todayClients: 4, rating: 4.9, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300' },
+      { id: 'minh-anh', name: 'Minh Anh', role: 'Senior Hair Artist', phone: '0982223344', status: 'Busy', todayClients: 3, rating: 4.8, avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300' },
+      { id: 'david-nguyen', name: 'David Nguyễn', role: 'Barber Specialist', phone: '0983334455', status: 'Busy', todayClients: 5, rating: 4.9, avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300' },
+      { id: 'elena-vu', name: 'Elena Vũ', role: 'Treatment Expert', phone: '0984445566', status: 'Available', todayClients: 2, rating: 5.0, avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=300' }
+    ];
+
+    const formatVND = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+
+    function AdminApp() {
+      // Authentication State
+      const [isAuthenticated, setIsAuthenticated] = useState(() => {
+        return sessionStorage.getItem('lumiere_admin_auth') === 'true';
+      });
+      const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+      const [loginError, setLoginError] = useState('');
+      const [showPassword, setShowPassword] = useState(false);
+
+      // Admin Active Tab: 'appointments' | 'services' | 'stylists' | 'reports'
+      const [activeTab, setActiveTab] = useState('appointments');
+      
+      // Main Data States with LocalStorage Persistence
+      const [appointments, setAppointments] = useState(() => {
+        try {
+          const raw = localStorage.getItem('lumiere_appointments');
+          return raw ? JSON.parse(raw) : INITIAL_APPOINTMENTS;
+        } catch(e) { return INITIAL_APPOINTMENTS; }
+      });
+      const [services, setServices] = useState(() => {
+        try {
+          const raw = localStorage.getItem('lumiere_services');
+          return raw ? JSON.parse(raw) : INITIAL_SERVICES;
+        } catch(e) { return INITIAL_SERVICES; }
+      });
+      const [stylists, setStylists] = useState(() => {
+        try {
+          const raw = localStorage.getItem('lumiere_stylists');
+          return raw ? JSON.parse(raw) : INITIAL_STYLISTS;
+        } catch(e) { return INITIAL_STYLISTS; }
+      });
+
+      useEffect(() => {
+        try { localStorage.setItem('lumiere_appointments', JSON.stringify(appointments)); } catch(e) {}
+      }, [appointments]);
+
+      useEffect(() => {
+        try { localStorage.setItem('lumiere_services', JSON.stringify(services)); } catch(e) {}
+      }, [services]);
+
+      useEffect(() => {
+        try { localStorage.setItem('lumiere_stylists', JSON.stringify(stylists)); } catch(e) {}
+      }, [stylists]);
+
+      // Search & Filters for Appointments
+      const [searchQuery, setSearchQuery] = useState('');
+      const [statusFilter, setStatusFilter] = useState('All');
+
+      // Modals State
+      const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false);
+      const [newService, setNewService] = useState({ name: '', price: '', duration: '45 phút', category: 'Cắt & Tạo Kiểu' });
+
+      const [isAddStylistModalOpen, setIsAddStylistModalOpen] = useState(false);
+      const [newStylist, setNewStylist] = useState({ name: '', role: 'Senior Hair Artist', phone: '', specialty: 'Cắt Layer & Uốn Hàn Quốc', rating: '5.0' });
+
+      const [editingService, setEditingService] = useState(null);
+
+      const [toastMsg, setToastMsg] = useState(null);
+
+      useEffect(() => {
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      });
+
+      const showToast = (msg) => {
+        setToastMsg(msg);
+        setTimeout(() => setToastMsg(null), 3000);
+      };
+
+      const handleLogin = (e) => {
+        e.preventDefault();
+        if (loginForm.username.trim() === 'admin' && loginForm.password === '123456') {
+          setIsAuthenticated(true);
+          sessionStorage.setItem('lumiere_admin_auth', 'true');
+          setLoginError('');
+          showToast('🔓 Đăng nhập hệ thống Quản Trị thành công!');
+        } else {
+          setLoginError('Tên đăng nhập hoặc mật khẩu không đúng!');
+        }
+      };
+
+      const handleLogout = () => {
+        if (confirm('Bạn có chắc muốn đăng xuất khỏi trang Quản trị?')) {
+          setIsAuthenticated(false);
+          sessionStorage.removeItem('lumiere_admin_auth');
+          showToast('🔒 Đã đăng xuất thành công');
+        }
+      };
+
+      // Statistics calculations
+      const stats = useMemo(() => {
+        const totalRev = appointments
+          .filter(a => a.status === 'Completed' || a.status === 'Confirmed' || a.status === 'InProgress')
+          .reduce((acc, curr) => acc + curr.totalPrice, 0);
+
+        const pendingCount = appointments.filter(a => a.status === 'Pending').length;
+        const confirmedCount = appointments.filter(a => a.status === 'Confirmed' || a.status === 'InProgress').length;
+        const completedCount = appointments.filter(a => a.status === 'Completed').length;
+
+        return {
+          totalRev,
+          pendingCount,
+          confirmedCount,
+          completedCount,
+          totalAppointments: appointments.length
+        };
+      }, [appointments]);
+
+      // Filtered appointments
+      const filteredAppointments = useMemo(() => {
+        return appointments.filter(app => {
+          const matchQuery = app.customerName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                             app.phone.includes(searchQuery) || 
+                             app.id.toLowerCase().includes(searchQuery.toLowerCase());
+          const matchStatus = statusFilter === 'All' || app.status === statusFilter;
+          return matchQuery && matchStatus;
+        });
+      }, [appointments, searchQuery, statusFilter]);
+
+      // Update Appointment Status
+      const updateStatus = (id, newStatus) => {
+        setAppointments(prev => prev.map(a => a.id === id ? { ...a, status: newStatus } : a));
+        showToast(`Đã cập nhật trạng thái đơn ${id} thành: ${newStatus}`);
+      };
+
+      // Delete Appointment
+      const deleteAppointment = (id) => {
+        if (confirm(`Bạn có chắc chắn muốn xóa lịch hẹn ${id}?`)) {
+          setAppointments(prev => prev.filter(a => a.id !== id));
+          showToast(`Đã xóa lịch hẹn ${id}`);
+        }
+      };
+
+      // Add New Service Handler
+      const handleAddService = (e) => {
+        e.preventDefault();
+        if (!newService.name || !newService.price) {
+          showToast('Vui lòng nhập đầy đủ thông tin dịch vụ!');
+          return;
+        }
+
+        const newId = 'serv-' + Date.now();
+        const created = {
+          id: newId,
+          name: newService.name,
+          price: parseInt(newService.price),
+          duration: newService.duration,
+          category: newService.category,
+          active: true
+        };
+
+        setServices(prev => [created, ...prev]);
+        setNewService({ name: '', price: '', duration: '45 phút', category: 'Cắt & Tạo Kiểu' });
+        setIsAddServiceModalOpen(false);
+        showToast('Đã thêm dịch vụ mới thành công!');
+      };
+
+      // Update Existing Service Price & Info Handler
+      const handleUpdateService = (e) => {
+        e.preventDefault();
+        if (!editingService) return;
+
+        setServices(prev => prev.map(s => s.id === editingService.id ? editingService : s));
+        const updatedName = editingService.name;
+        const updatedPrice = editingService.price;
+        setEditingService(null);
+        showToast(`🎉 Đã cập nhật giá dịch vụ "${updatedName}" thành ${formatVND(updatedPrice)}!`);
+      };
+
+      // Add New Stylist Handler
+      const handleAddStylist = (e) => {
+        e.preventDefault();
+        if (!newStylist.name.trim()) {
+          showToast('Vui lòng nhập tên thợ!');
+          return;
+        }
+
+        const newId = 'stylist-' + Date.now();
+        const created = {
+          id: newId,
+          name: newStylist.name,
+          role: newStylist.role,
+          phone: newStylist.phone || '098' + Math.floor(1000000 + Math.random() * 9000000),
+          specialty: newStylist.specialty,
+          status: 'Available',
+          todayClients: 0,
+          rating: parseFloat(newStylist.rating) || 5.0
+        };
+
+        setStylists(prev => [...prev, created]);
+        setNewStylist({ name: '', role: 'Senior Hair Artist', phone: '', specialty: 'Cắt Layer & Uốn Hàn Quốc', rating: '5.0' });
+        setIsAddStylistModalOpen(false);
+        showToast(`🎉 Đã thêm thợ ${created.name} thành công!`);
+      };
+
+      // Toggle Service Active Status
+      const toggleServiceActive = (id) => {
+        setServices(prev => prev.map(s => s.id === id ? { ...s, active: !s.active } : s));
+        showToast('Đã cập nhật trạng thái dịch vụ!');
+      };
+
+      // Toggle Stylist Status (Available / Busy)
+      const toggleStylistStatus = (id) => {
+        setStylists(prev => prev.map(st => {
+          if (st.id === id) {
+            const nextStatus = st.status === 'Available' ? 'Busy' : 'Available';
+            return { ...st, status: nextStatus };
+          }
+          return st;
+        }));
+        showToast('Đã cập nhật trạng thái thợ làm tóc!');
+      };
+
+      // RENDER LOGIN SCREEN IF NOT AUTHENTICATED
+      if (!isAuthenticated) {
+        return (
+          <div className="min-h-screen bg-[#F8F6F0] flex items-center justify-center p-4">
+            
+            {/* TOAST NOTIFICATION */}
+            {toastMsg && (
+              <div className="fixed top-5 right-5 z-50 bg-stone-900 text-stone-100 px-4 py-3 rounded-2xl shadow-xl text-sm font-medium flex items-center gap-2">
+                <span>⚡</span>
+                <span>{toastMsg}</span>
+              </div>
+            )}
+
+            <div className="bg-white max-w-md w-full rounded-3xl border border-stone-200 shadow-xl overflow-hidden p-8 space-y-6">
+              
+              {/* Header Logo */}
+              <div className="text-center space-y-2">
+                <div className="w-14 h-14 rounded-full bg-salon-primary text-white flex items-center justify-center font-serif text-2xl font-bold mx-auto shadow-md">
+                  L
+                </div>
+                <h1 className="font-serif-accent text-2xl font-bold text-stone-900">LUMIÈRE Hair Studio</h1>
+                <span className="text-xs uppercase tracking-widest font-semibold text-salon-secondary bg-salon-secondaryLight px-3 py-1 rounded-full inline-block">
+                  Cổng Đăng Nhập Quản Trị Viên
+                </span>
+              </div>
+
+              {/* Login Form */}
+              <form onSubmit={handleLogin} className="space-y-4 text-xs">
+                
+                {loginError && (
+                  <div className="bg-rose-50 text-rose-700 p-3 rounded-xl border border-rose-200 font-semibold text-center">
+                    ⚠️ {loginError}
+                  </div>
+                )}
+
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-stone-700">Tên Đăng Nhập / Username</label>
+                  <input 
+                    type="text" 
+                    required
+                    placeholder="Nhập tên đăng nhập"
+                    value={loginForm.username}
+                    onChange={(e) => setLoginForm({...loginForm, username: e.target.value})}
+                    className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 text-sm bg-salon-bg"
+                  />
+                </div>
+
+                <div className="space-y-1.5 relative">
+                  <label className="font-semibold text-stone-700">Mật Khẩu / Password</label>
+                  <div className="relative">
+                    <input 
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      placeholder="Nhập mật khẩu"
+                      value={loginForm.password}
+                      onChange={(e) => setLoginForm({...loginForm, password: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 text-sm bg-salon-bg pr-10"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-3 text-stone-400 hover:text-stone-700 text-xs font-semibold"
+                    >
+                      {showPassword ? 'Ẩn' : 'Hiện'}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full bg-salon-primary hover:bg-salon-primaryHover text-white py-3.5 rounded-2xl font-bold text-sm shadow-md transition flex items-center justify-center gap-2"
+                >
+                  <span>Đăng Nhập Quản Trị</span>
+                  <i data-lucide="arrow-right" className="w-4 h-4"></i>
+                </button>
+              </form>
+
+              {/* Back to Client Site */}
+              <div className="pt-4 border-t border-stone-100 text-center">
+                <a href="index.html" className="text-xs text-stone-500 hover:text-stone-900 font-semibold hover:underline">
+                  ← Quay về trang dành cho khách hàng
+                </a>
+              </div>
+
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen flex flex-col md:flex-row bg-[#F8F6F0]">
+          
+          {/* TOAST NOTIFICATION */}
+          {toastMsg && (
+            <div className="fixed top-5 right-5 z-50 bg-stone-900 text-stone-100 px-4 py-3 rounded-2xl shadow-xl text-sm font-medium flex items-center gap-2">
+              <span>⚡</span>
+              <span>{toastMsg}</span>
+            </div>
+          )}
+
+          {/* SIDEBAR NAVIGATION */}
+          <aside className="w-full md:w-64 bg-stone-900 text-stone-300 flex-shrink-0 flex flex-col justify-between p-5">
+            <div className="space-y-6">
+              
+              {/* Brand Logo */}
+              <div className="flex items-center gap-3 pb-6 border-b border-stone-800">
+                <div className="w-10 h-10 rounded-full bg-salon-primary text-white flex items-center justify-center font-serif text-xl font-bold">
+                  L
+                </div>
+                <div>
+                  <h1 className="font-serif-accent text-lg font-bold text-white leading-none">LUMIÈRE</h1>
+                  <span className="text-[10px] tracking-widest uppercase text-salon-secondary font-semibold">Admin Portal</span>
+                </div>
+              </div>
+
+              {/* Navigation Items */}
+              <nav className="space-y-1">
+                {[
+                  { key: 'appointments', label: 'Quản Lý Lịch Hẹn', icon: 'calendar', badge: stats.pendingCount },
+                  { key: 'services', label: 'Dịch Vụ & Bảng Giá', icon: 'scissors', badge: services.length },
+                  { key: 'stylists', label: 'Đội Ngũ Stylist', icon: 'users', badge: stylists.length },
+                  { key: 'reports', label: 'Báo Cáo Doanh Thu', icon: 'bar-chart-3', badge: null }
+                ].map((item) => (
+                  <button
+                    key={item.key}
+                    onClick={() => setActiveTab(item.key)}
+                    className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-semibold transition-all ${
+                      activeTab === item.key
+                        ? 'bg-salon-primary text-white shadow-md'
+                        : 'text-stone-400 hover:bg-stone-800 hover:text-stone-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <i data-lucide={item.icon} className="w-4 h-4"></i>
+                      <span>{item.label}</span>
+                    </div>
+                    {item.badge !== null && item.badge > 0 && (
+                      <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        activeTab === item.key ? 'bg-white text-salon-primary' : 'bg-stone-800 text-stone-300'
+                      }`}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </nav>
+
+            </div>
+
+            {/* Bottom Actions: Back to Website & Logout */}
+            <div className="pt-6 border-t border-stone-800 space-y-2">
+              <a 
+                href="index.html" 
+                className="w-full flex items-center justify-center gap-2 bg-stone-800 hover:bg-stone-700 text-stone-200 py-2.5 rounded-xl text-xs font-semibold transition"
+              >
+                <i data-lucide="external-link" className="w-4 h-4"></i>
+                <span>Trang Khách hàng</span>
+              </a>
+              <button 
+                onClick={handleLogout}
+                className="w-full flex items-center justify-center gap-2 bg-rose-900/60 hover:bg-rose-900 text-rose-200 py-2.5 rounded-xl text-xs font-semibold transition border border-rose-800/40"
+              >
+                <i data-lucide="log-out" className="w-4 h-4"></i>
+                <span>Đăng Xuất Admin</span>
+              </button>
+              <p className="text-[10px] text-stone-500 text-center pt-1">Lumière Hair Studio v2.4 Admin</p>
+            </div>
+          </aside>
+
+          {/* MAIN CONTENT AREA */}
+          <main className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-8">
+            
+            {/* TOP BAR & STATS CARDS */}
+            <div>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                <div>
+                  <h2 className="text-2xl font-serif-accent font-bold text-stone-900">
+                    Bảng Quản Trị Salon
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    Quản lý đơn đặt lịch, dịch vụ và nhân sự trong ngày
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold bg-emerald-100 text-emerald-800 px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Hệ thống đang hoạt động</span>
+                  </span>
+                </div>
+              </div>
+
+              {/* STATS OVERVIEW CARDS */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-1">
+                  <span className="text-xs text-stone-500 font-medium block">Tổng Doanh Thu (Ưóc tính)</span>
+                  <p className="text-xl font-bold font-serif-accent text-stone-900">{formatVND(stats.totalRev)}</p>
+                  <span className="text-[10px] text-emerald-600 font-semibold block">↑ +15% so với tuần trước</span>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-1">
+                  <span className="text-xs text-stone-500 font-medium block">Lịch Chờ Duyệt</span>
+                  <p className="text-xl font-bold text-amber-600">{stats.pendingCount} đơn</p>
+                  <span className="text-[10px] text-amber-700 font-semibold block">Cần xác nhận ngay</span>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-1">
+                  <span className="text-xs text-stone-500 font-medium block">Đã Xác Nhận / Đang Làm</span>
+                  <p className="text-xl font-bold text-salon-primary">{stats.confirmedCount} khách</p>
+                  <span className="text-[10px] text-stone-500 block">Sẵn sàng phục vụ</span>
+                </div>
+
+                <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-1">
+                  <span className="text-xs text-stone-500 font-medium block">Stylist Đang Làm Việc</span>
+                  <p className="text-xl font-bold text-stone-900">
+                    {stylists.filter(s => s.status === 'Busy').length} / {stylists.length} thợ
+                  </p>
+                  <span className="text-[10px] text-stone-500 block">Đang đứng cắt</span>
+                </div>
+              </div>
+            </div>
+
+            {/* TAB 1: QUẢN LÝ LỊCH HẸN */}
+            {activeTab === 'appointments' && (
+              <div className="bg-white rounded-3xl border border-stone-200 shadow-sm overflow-hidden space-y-4">
+                
+                {/* Filter & Search Header */}
+                <div className="p-5 border-b border-stone-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="relative flex-1 max-w-md">
+                    <i data-lucide="search" className="w-4 h-4 absolute left-3 top-3 text-stone-400"></i>
+                    <input 
+                      type="text"
+                      placeholder="Tìm theo tên khách, SĐT hoặc mã đơn..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-stone-200 text-xs focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-2 overflow-x-auto">
+                    {['All', 'Pending', 'Confirmed', 'InProgress', 'Completed', 'Cancelled'].map((st) => (
+                      <button
+                        key={st}
+                        onClick={() => setStatusFilter(st)}
+                        className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition ${
+                          statusFilter === st
+                            ? 'bg-salon-primary text-white shadow-sm'
+                            : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
+                        }`}
+                      >
+                        {st === 'All' ? 'Tất cả' : st === 'Pending' ? 'Chờ duyệt' : st === 'Confirmed' ? 'Đã duyệt' : st === 'InProgress' ? 'Đang làm' : st === 'Completed' ? 'Hoàn thành' : 'Đã hủy'}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Appointments Table */}
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs border-collapse">
+                    <thead>
+                      <tr className="bg-salon-bg text-stone-500 font-bold border-b border-stone-200">
+                        <th className="py-3.5 px-4">MÃ ĐƠN & KHÁCH HÀNG</th>
+                        <th className="py-3.5 px-4">DỊCH VỤ & KIỂU/MÀU</th>
+                        <th className="py-3.5 px-4">STYLIST</th>
+                        <th className="py-3.5 px-4">THỜI GIAN HẸN</th>
+                        <th className="py-3.5 px-4">TỔNG TIỀN</th>
+                        <th className="py-3.5 px-4">TRẠNG THÁI</th>
+                        <th className="py-3.5 px-4 text-right">THAO TÁC DUYỆT</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-stone-100">
+                      {filteredAppointments.length === 0 ? (
+                        <tr>
+                          <td colSpan="7" className="text-center py-10 text-stone-400">
+                            Không tìm thấy lịch hẹn nào phù hợp.
+                          </td>
+                        </tr>
+                      ) : (
+                        filteredAppointments.map((app) => (
+                          <tr key={app.id} className="hover:bg-salon-secondaryLight/30 transition">
+                            <td className="py-4 px-4">
+                              <span className="font-mono font-bold text-salon-primary block text-[11px]">{app.id}</span>
+                              <span className="font-bold text-stone-900 block text-sm">{app.customerName}</span>
+                              <span className="text-stone-500 block">{app.phone}</span>
+                            </td>
+
+                            <td className="py-4 px-4 max-w-xs">
+                              <p className="font-semibold text-stone-800">{app.services.join(', ')}</p>
+                              <div className="text-[11px] text-stone-500 mt-1 space-y-0.5">
+                                <span>✂️ Kiểu: <strong>{app.hairstyle}</strong></span> <br />
+                                <span>🎨 Màu: <strong>{app.haircolor}</strong></span>
+                              </div>
+                            </td>
+
+                            <td className="py-4 px-4 font-medium text-stone-800">
+                              {app.stylist}
+                            </td>
+
+                            <td className="py-4 px-4">
+                              <span className="font-bold text-stone-900 block">{app.time}</span>
+                              <span className="text-stone-500 text-[11px]">{app.date}</span>
+                            </td>
+
+                            <td className="py-4 px-4 font-bold text-stone-900">
+                              {formatVND(app.totalPrice)}
+                            </td>
+
+                            <td className="py-4 px-4">
+                              <span className={`px-2.5 py-1 rounded-full text-[11px] font-bold inline-block ${
+                                app.status === 'Confirmed' ? 'bg-emerald-100 text-emerald-800' :
+                                app.status === 'Pending' ? 'bg-amber-100 text-amber-800' :
+                                app.status === 'InProgress' ? 'bg-blue-100 text-blue-800' :
+                                app.status === 'Completed' ? 'bg-stone-200 text-stone-700' :
+                                'bg-rose-100 text-rose-800'
+                              }`}>
+                                {app.status === 'Pending' ? '⏳ Chờ duyệt' :
+                                 app.status === 'Confirmed' ? '✓ Đã duyệt' :
+                                 app.status === 'InProgress' ? '✂️ Đang cắt' :
+                                 app.status === 'Completed' ? '🎉 Hoàn thành' : '✖ Đã hủy'}
+                              </span>
+                            </td>
+
+                            <td className="py-4 px-4 text-right space-x-1 whitespace-nowrap">
+                              {app.status === 'Pending' && (
+                                <button
+                                  onClick={() => updateStatus(app.id, 'Confirmed')}
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 rounded-lg font-semibold text-[11px] transition shadow-sm"
+                                >
+                                  Duyệt nhanh
+                                </button>
+                              )}
+
+                              {app.status === 'Confirmed' && (
+                                <button
+                                  onClick={() => updateStatus(app.id, 'InProgress')}
+                                  className="bg-blue-600 hover:bg-blue-700 text-white px-2.5 py-1 rounded-lg font-semibold text-[11px] transition shadow-sm"
+                                >
+                                  Bắt đầu cắt
+                                </button>
+                              )}
+
+                              {app.status === 'InProgress' && (
+                                <button
+                                  onClick={() => updateStatus(app.id, 'Completed')}
+                                  className="bg-stone-800 hover:bg-stone-900 text-white px-2.5 py-1 rounded-lg font-semibold text-[11px] transition shadow-sm"
+                                >
+                                  Hoàn thành
+                                </button>
+                              )}
+
+                              {app.status !== 'Cancelled' && app.status !== 'Completed' && (
+                                <button
+                                  onClick={() => updateStatus(app.id, 'Cancelled')}
+                                  className="bg-rose-100 hover:bg-rose-200 text-rose-700 px-2 py-1 rounded-lg font-semibold text-[11px] transition"
+                                >
+                                  Hủy
+                                </button>
+                              )}
+
+                              <button
+                                onClick={() => deleteAppointment(app.id)}
+                                className="text-stone-400 hover:text-rose-600 p-1 rounded transition"
+                                title="Xóa đơn"
+                              >
+                                🗑️
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+              </div>
+            )}
+
+            {/* TAB 2: QUẢN LÝ DỊCH VỤ & BẢNG GIÁ */}
+            {activeTab === 'services' && (
+              <div className="space-y-6">
+                
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-stone-900">Danh Mục Dịch Vụ Niêm Yết</h3>
+                  <button
+                    onClick={() => setIsAddServiceModalOpen(true)}
+                    className="bg-salon-primary hover:bg-salon-primaryHover text-white px-4 py-2.5 rounded-2xl text-xs font-semibold shadow transition flex items-center gap-2"
+                  >
+                    <span>+ Thêm Dịch Vụ Mới</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {services.map((s) => (
+                    <div key={s.id} className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex flex-col justify-between space-y-3">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <span className="text-[10px] font-bold uppercase tracking-wider text-salon-secondary">{s.category}</span>
+                          <h4 className="text-base font-bold text-stone-900">{s.name}</h4>
+                        </div>
+                        <button
+                          onClick={() => toggleServiceActive(s.id)}
+                          className={`w-9 h-5 rounded-full transition-colors relative p-0.5 ${s.active ? 'bg-salon-primary' : 'bg-stone-300'}`}
+                        >
+                          <div className={`w-4 h-4 rounded-full bg-white transition-transform ${s.active ? 'translate-x-4' : 'translate-x-0'}`}></div>
+                        </button>
+                      </div>
+
+                      <div className="flex justify-between items-center pt-3 border-t border-stone-100 text-xs">
+                        <span className="text-stone-500">⏱ {s.duration}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-base font-serif-accent font-bold text-stone-900">{formatVND(s.price)}</span>
+                          <button
+                            onClick={() => setEditingService({...s})}
+                            className="bg-salon-bg hover:bg-salon-secondaryLight text-salon-primary px-2.5 py-1 rounded-lg border border-salon-border text-[11px] font-semibold transition flex items-center gap-1 shadow-sm"
+                            title="Chỉnh sửa giá dịch vụ"
+                          >
+                            <span>✏️</span>
+                            <span>Sửa giá</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+              </div>
+            )}
+
+            {/* TAB 3: QUẢN LÝ ĐỘI NGŨ STYLIST */}
+            {activeTab === 'stylists' && (
+              <div className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-stone-900">Đội Ngũ Stylist & Trạng Thái Làm Việc</h3>
+                  <button
+                    onClick={() => setIsAddStylistModalOpen(true)}
+                    className="bg-salon-primary hover:bg-salon-primaryHover text-white px-4 py-2.5 rounded-2xl text-xs font-semibold shadow transition flex items-center gap-2"
+                  >
+                    <span>+ Thêm Stylist Mới</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {stylists.map((st) => (
+                    <div key={st.id} className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm space-y-4 text-center">
+                      <img 
+                        src={st.avatar || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300'} 
+                        alt={st.name} 
+                        className="w-16 h-16 rounded-full mx-auto object-cover border-2 border-salon-primary shadow-sm"
+                      />
+                      <div>
+                        <h4 className="text-base font-bold text-stone-900">{st.name}</h4>
+                        <p className="text-xs text-salon-primary font-semibold">{st.role}</p>
+                        <p className="text-[11px] text-stone-500 mt-0.5">📞 {st.phone}</p>
+                      </div>
+
+                      <div className="bg-salon-bg p-2.5 rounded-xl border border-stone-200 text-xs flex justify-between">
+                        <span className="text-stone-500">Đánh giá:</span>
+                        <strong className="text-amber-600">★ {st.rating}</strong>
+                      </div>
+
+                      <button
+                        onClick={() => toggleStylistStatus(st.id)}
+                        className={`w-full py-2 rounded-xl text-xs font-semibold transition ${
+                          st.status === 'Available'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            : 'bg-amber-100 text-amber-800 border border-amber-300'
+                        }`}
+                      >
+                        {st.status === 'Available' ? '🟢 Đang rảnh (Có thể nhận lịch)' : '🔴 Đang làm tóc (Bận)'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: BÁO CÁO DOANH THU */}
+            {activeTab === 'reports' && (
+              <div className="bg-white p-8 rounded-3xl border border-stone-200 shadow-sm space-y-6">
+                <h3 className="text-xl font-serif-accent font-bold text-stone-900">Báo Cáo & Thống Kê Hoạt Động Salon</h3>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="bg-salon-bg p-6 rounded-2xl border border-stone-200 space-y-3">
+                    <h4 className="text-sm font-bold text-stone-900">🔥 Top Dịch Vụ Đặt Nhiều Nhất</h4>
+                    <ul className="space-y-2 text-xs">
+                      <li className="flex justify-between pb-2 border-b">
+                        <span>1. Uốn Sóng Lơi Hàn Quốc</span>
+                        <strong className="text-salon-primary">42 lượt đặt</strong>
+                      </li>
+                      <li className="flex justify-between pb-2 border-b">
+                        <span>2. Cắt Layer Nữ</span>
+                        <strong className="text-salon-primary">38 lượt đặt</strong>
+                      </li>
+                      <li className="flex justify-between pb-2 border-b">
+                        <span>3. Nhuộm Nâu Trà Sữa Premium</span>
+                        <strong className="text-salon-primary">29 lượt đặt</strong>
+                      </li>
+                      <li className="flex justify-between">
+                        <span>4. Gội Đầu Dưỡng Sinh</span>
+                        <strong className="text-salon-primary">25 lượt đặt</strong>
+                      </li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-salon-bg p-6 rounded-2xl border border-stone-200 space-y-3">
+                    <h4 className="text-sm font-bold text-stone-900">📊 Doanh Thu Theo Khung Giờ</h4>
+                    <p className="text-xs text-stone-500">Khung giờ cao điểm nhất trong ngày từ <strong>14:30 - 18:30</strong></p>
+                    <div className="h-28 bg-white rounded-xl border p-3 flex items-end justify-between gap-2">
+                      {[30, 50, 80, 95, 60, 40].map((h, idx) => (
+                        <div key={idx} className="flex-1 bg-salon-primary rounded-t transition-all" style={{ height: `${h}%` }}></div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </main>
+
+          {/* MODAL 1: THÊM DỊCH VỤ MỚI */}
+          {isAddServiceModalOpen && (
+            <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+                <div className="flex justify-between items-center pb-3 border-b">
+                  <h3 className="font-bold text-stone-900 text-base">Thêm Dịch Vụ Mới</h3>
+                  <button onClick={() => setIsAddServiceModalOpen(false)} className="text-stone-400 hover:text-stone-600 font-bold">✖</button>
+                </div>
+
+                <form onSubmit={handleAddService} className="space-y-4 text-xs">
+                  <div className="space-y-1">
+                    <label className="font-semibold text-stone-700">Tên Dịch Vụ</label>
+                    <input 
+                      type="text" 
+                      required 
+                      placeholder="Ví dụ: Tẩy Tóc & Phủ Bóng Glassing"
+                      value={newService.name} 
+                      onChange={(e) => setNewService({...newService, name: e.target.value})}
+                      className="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-semibold text-stone-700">Giá Niêm Yết (VNĐ)</label>
+                      <input 
+                        type="number" 
+                        required 
+                        placeholder="800000"
+                        value={newService.price} 
+                        onChange={(e) => setNewService({...newService, price: e.target.value})}
+                        className="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-semibold text-stone-700">Thời Gian Dự Kiến</label>
+                      <select 
+                        value={newService.duration}
+                        onChange={(e) => setNewService({...newService, duration: e.target.value})}
+                        className="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                      >
+                        <option value="30 phút">30 phút</option>
+                        <option value="45 phút">45 phút</option>
+                        <option value="60 phút">60 phút</option>
+                        <option value="90 phút">90 phút</option>
+                        <option value="120 phút">120 phút</option>
+                        <option value="150 phút">150 phút</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-semibold text-stone-700">Phân Loại Danh Mục</label>
+                    <select 
+                      value={newService.category}
+                      onChange={(e) => setNewService({...newService, category: e.target.value})}
+                      className="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                    >
+                      <option value="Cắt & Tạo Kiểu">Cắt & Tạo Kiểu</option>
+                      <option value="Nhuộm Cao Cấp">Nhuộm Cao Cấp</option>
+                      <option value="Uốn & Ép">Uốn & Ép</option>
+                      <option value="Phục Hồi">Phục Hồi</option>
+                    </select>
+                  </div>
+
+                  <div className="pt-3 flex gap-2">
+                    <button 
+                      type="button" 
+                      onClick={() => setIsAddServiceModalOpen(false)}
+                      className="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-700 py-3 rounded-xl font-semibold"
+                    >
+                      Hủy bỏ
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="flex-1 bg-salon-primary hover:bg-salon-primaryHover text-white py-3 rounded-xl font-semibold shadow"
+                    >
+                      Thêm Dịch Vụ
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL 2: THÊM STYLIST MỚI */}
+          {isAddStylistModalOpen && (
+            <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+                <div className="flex justify-between items-center pb-3 border-b">
+                  <h3 className="font-bold text-stone-900 text-base">Thêm Thợ Làm Tóc Mới</h3>
+                  <button onClick={() => setIsAddStylistModalOpen(false)} className="text-stone-400 hover:text-stone-600 font-bold">✖</button>
+                </div>
+
+                <form onSubmit={handleAddStylist} className="space-y-4 text-xs">
+                  <div className="space-y-1">
+                    <label className="font-semibold text-stone-700">Tên Thợ / Stylist <span className="text-red-500">*</span></label>
+                    <input 
+                      type="text" 
+                      required 
+                      placeholder="Ví dụ: Hoàng Anh"
+                      value={newStylist.name} 
+                      onChange={(e) => setNewStylist({...newStylist, name: e.target.value})}
+                      className="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-semibold text-stone-700">Chức Danh / Vai Trò</label>
+                      <select 
+                        value={newStylist.role}
+                        onChange={(e) => setNewStylist({...newStylist, role: e.target.value})}
+                        className="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                      >
+                        <option value="Master Stylist">Master Stylist</option>
+                        <option value="Senior Hair Artist">Senior Hair Artist</option>
+                        <option value="Barber Specialist">Barber Specialist</option>
+                        <option value="Color Specialist">Color Specialist</option>
+                        <option value="Treatment Expert">Treatment Expert</option>
+                      </select>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-semibold text-stone-700">Số Điện Thoại</label>
+                      <input 
+                        type="tel" 
+                        placeholder="0988 777 666"
+                        value={newStylist.phone} 
+                        onChange={(e) => setNewStylist({...newStylist, phone: e.target.value})}
+                        className="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-semibold text-stone-700">Sở Trường / Chuyên Môn</label>
+                    <input 
+                      type="text" 
+                      placeholder="Ví dụ: Chuyên Uốn Sóng & Nhuộm Balayage"
+                      value={newStylist.specialty} 
+                      onChange={(e) => setNewStylist({...newStylist, specialty: e.target.value})}
+                      className="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-semibold text-stone-700">Đánh Giá Ban Đầu (Số sao)</label>
+                    <select 
+                      value={newStylist.rating}
+                      onChange={(e) => setNewStylist({...newStylist, rating: e.target.value})}
+                      className="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                    >
+                      <option value="5.0">5.0 ★ (Xuất sắc)</option>
+                      <option value="4.9">4.9 ★ (Rất tốt)</option>
+                      <option value="4.8">4.8 ★ (Tốt)</option>
+                    </select>
+                  </div>
+
+                  <div className="pt-3 flex gap-2">
+                    <button 
+                      type="button" 
+                      onClick={() => setIsAddStylistModalOpen(false)}
+                      className="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-700 py-3 rounded-xl font-semibold"
+                    >
+                      Hủy bỏ
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="flex-1 bg-salon-primary hover:bg-salon-primaryHover text-white py-3 rounded-xl font-semibold shadow"
+                    >
+                      Lưu Stylist Mới
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL 3: CHỈNH SỬA GIÁ DỊCH VỤ */}
+          {editingService && (
+            <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-4">
+                <div className="flex justify-between items-center pb-3 border-b">
+                  <div>
+                    <h3 className="font-bold text-stone-900 text-base">Chỉnh Sửa Giá Dịch Vụ</h3>
+                    <p className="text-[11px] text-stone-500">{editingService.name}</p>
+                  </div>
+                  <button onClick={() => setEditingService(null)} className="text-stone-400 hover:text-stone-600 font-bold">✖</button>
+                </div>
+
+                <form onSubmit={handleUpdateService} className="space-y-4 text-xs">
+                  <div className="space-y-1">
+                    <label className="font-semibold text-stone-700">Tên Dịch Vụ</label>
+                    <input 
+                      type="text" 
+                      required 
+                      value={editingService.name} 
+                      onChange={(e) => setEditingService({...editingService, name: e.target.value})}
+                      className="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-semibold text-stone-700">Giá Niêm Yết Mới (VNĐ) <span className="text-red-500">*</span></label>
+                      <input 
+                        type="number" 
+                        required 
+                        placeholder="Ví dụ: 300000"
+                        value={editingService.price} 
+                        onChange={(e) => setEditingService({...editingService, price: parseInt(e.target.value) || 0})}
+                        className="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg font-bold text-salon-primary"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-semibold text-stone-700">Thời Gian Dự Kiến</label>
+                      <select 
+                        value={editingService.duration}
+                        onChange={(e) => setEditingService({...editingService, duration: e.target.value})}
+                        className="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                      >
+                        <option value="30 phút">30 phút</option>
+                        <option value="45 phút">45 phút</option>
+                        <option value="60 phút">60 phút</option>
+                        <option value="90 phút">90 phút</option>
+                        <option value="120 phút">120 phút</option>
+                        <option value="150 phút">150 phút</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-semibold text-stone-700">Phân Loại Danh Mục</label>
+                    <select 
+                      value={editingService.category}
+                      onChange={(e) => setEditingService({...editingService, category: e.target.value})}
+                      className="w-full p-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                    >
+                      <option value="Cắt & Tạo Kiểu">Cắt & Tạo Kiểu</option>
+                      <option value="Nhuộm Cao Cấp">Nhuộm Cao Cấp</option>
+                      <option value="Uốn & Ép">Uốn & Ép</option>
+                      <option value="Phục Hồi">Phục Hồi</option>
+                    </select>
+                  </div>
+
+                  <div className="pt-3 flex gap-2">
+                    <button 
+                      type="button" 
+                      onClick={() => setEditingService(null)}
+                      className="flex-1 bg-stone-100 hover:bg-stone-200 text-stone-700 py-3 rounded-xl font-semibold"
+                    >
+                      Hủy bỏ
+                    </button>
+                    <button 
+                      type="submit" 
+                      className="flex-1 bg-salon-primary hover:bg-salon-primaryHover text-white py-3 rounded-xl font-semibold shadow"
+                    >
+                      Lưu Cập Nhật Giá
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    const rootElement = document.getElementById('root');
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(<AdminApp />);
+  </script>
+</body>
+</html>

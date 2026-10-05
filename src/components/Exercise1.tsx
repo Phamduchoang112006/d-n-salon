@@ -38,6 +38,7 @@ const Exercise1 = () => {
   };
 
   const handleCalculate = (operation: 'add' | 'sub' | 'mul' | 'div' | 'compare') => {
+    Keyboard.dismiss();
     const { a, b, isValid } = getNumbers();
     if (!isValid) {return;}
 

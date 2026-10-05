@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Image } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 
 interface LightControlProps {
   isLightOn: boolean;
@@ -16,10 +16,6 @@ const LightControl: React.FC<LightControlProps> = ({
   onIncreaseBrightness,
   onDecreaseBrightness,
 }) => {
-  // Relative path to assets in the project root
-  const bulbOn = require('../assets/bulb_on.png');
-  const bulbOff = require('../assets/bulb_off.png');
-
   // Dynamic styling for the glowing effect of the bulb based on brightness
   const glowOpacity = isLightOn ? brightness / 100 : 0;
   const bulbScale = isLightOn ? 1 + (brightness / 200) * 0.15 : 1; // subtle pulse with brightness
@@ -28,26 +24,54 @@ const LightControl: React.FC<LightControlProps> = ({
     <View style={styles.container}>
       <Text style={styles.title}>===== COMPONENT CON =====</Text>
 
-      {/* Light Bulb Container with dynamic shadow/glow */}
+      {/* Custom CSS Light Bulb Container with dynamic shadow/glow */}
       <View style={styles.imageWrapper}>
+        {/* Outer Glow effect behind the bulb */}
         {isLightOn && (
           <View
             style={[
               styles.glowEffect,
               {
-                opacity: glowOpacity,
-                transform: [{ scale: bulbScale }],
+                opacity: glowOpacity * 0.8,
+                transform: [{ scale: bulbScale * 1.15 }],
               },
             ]}
           />
         )}
-        <Image
-          source={isLightOn ? bulbOn : bulbOff}
-          style={[
-            styles.image,
-            isLightOn && { transform: [{ scale: bulbScale }] },
-          ]}
-        />
+
+        {/* Bulb shape */}
+        <View style={[styles.bulbContainer, { transform: [{ scale: bulbScale }] }]}>
+          {/* Circular Glass Part */}
+          <View
+            style={[
+              styles.bulbGlass,
+              {
+                backgroundColor: isLightOn
+                  ? `rgba(255, 235, 59, ${0.15 + (brightness / 100) * 0.85})` // yellow gets stronger/brighter based on brightness
+                  : '#334155', // Slate gray when off
+                borderColor: isLightOn ? '#ffeb3b' : '#64748b',
+              },
+            ]}
+          >
+            {/* Brightness percentage text inside the bulb */}
+            {isLightOn ? (
+              <Text style={styles.bulbTextInside}>
+                {brightness}%
+              </Text>
+            ) : (
+              <Text style={styles.bulbTextInsideOff}>
+                TẮT
+              </Text>
+            )}
+          </View>
+
+          {/* Bulb Base (Screw threads) */}
+          <View style={styles.bulbBaseContainer}>
+            <View style={styles.bulbBaseThread1} />
+            <View style={styles.bulbBaseThread2} />
+            <View style={styles.bulbBaseTip} />
+          </View>
+        </View>
       </View>
 
       {/* Info Box showing received props */}
@@ -154,9 +178,9 @@ const styles = StyleSheet.create({
   },
   glowEffect: {
     position: 'absolute',
-    width: 130,
-    height: 130,
-    borderRadius: 65,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
     backgroundColor: 'rgba(255, 235, 59, 0.45)',
     shadowColor: '#ffeb3b',
     shadowOffset: { width: 0, height: 0 },
@@ -164,10 +188,60 @@ const styles = StyleSheet.create({
     shadowRadius: 50,
     elevation: 25,
   },
-  image: {
-    width: 140,
-    height: 140,
-    resizeMode: 'contain',
+  bulbContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bulbGlass: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
+    borderWidth: 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#ffeb3b',
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.8,
+    shadowRadius: 15,
+  },
+  bulbTextInside: {
+    fontSize: 26,
+    fontWeight: '900',
+    color: '#0f172a', // Dark text for contrast against yellow glass
+  },
+  bulbTextInsideOff: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#94a3b8',
+  },
+  bulbBaseContainer: {
+    alignItems: 'center',
+    marginTop: -8, // slight overlap with glass bulb for continuity
+  },
+  bulbBaseThread1: {
+    width: 58,
+    height: 18,
+    backgroundColor: '#94a3b8',
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: '#475569',
+  },
+  bulbBaseThread2: {
+    width: 44,
+    height: 14,
+    backgroundColor: '#64748b',
+    borderRadius: 7,
+    marginTop: -4,
+    borderWidth: 1.5,
+    borderColor: '#334155',
+  },
+  bulbBaseTip: {
+    width: 26,
+    height: 8,
+    backgroundColor: '#334155',
+    borderBottomLeftRadius: 6,
+    borderBottomRightRadius: 6,
+    marginTop: -2,
   },
   infoBox: {
     backgroundColor: '#0f172a', // Ultra dark background for telemetry

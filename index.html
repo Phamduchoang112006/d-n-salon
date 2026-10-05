@@ -1,0 +1,2339 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LUMIÈRE Hair Studio - Đặt Lịch Cắt Tóc & Chăm Sóc Tóc</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            salon: {
+              bg: '#FBF9F5',
+              surface: '#FFFFFF',
+              card: '#F5F0EB',
+              primary: '#4A6B5D', // Deep sage green
+              primaryHover: '#3D5A4D',
+              secondary: '#C89F82', // Warm taupe/terracotta accent
+              secondaryLight: '#F7F1EC',
+              text: '#1C1917',
+              muted: '#78716C',
+              border: '#E7E0D8'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- React 18 & Babel CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      background-color: #FBF9F5;
+      color: #1C1917;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    .font-serif-accent {
+      font-family: 'Playfair Display', serif;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #FBF9F5;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #D9D1C7;
+      border-radius: 10px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #B8ADA0;
+    }
+
+    .glass-nav {
+      background: rgba(251, 249, 245, 0.88);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-salon-primary/20 selection:text-salon-primary">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    // --- MOCK DATA ---
+    const SERVICES = [
+      {
+        id: 'cut-women',
+        name: 'Cắt & Tạo Kiểu Nữ',
+        category: 'Cắt & Tạo Kiểu',
+        duration: '45 phút',
+        minutes: 45,
+        price: 250000,
+        description: 'Tư vấn dáng mặt, cắt tỉa layer chuyên sâu & sấy tạo kiểu bồng bềnh tự nhiên.',
+        badge: 'Phổ biến',
+        icon: '✂️',
+        image: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&q=80&w=600'
+      },
+      {
+        id: 'cut-men',
+        name: 'Cắt & Styling Nam Premium',
+        category: 'Cắt & Tạo Kiểu',
+        duration: '30 phút',
+        minutes: 30,
+        price: 160000,
+        description: 'Cắt gội massage thư giãn, sấy vuốt sáp tạo kiểu thời trang cao cấp.',
+        badge: 'Bán chạy',
+        icon: '💈',
+        image: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&q=80&w=600'
+      },
+      {
+        id: 'color-premium',
+        name: 'Nhuộm Màu Thời Trang Premium',
+        category: 'Nhuộm Cao Cấp',
+        duration: '120 phút',
+        minutes: 120,
+        price: 650000,
+        description: 'Thuốc nhuộm thảo dược hữu cơ bảo vệ da đầu, lên màu chuẩn bóng mượt.',
+        badge: 'Khuyên dùng',
+        icon: '🎨',
+        image: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&q=80&w=600'
+      },
+      {
+        id: 'perm-korean',
+        name: 'Uốn Sóng Lơi Hàn Quốc',
+        category: 'Uốn & Ép',
+        duration: '150 phút',
+        minutes: 150,
+        price: 750000,
+        description: 'Kỹ thuật uốn lạnh/nóng giữ nếp tự nhiên, không gây khô xơ ngọn tóc.',
+        badge: 'Hot Trend',
+        icon: '✨',
+        image: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&q=80&w=600'
+      },
+      {
+        id: 'straight-silk',
+        name: 'Ép Tóc Lụa Phủ Bóng Organic',
+        category: 'Uốn & Ép',
+        duration: '120 phút',
+        minutes: 120,
+        price: 680000,
+        description: 'Tóc thẳng mượt vào nếp tự nhiên, giữ ẩm sâu với tinh chất Collagen.',
+        badge: 'Suôn mượt',
+        icon: '💫',
+        image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=600'
+      },
+      {
+        id: 'treatment-keratin',
+        name: 'Phục Hồi Keratin Chuyên Sâu',
+        category: 'Phục Hồi',
+        duration: '60 phút',
+        minutes: 60,
+        price: 520000,
+        description: 'Tái tạo cấu trúc tóc nát, hư tổn nặng do hóa chất, trả lại sự đàn hồi.',
+        badge: 'Cứu cánh tóc xơ',
+        icon: '🌿',
+        image: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&q=80&w=600'
+      },
+      {
+        id: 'head-spa',
+        name: 'Gội Đầu Dưỡng Sinh Thảo Dược',
+        category: 'Phục Hồi',
+        duration: '45 phút',
+        minutes: 45,
+        price: 180000,
+        description: 'Massage ấn huyệt vai cổ gáy, gội nước thảo mộc thư giãn giảm stress.',
+        badge: 'Thư giãn',
+        icon: '🌸',
+        image: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&q=80&w=600'
+      }
+    ];
+
+    const HAIRSTYLES = [
+      {
+        id: 'style-none',
+        name: 'Tư Vấn Trực Tiếp Tại Salon',
+        category: 'Tất cả',
+        image: 'https://images.unsplash.com/photo-1521590832167-7bcbfaa6381f?auto=format&fit=crop&q=80&w=400',
+        tag: 'Dễ dàng',
+        desc: 'Để Stylist kiểm tra chất tóc & tư vấn dáng mặt thích hợp nhất'
+      },
+      {
+        id: 'style-layer-korean',
+        name: 'Cắt Layer Bồng Bềnh',
+        category: 'Tóc Nữ',
+        image: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&q=80&w=400',
+        tag: 'Best Seller',
+        desc: 'Tỉa tầng bay bổng, ôm trọn gương mặt giúp thon gọn cá tính'
+      },
+      {
+        id: 'style-wave-korean',
+        name: 'Uốn Sóng Lơi Sóng Nước',
+        category: 'Tóc Nữ',
+        image: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&q=80&w=400',
+        tag: 'Xu Hướng 2026',
+        desc: 'Nếp sóng xoăn nhẹ nhàng tự nhiên như không uốn'
+      },
+      {
+        id: 'style-hippie',
+        name: 'Uốn Hippie Retro Cổ Điển',
+        category: 'Tóc Nữ',
+        image: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&q=80&w=400',
+        tag: 'Cá Tính',
+        desc: 'Xoăn xù mì bồng bềnh mang phong cách Vintage tự do'
+      },
+      {
+        id: 'style-bob-chic',
+        name: 'Cắt Bob Ngắn Thanh Lịch',
+        category: 'Tóc Nữ',
+        image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=400',
+        tag: 'Thanh Lịch',
+        desc: 'Mái tóc ngắn ôm gáy phom dáng tối giản hiện đại'
+      },
+      {
+        id: 'style-sidepart',
+        name: 'Side Part 7/3 Hàn Quốc',
+        category: 'Tóc Nam',
+        image: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&q=80&w=400',
+        tag: 'Lịch Lãm',
+        desc: 'Tạo phồng chân tóc nhẹ nhàng, lịch sự công sở & đi chơi'
+      },
+      {
+        id: 'style-undercut',
+        name: 'Undercut High Fade Modern',
+        category: 'Tóc Nam',
+        image: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400',
+        tag: 'Cắt Ngắn Gọn',
+        desc: 'Cắt sát hai bên sắc nét, vuốt phồng đỉnh đầu cá tính'
+      }
+    ];
+
+    const HAIR_COLORS = [
+      {
+        id: 'color-none',
+        name: 'Giữ Màu Tóc Tự Nhiên / Không Nhuộm',
+        hex: '#2B2725',
+        badge: 'Nguyên Bản',
+        desc: 'Chỉ thực hiện dịch vụ cắt/uốn/chăm sóc phục hồi',
+        image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400'
+      },
+      {
+        id: 'color-milktea',
+        name: 'Nâu Trà Sữa (Milk Tea)',
+        hex: '#D2B48C',
+        badge: 'Hot Trend 2026',
+        desc: 'Tông màu siêu sáng da, trẻ trung bồng bềnh thu hút',
+        image: 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=400'
+      },
+      {
+        id: 'color-ash-brown',
+        name: 'Nâu Lạnh Khói (Ash Brown)',
+        hex: '#8B8580',
+        badge: 'Tôn Da Sáng',
+        desc: 'Sắc khói huyền bí tây tây, không tẩy tóc vẫn đẹp',
+        image: 'https://images.unsplash.com/photo-1519699047748-de8e457a634e?auto=format&fit=crop&q=80&w=400'
+      },
+      {
+        id: 'color-chestnut',
+        name: 'Nâu Hạt Dẻ Trầm (Chestnut)',
+        hex: '#5C4033',
+        badge: 'Công Sở / Học Sinh',
+        desc: 'Thanh lịch dịu dàng, tự nhiên hợp mọi trang phục',
+        image: 'https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&q=80&w=400'
+      },
+      {
+        id: 'color-balayage-ash',
+        name: 'Balayage Khói Bạch Kim',
+        hex: '#C0C0C0',
+        badge: 'Nghệ Thuật Cao Cấp',
+        desc: 'Kỹ thuật nhuộm chuyển sắc loang ngọn tóc độc bản',
+        image: 'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&q=80&w=400'
+      },
+      {
+        id: 'color-rose-pink',
+        name: 'Hồng Ánh Kim (Rose Gold)',
+        hex: '#B76E79',
+        badge: 'Nổi Bật Cá Tính',
+        desc: 'Tông màu nổi bật, thời thượng phong cách Idol',
+        image: 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&q=80&w=400'
+      },
+      {
+        id: 'color-blue-black',
+        name: 'Xanh Đen Âm Trầm (Blue Black)',
+        hex: '#1C2833',
+        badge: 'Bí Ẩn Sành Điệu',
+        desc: 'Trầm ẩn trong nhà, ánh xanh rực rỡ khi ra nắng',
+        image: 'https://images.unsplash.com/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&q=80&w=400'
+      }
+    ];
+
+    const STYLISTS = [
+      {
+        id: 'any',
+        name: 'Bất Kỳ Thợ Nào',
+        role: 'Sắp xếp thợ sẵn sàng nhanh nhất',
+        experience: 'Linh hoạt',
+        rating: 5.0,
+        reviews: 450,
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300',
+        specialty: 'Tiết kiệm thời gian chờ',
+        isAny: true
+      },
+      {
+        id: 'alex-tran',
+        name: 'Alex Trần',
+        role: 'Master Stylist',
+        experience: '10 năm kinh nghiệm',
+        rating: 4.9,
+        reviews: 320,
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300',
+        specialty: 'Chuyên gia Uốn Sóng & Nhuộm Balayage'
+      },
+      {
+        id: 'minh-anh',
+        name: 'Minh Anh',
+        role: 'Senior Hair Artist',
+        experience: '7 năm kinh nghiệm',
+        rating: 4.8,
+        reviews: 245,
+        avatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300',
+        specialty: 'Cắt Layer & Tạo Kiểu Hàn Quốc'
+      },
+      {
+        id: 'david-nguyen',
+        name: 'David Nguyễn',
+        role: 'Barber Specialist',
+        experience: '8 năm kinh nghiệm',
+        rating: 4.9,
+        reviews: 198,
+        avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300',
+        specialty: 'Undercut, Fade & Cắt Nam Hiện Đại'
+      },
+      {
+        id: 'elena-vu',
+        name: 'Elena Vũ',
+        role: 'Treatment & Spa Expert',
+        experience: '5 năm kinh nghiệm',
+        rating: 5.0,
+        reviews: 160,
+        avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=300',
+        specialty: 'Phục Hồi Tóc Hư Tổn & Gội Dưỡng Sinh'
+      }
+    ];
+
+    const REVIEWS = [
+      {
+        id: 1,
+        name: 'Nguyễn Bích Phương',
+        role: 'Khách hàng thân thiết',
+        avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150',
+        content: 'Mình chọn nhuộm màu Nâu Trà Sữa với uốn sóng lơi. Tóc mềm mịn cực kỳ, lên màu chuẩn y như hình tư vấn luôn!',
+        rating: 5,
+        service: 'Uốn Sóng & Nhuộm Trà Sữa'
+      },
+      {
+        id: 2,
+        name: 'Trần Hoàng Nam',
+        role: 'Khách hàng',
+        avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=150',
+        content: 'Đặt lịch trên mobile chọn kiểu Side Part 7/3 rất tiện. Anh David cắt rất kĩ, vuốt sáp chuẩn phom Hàn Quốc.',
+        rating: 5,
+        service: 'Cắt Side Part Nam'
+      },
+      {
+        id: 3,
+        name: 'Lê Thảo My',
+        role: 'Khách hàng',
+        avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=150',
+        content: 'Kiểu tóc Layer kết hợp phục hồi Keratin làm xong ai cũng khen. Không gian thơm mùi trà thảo mộc rất thư thái.',
+        rating: 5,
+        service: 'Phục Hồi Keratin'
+      }
+    ];
+
+    const formatVND = (price) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
+
+    const getNextDays = (count = 7) => {
+      const days = [];
+      const today = new Date();
+      const dayNames = ['Chủ Nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+      
+      for (let i = 0; i < count; i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() + i);
+        days.push({
+          dateObj: d,
+          dateString: d.toISOString().split('T')[0],
+          dayName: i === 0 ? 'Hôm nay' : i === 1 ? 'Ngày mai' : dayNames[d.getDay()],
+          formattedDate: `${d.getDate()}/${d.getMonth() + 1}`
+        });
+      }
+      return days;
+    };
+
+    const TIME_SLOTS = [
+      { time: '08:30', period: 'Sáng' },
+      { time: '09:30', period: 'Sáng' },
+      { time: '10:30', period: 'Sáng' },
+      { time: '11:30', period: 'Sáng' },
+      { time: '13:30', period: 'Chiều' },
+      { time: '14:30', period: 'Chiều' },
+      { time: '15:30', period: 'Chiều' },
+      { time: '16:30', period: 'Chiều' },
+      { time: '17:30', period: 'Tối' },
+      { time: '18:30', period: 'Tối' },
+      { time: '19:30', period: 'Tối' }
+    ];
+
+    const DEFAULT_USERS = [
+      { name: 'Nguyễn Bích Phương', phone: '0912345678', password: '123456', email: 'bichphuong@gmail.com' }
+    ];
+
+    const getRegisteredUsers = () => {
+      try {
+        const raw = localStorage.getItem('lumiere_registered_users');
+        return raw ? JSON.parse(raw) : DEFAULT_USERS;
+      } catch (e) {
+        return DEFAULT_USERS;
+      }
+    };
+
+    const getDynamicServices = () => {
+      try {
+        const raw = localStorage.getItem('lumiere_services');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.length > 0) {
+            return parsed.map(s => {
+              const defaultService = SERVICES.find(ds => ds.id === s.id);
+              let img = s.image;
+              if (!img || img.includes('af8e5cb1f35f')) {
+                img = defaultService ? defaultService.image : 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&q=80&w=600';
+              }
+              return {
+                ...s,
+                duration: s.duration || `${s.minutes || 45} phút`,
+                minutes: s.minutes || parseInt(s.duration) || 45,
+                description: s.description || (defaultService ? defaultService.description : 'Dịch vụ chăm sóc & tạo kiểu tóc chuyên nghiệp tại Lumière.'),
+                badge: s.badge || (defaultService ? defaultService.badge : null),
+                icon: s.icon || (defaultService ? defaultService.icon : '✂️'),
+                image: img
+              };
+            });
+          }
+        }
+      } catch(e) {}
+      return SERVICES;
+    };
+
+    const getDynamicStylists = () => {
+      try {
+        const raw = localStorage.getItem('lumiere_stylists');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          if (parsed && parsed.length > 0) return parsed;
+        }
+      } catch(e) {}
+      return STYLISTS;
+    };
+
+    function App() {
+      // Dynamic Services & Stylists synced from Admin
+      const activeServices = useMemo(() => getDynamicServices(), []);
+      const activeStylists = useMemo(() => getDynamicStylists(), []);
+
+      // Logged in customer session check
+      const [loggedInCustomer, setLoggedInCustomer] = useState(() => {
+        try {
+          const raw = sessionStorage.getItem('lumiere_customer_auth');
+          return raw ? JSON.parse(raw) : null;
+        } catch(e) {
+          return null;
+        }
+      });
+
+      // Customer Auth Modal State
+      const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+      const [authModalMode, setAuthModalMode] = useState('login'); // 'login' | 'register'
+      const [authLoginPhone, setAuthLoginPhone] = useState('');
+      const [authLoginPassword, setAuthLoginPassword] = useState('');
+      const [authRegName, setAuthRegName] = useState('');
+      const [authRegPhone, setAuthRegPhone] = useState('');
+      const [authRegEmail, setAuthRegEmail] = useState('');
+      const [authRegPassword, setAuthRegPassword] = useState('');
+      const [authRegConfirm, setAuthRegConfirm] = useState('');
+      const [authError, setAuthError] = useState('');
+
+      // Navigation & Layout State
+      const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+      const [selectedCategory, setSelectedCategory] = useState('Tất cả');
+      const [lookbookTab, setLookbookTab] = useState('kiểu tóc');
+
+      // Booking Form State
+      const [bookingStep, setBookingStep] = useState(1);
+      const [selectedServiceIds, setSelectedServiceIds] = useState(['cut-women']);
+      const [selectedHairstyleId, setSelectedHairstyleId] = useState('style-none');
+      const [selectedHairColorId, setSelectedHairColorId] = useState('color-none');
+      const [selectedStylistId, setSelectedStylistId] = useState('any');
+      
+      const daysList = useMemo(() => getNextDays(7), []);
+      const [selectedDate, setSelectedDate] = useState(daysList[0].dateString);
+      const [selectedTime, setSelectedTime] = useState('09:30');
+
+      const [customerInfo, setCustomerInfo] = useState(() => ({
+        name: loggedInCustomer ? loggedInCustomer.name : '',
+        phone: loggedInCustomer ? loggedInCustomer.phone : '',
+        note: ''
+      }));
+
+      useEffect(() => {
+        if (loggedInCustomer) {
+          setCustomerInfo(prev => ({
+            ...prev,
+            name: loggedInCustomer.name || prev.name,
+            phone: loggedInCustomer.phone || prev.phone
+          }));
+        }
+      }, [loggedInCustomer]);
+
+      const [bookingConfirmed, setBookingConfirmed] = useState(null);
+      const [toastMessage, setToastMessage] = useState(null);
+
+      useEffect(() => {
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      });
+
+      const handleCustomerLogout = () => {
+        sessionStorage.removeItem('lumiere_customer_auth');
+        setLoggedInCustomer(null);
+        setCustomerInfo({ name: '', phone: '', note: '' });
+        showToast('🔒 Đã đăng xuất khỏi tài khoản khách hàng');
+      };
+
+      const handleModalLogin = (e) => {
+        e.preventDefault();
+        setAuthError('');
+        const phoneClean = authLoginPhone.trim();
+        const passwordClean = authLoginPassword.trim();
+        if (!phoneClean || !passwordClean) {
+          setAuthError('Vui lòng điền Số điện thoại và Mật khẩu!');
+          return;
+        }
+
+        const users = getRegisteredUsers();
+        const matched = users.find(u => u.phone === phoneClean && u.password === passwordClean);
+
+        let userObj;
+        if (matched) {
+          userObj = { name: matched.name, phone: matched.phone, email: matched.email || '', role: 'customer' };
+        } else {
+          const exists = users.some(u => u.phone === phoneClean);
+          if (exists) {
+            setAuthError('Mật khẩu không chính xác!');
+            return;
+          }
+          userObj = { name: `Khách Hàng (${phoneClean.slice(-4)})`, phone: phoneClean, role: 'customer' };
+        }
+
+        sessionStorage.setItem('lumiere_customer_auth', JSON.stringify(userObj));
+        setLoggedInCustomer(userObj);
+        setIsAuthModalOpen(false);
+        setAuthLoginPhone('');
+        setAuthLoginPassword('');
+        showToast(`🎉 Đăng nhập thành công! Chào mừng ${userObj.name}`);
+      };
+
+      const handleModalRegister = (e) => {
+        e.preventDefault();
+        setAuthError('');
+        const nameClean = authRegName.trim();
+        const phoneClean = authRegPhone.trim();
+        const passwordClean = authRegPassword.trim();
+
+        if (!nameClean || !phoneClean || !passwordClean) {
+          setAuthError('Vui lòng điền đầy đủ các thông tin (*)!');
+          return;
+        }
+
+        if (passwordClean !== authRegConfirm.trim()) {
+          setAuthError('Mật khẩu xác nhận không trùng khớp!');
+          return;
+        }
+
+        const users = getRegisteredUsers();
+        if (users.some(u => u.phone === phoneClean)) {
+          setAuthError('Số điện thoại này đã được đăng ký! Vui lòng chọn Đăng nhập.');
+          return;
+        }
+
+        const newUser = { name: nameClean, phone: phoneClean, email: authRegEmail.trim(), password: passwordClean };
+        const updatedUsers = [...users, newUser];
+        try {
+          localStorage.setItem('lumiere_registered_users', JSON.stringify(updatedUsers));
+        } catch (e) {}
+
+        const authUser = { name: nameClean, phone: phoneClean, email: newUser.email, role: 'customer' };
+        sessionStorage.setItem('lumiere_customer_auth', JSON.stringify(authUser));
+        setLoggedInCustomer(authUser);
+        setIsAuthModalOpen(false);
+        setAuthRegName('');
+        setAuthRegPhone('');
+        setAuthRegEmail('');
+        setAuthRegPassword('');
+        setAuthRegConfirm('');
+        showToast(`🎉 Đăng ký thành công! Chào mừng ${nameClean}`);
+      };
+
+      // Customer Reviews State & LocalStorage Persistence
+      const [reviewsList, setReviewsList] = useState(() => {
+        try {
+          const stored = localStorage.getItem('lumiere_reviews');
+          return stored ? JSON.parse(stored) : REVIEWS;
+        } catch(e) {
+          return REVIEWS;
+        }
+      });
+
+      const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+      const [newReviewRating, setNewReviewRating] = useState(5);
+      const [hoverRating, setHoverRating] = useState(0);
+      const [newReviewName, setNewReviewName] = useState('');
+      const [newReviewService, setNewReviewService] = useState('Cắt & Tạo Kiểu Nữ');
+      const [newReviewContent, setNewReviewContent] = useState('');
+      const [reviewFormError, setReviewFormError] = useState('');
+
+      useEffect(() => {
+        try {
+          localStorage.setItem('lumiere_reviews', JSON.stringify(reviewsList));
+        } catch(e) {}
+      }, [reviewsList]);
+
+      useEffect(() => {
+        if (loggedInCustomer && loggedInCustomer.name) {
+          setNewReviewName(loggedInCustomer.name);
+        }
+      }, [loggedInCustomer]);
+
+      const handleSubmitReview = (e) => {
+        e.preventDefault();
+        setReviewFormError('');
+        const nameClean = newReviewName.trim();
+        const contentClean = newReviewContent.trim();
+
+        if (!nameClean || !contentClean) {
+          setReviewFormError('Vui lòng nhập đầy đủ Họ tên và Nội dung đánh giá!');
+          return;
+        }
+
+        const avatars = [
+          'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150',
+          'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=150',
+          'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=150',
+          'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=150',
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150'
+        ];
+        const randomAvatar = avatars[Math.floor(Math.random() * avatars.length)];
+
+        const newReviewItem = {
+          id: Date.now(),
+          name: nameClean,
+          role: loggedInCustomer ? 'Khách hàng đã xác thực' : 'Khách hàng',
+          avatar: randomAvatar,
+          content: contentClean,
+          rating: newReviewRating,
+          service: newReviewService,
+          date: new Date().toLocaleDateString('vi-VN')
+        };
+
+        const updatedReviews = [newReviewItem, ...reviewsList];
+        setReviewsList(updatedReviews);
+        setIsReviewModalOpen(false);
+        setNewReviewContent('');
+        showToast('🎉 Cảm ơn quý khách đã gửi đánh giá! Ý kiến của bạn đã được hiển thị.');
+      };
+
+      const selectedServicesList = useMemo(() => {
+        return SERVICES.filter(s => selectedServiceIds.includes(s.id));
+      }, [selectedServiceIds]);
+
+      const selectedHairstyle = useMemo(() => {
+        return HAIRSTYLES.find(h => h.id === selectedHairstyleId) || HAIRSTYLES[0];
+      }, [selectedHairstyleId]);
+
+      const selectedHairColor = useMemo(() => {
+        return HAIR_COLORS.find(c => c.id === selectedHairColorId) || HAIR_COLORS[0];
+      }, [selectedHairColorId]);
+
+      const totalPrice = useMemo(() => {
+        return selectedServicesList.reduce((acc, curr) => acc + curr.price, 0);
+      }, [selectedServicesList]);
+
+      const totalMinutes = useMemo(() => {
+        return selectedServicesList.reduce((acc, curr) => acc + curr.minutes, 0);
+      }, [selectedServicesList]);
+
+      const selectedStylist = useMemo(() => {
+        return STYLISTS.find(s => s.id === selectedStylistId) || STYLISTS[0];
+      }, [selectedStylistId]);
+
+      const toggleService = (id) => {
+        setSelectedServiceIds(prev => {
+          if (prev.includes(id)) {
+            if (prev.length === 1) {
+              showToast('Vui lòng chọn ít nhất 1 dịch vụ!');
+              return prev;
+            }
+            return prev.filter(item => item !== id);
+          } else {
+            return [...prev, id];
+          }
+        });
+      };
+
+      const showToast = (msg) => {
+        setToastMessage(msg);
+        setTimeout(() => setToastMessage(null), 3500);
+      };
+
+      const handleSelectServiceFromMenu = (serviceId) => {
+        setSelectedServiceIds([serviceId]);
+        setBookingStep(1);
+        const bookingSection = document.getElementById('booking');
+        if (bookingSection) {
+          bookingSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      };
+
+      const handleSelectStyleOrColor = (type, itemId) => {
+        if (type === 'style') {
+          setSelectedHairstyleId(itemId);
+          showToast(`Đã chọn kiểu: ${HAIRSTYLES.find(h=>h.id===itemId)?.name}`);
+        } else {
+          setSelectedHairColorId(itemId);
+          showToast(`Đã chọn màu: ${HAIR_COLORS.find(c=>c.id===itemId)?.name}`);
+        }
+        setBookingStep(1);
+        const bookingSection = document.getElementById('booking');
+        if (bookingSection) {
+          bookingSection.scrollIntoView({ behavior: 'smooth' });
+        }
+      };
+
+      const handleConfirmBooking = (e) => {
+        e.preventDefault();
+        if (!customerInfo.name.trim() || !customerInfo.phone.trim()) {
+          showToast('Vui lòng điền Họ tên và Số điện thoại!');
+          return;
+        }
+
+        const dateObj = daysList.find(d => d.dateString === selectedDate);
+        const bookingCode = 'LUMI-' + Math.floor(1000 + Math.random() * 9000);
+        const formattedDate = dateObj ? `${dateObj.dayName}, ${dateObj.formattedDate}` : selectedDate;
+
+        const bookingData = {
+          code: bookingCode,
+          services: selectedServicesList,
+          hairstyle: selectedHairstyle,
+          haircolor: selectedHairColor,
+          stylist: selectedStylist,
+          date: formattedDate,
+          time: selectedTime,
+          price: totalPrice,
+          duration: totalMinutes,
+          customer: customerInfo
+        };
+
+        // Save appointment into localStorage for Admin Dashboard
+        try {
+          const existingApps = JSON.parse(localStorage.getItem('lumiere_appointments') || '[]');
+          const newAdminApp = {
+            id: bookingCode,
+            customerName: customerInfo.name.trim(),
+            phone: customerInfo.phone.trim(),
+            services: selectedServicesList.map(s => s.name),
+            hairstyle: selectedHairstyle.id !== 'style-none' ? selectedHairstyle.name : 'Không chọn',
+            haircolor: selectedHairColor.id !== 'color-none' ? selectedHairColor.name : 'Không chọn',
+            stylist: selectedStylist.name,
+            date: formattedDate,
+            time: selectedTime,
+            totalPrice: totalPrice,
+            status: 'Pending',
+            createdTime: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ' - ' + new Date().toLocaleDateString('vi-VN')
+          };
+          localStorage.setItem('lumiere_appointments', JSON.stringify([newAdminApp, ...existingApps]));
+        } catch(e) {}
+
+        setBookingConfirmed(bookingData);
+        showToast('🎉 Đặt lịch thành công! Cảm ơn quý khách.');
+      };
+
+      const resetBookingForm = () => {
+        setBookingConfirmed(null);
+        setBookingStep(1);
+        setSelectedServiceIds(['cut-women']);
+        setSelectedHairstyleId('style-none');
+        setSelectedHairColorId('color-none');
+        setSelectedStylistId('any');
+        setCustomerInfo({ 
+          name: loggedInCustomer ? loggedInCustomer.name : '', 
+          phone: loggedInCustomer ? loggedInCustomer.phone : '', 
+          note: '' 
+        });
+      };
+
+      const categories = ['Tất cả', 'Cắt & Tạo Kiểu', 'Nhuộm Cao Cấp', 'Uốn & Ép', 'Phục Hồi'];
+      const filteredServices = selectedCategory === 'Tất cả' 
+        ? SERVICES 
+        : SERVICES.filter(s => s.category === selectedCategory);
+
+      return (
+        <div className="min-h-screen flex flex-col relative">
+
+          {/* TOAST NOTIFICATION */}
+          {toastMessage && (
+            <div className="fixed top-20 right-4 z-50 bg-stone-900 text-stone-100 text-sm px-4 py-3 rounded-2xl shadow-xl border border-stone-700 flex items-center gap-3 transition-all duration-300 animate-bounce">
+              <span className="text-xl">🌿</span>
+              <p className="font-medium">{toastMessage}</p>
+            </div>
+          )}
+
+          {/* HEADER */}
+          <header className="sticky top-0 z-40 glass-nav border-b border-salon-border/60 transition-all">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+              
+              {/* Logo */}
+              <a href="#" className="flex items-center gap-2.5 group">
+                <div className="w-10 h-10 rounded-full bg-salon-primary text-white flex items-center justify-center font-serif text-xl font-bold shadow-sm group-hover:bg-salon-primaryHover transition">
+                  L
+                </div>
+                <div>
+                  <span className="font-serif-accent text-xl font-bold tracking-tight text-stone-900 block leading-tight">
+                    LUMIÈRE
+                  </span>
+                  <span className="text-[10px] tracking-widest uppercase font-semibold text-salon-secondary block">
+                    Hair Studio
+                  </span>
+                </div>
+              </a>
+
+              {/* Desktop Nav */}
+              <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-stone-700">
+                <a href="#services" className="hover:text-salon-primary transition">Dịch Vụ</a>
+                <a href="#lookbook" className="hover:text-salon-primary transition">Kiểu & Màu Tóc</a>
+                <a href="#stylists" className="hover:text-salon-primary transition">Stylist</a>
+                <a href="#reviews" className="hover:text-salon-primary transition">Đánh Giá</a>
+                <a href="#footer" className="hover:text-salon-primary transition">Liên Hệ</a>
+                
+                {loggedInCustomer ? (
+                  <div className="flex items-center gap-3 bg-salon-secondaryLight px-3.5 py-1.5 rounded-full border border-salon-primary/20 text-xs">
+                    <span className="font-bold text-salon-primary">👋 {loggedInCustomer.name}</span>
+                    <button 
+                      onClick={handleCustomerLogout}
+                      className="text-stone-500 hover:text-stone-900 font-semibold underline"
+                    >
+                      Đăng xuất
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => { setIsAuthModalOpen(true); setAuthError(''); }}
+                    className="bg-white hover:bg-salon-card text-stone-900 font-semibold px-4 py-2 rounded-full border border-salon-border text-xs transition flex items-center gap-1.5 shadow-sm"
+                  >
+                    <span>🔑 Đăng Nhập / Đăng Ký</span>
+                  </button>
+                )}
+              </nav>
+
+              {/* Header Action Button */}
+              <div className="hidden md:flex items-center gap-4">
+                <a 
+                  href="#booking"
+                  className="bg-salon-primary hover:bg-salon-primaryHover text-white px-5 py-2.5 rounded-full text-sm font-semibold shadow-sm hover:shadow transition-all duration-200 flex items-center gap-2"
+                >
+                  <span>Đặt lịch ngay</span>
+                  <i data-lucide="arrow-right" className="w-4 h-4"></i>
+                </a>
+              </div>
+
+              {/* Mobile Hamburger Button */}
+              <button 
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden p-2 text-stone-700 hover:text-stone-900 focus:outline-none"
+                aria-label="Toggle menu"
+              >
+                {isMobileMenuOpen ? (
+                  <i data-lucide="x" className="w-6 h-6"></i>
+                ) : (
+                  <i data-lucide="menu" className="w-6 h-6"></i>
+                )}
+              </button>
+            </div>
+
+            {/* Mobile Drawer Menu */}
+            {isMobileMenuOpen && (
+              <div className="md:hidden bg-salon-bg border-b border-salon-border px-4 pt-3 pb-6 space-y-3 shadow-lg">
+                <a 
+                  href="#services" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block px-3 py-2 text-base font-medium text-stone-800 rounded-xl hover:bg-salon-secondaryLight transition"
+                >
+                  Dịch Vụ & Bảng Giá
+                </a>
+                <a 
+                  href="#lookbook" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block px-3 py-2 text-base font-medium text-stone-800 rounded-xl hover:bg-salon-secondaryLight transition"
+                >
+                  Chọn Kiểu & Màu Tóc Hot Trend
+                </a>
+                <a 
+                  href="#stylists" 
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="block px-3 py-2 text-base font-medium text-stone-800 rounded-xl hover:bg-salon-secondaryLight transition"
+                >
+                  Đội Ngũ Stylist
+                </a>
+                
+                {loggedInCustomer ? (
+                  <div className="p-3 bg-salon-secondaryLight rounded-xl border border-salon-primary/20 flex items-center justify-between">
+                    <span className="font-bold text-salon-primary text-sm">👋 {loggedInCustomer.name}</span>
+                    <button 
+                      onClick={() => { handleCustomerLogout(); setIsMobileMenuOpen(false); }}
+                      className="text-xs text-stone-500 hover:text-stone-900 font-semibold underline"
+                    >
+                      Đăng xuất
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => { setIsMobileMenuOpen(false); setIsAuthModalOpen(true); setAuthError(''); }}
+                    className="w-full text-left px-3 py-2 text-base font-bold text-salon-primary rounded-xl hover:bg-salon-secondaryLight transition block"
+                  >
+                    🔑 Đăng Nhập / Đăng Ký Tài Khoản
+                  </button>
+                )}
+                <div className="pt-2">
+                  <a 
+                    href="#booking"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="w-full text-center bg-salon-primary text-white py-3 rounded-2xl font-semibold shadow block"
+                  >
+                    Đặt Lịch Hẹn Chăm Sóc Tóc
+                  </a>
+                </div>
+              </div>
+            )}
+          </header>
+
+          {/* HERO SECTION */}
+          <section className="relative overflow-hidden pt-8 pb-16 md:pt-16 md:pb-24">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid md:grid-cols-12 gap-8 md:gap-12 items-center">
+                
+                <div className="md:col-span-7 space-y-6 text-center md:text-left">
+                  
+                  <div className="inline-flex items-center gap-2 bg-salon-secondaryLight text-salon-primary px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide border border-salon-secondary/20">
+                    <span className="w-2 h-2 rounded-full bg-salon-primary animate-pulse"></span>
+                    <span>BỘ SƯU TẬP KIỂU TÓC & BẢNG MÀU THỜI TRANG 2026</span>
+                  </div>
+
+                  <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif-accent font-bold text-stone-900 leading-[1.25]">
+                    Lựa chọn kiểu dáng & màu nhuộm <br className="hidden sm:block" />
+                    <span className="italic font-normal text-salon-primary">chuẩn phong cách của bạn.</span>
+                  </h1>
+
+                  <p className="text-base sm:text-lg text-salon-muted leading-relaxed max-w-xl mx-auto md:mx-0 font-light">
+                    Trải nghiệm chọn trực tiếp kiểu cắt Layer, uốn sóng lơi hay màu nhuộm Nâu Trà Sữa, Nâu Lạnh Khói trên giao diện đặt lịch thông minh tại Lumière Hair Studio.
+                  </p>
+
+                  <div className="pt-2 flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
+                    <a 
+                      href="#booking" 
+                      className="w-full sm:w-auto bg-salon-primary hover:bg-salon-primaryHover text-white px-8 py-4 rounded-2xl font-semibold text-base shadow-md hover:shadow-lg transition-all text-center flex items-center justify-center gap-2"
+                    >
+                      <span>Đặt lịch & Chọn kiểu tóc</span>
+                      <i data-lucide="scissors" className="w-5 h-5"></i>
+                    </a>
+                    <a 
+                      href="#lookbook" 
+                      className="w-full sm:w-auto bg-white hover:bg-salon-card text-stone-800 border border-salon-border px-7 py-4 rounded-2xl font-semibold text-base shadow-sm transition text-center"
+                    >
+                      Xem bảng màu nhuộm hot
+                    </a>
+                  </div>
+
+                  <div className="pt-6 border-t border-salon-border/60 flex flex-wrap justify-center md:justify-start gap-3">
+                    <span className="bg-white px-3 py-1.5 rounded-xl border text-xs font-semibold text-stone-700 shadow-sm">
+                      ✂️ Cắt Layer & Bob Chic
+                    </span>
+                    <span className="bg-white px-3 py-1.5 rounded-xl border text-xs font-semibold text-stone-700 shadow-sm">
+                      🎨 Nhuộm Nâu Trà Sữa & Ash Brown
+                    </span>
+                    <span className="bg-white px-3 py-1.5 rounded-xl border text-xs font-semibold text-stone-700 shadow-sm">
+                      ✨ Uốn Sóng Lơi Hàn Quốc
+                    </span>
+                  </div>
+                </div>
+
+                <div className="md:col-span-5 relative">
+                  <div className="relative mx-auto max-w-md md:max-w-none">
+                    <div className="absolute -inset-2 bg-gradient-to-r from-salon-secondary/30 to-salon-primary/20 rounded-[2.5rem] blur-xl opacity-70"></div>
+                    
+                    <div className="relative rounded-[2rem] overflow-hidden border border-white/60 shadow-xl aspect-[4/5] bg-salon-card">
+                      <img 
+                        src="https://images.unsplash.com/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=800" 
+                        alt="Hair Salon Collection" 
+                        className="w-full h-full object-cover"
+                      />
+                      
+                      <div className="absolute bottom-4 left-4 right-4 glass-nav p-4 rounded-2xl border border-white/40 shadow-lg flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-salon-primary/10 text-salon-primary flex items-center justify-center font-bold">
+                            💈
+                          </div>
+                          <div>
+                            <p className="text-xs font-semibold text-stone-900">Bảng Màu Nhuộm 2026</p>
+                            <p className="text-[11px] text-stone-500">7 Tông màu hot tôn làn da châu Á</p>
+                          </div>
+                        </div>
+                        <span className="text-xs font-bold text-salon-primary bg-white px-2.5 py-1 rounded-lg shadow-sm">HOT</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          {/* LOOKBOOK SECTION */}
+          <section id="lookbook" className="py-16 bg-white border-y border-salon-border/60">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              
+              <div className="text-center max-w-2xl mx-auto mb-10 space-y-3">
+                <span className="text-xs font-bold tracking-widest text-salon-secondary uppercase">
+                  LOOKBOOK & COLOR CATALOG
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-serif-accent font-bold text-stone-900">
+                  Chọn Kiểu Tóc & Màu Nhuộm Yêu Thích
+                </h2>
+                <p className="text-sm sm:text-base text-salon-muted">
+                  Bấm vào mẫu bạn ưng ý để tự động áp dụng trực tiếp vào đơn đặt lịch giữ chỗ!
+                </p>
+              </div>
+
+              <div className="flex justify-center mb-8">
+                <div className="bg-salon-bg p-1.5 rounded-2xl border border-salon-border flex gap-2">
+                  <button
+                    onClick={() => setLookbookTab('kiểu tóc')}
+                    className={`px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                      lookbookTab === 'kiểu tóc'
+                        ? 'bg-salon-primary text-white shadow-sm'
+                        : 'text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    ✂️ Bộ Sưu Tập Kiểu Tóc
+                  </button>
+                  <button
+                    onClick={() => setLookbookTab('màu tóc')}
+                    className={`px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all ${
+                      lookbookTab === 'màu tóc'
+                        ? 'bg-salon-primary text-white shadow-sm'
+                        : 'text-stone-600 hover:text-stone-900'
+                    }`}
+                  >
+                    🎨 Bảng Màu Nhuộm
+                  </button>
+                </div>
+              </div>
+
+              {lookbookTab === 'kiểu tóc' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {HAIRSTYLES.filter(h => h.id !== 'style-none').map((style) => (
+                    <div 
+                      key={style.id}
+                      className="bg-salon-bg rounded-3xl overflow-hidden border border-salon-border shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
+                        <img 
+                          src={style.image} 
+                          alt={style.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                        />
+                        <span className="absolute top-3 left-3 bg-stone-900/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full">
+                          {style.tag}
+                        </span>
+                        <span className="absolute top-3 right-3 bg-white/90 text-stone-800 text-[11px] font-bold px-2.5 py-1 rounded-full">
+                          {style.category}
+                        </span>
+                      </div>
+
+                      <div className="p-5 space-y-3">
+                        <div>
+                          <h3 className="text-base font-bold text-stone-900">{style.name}</h3>
+                          <p className="text-xs text-salon-muted mt-1 leading-relaxed">{style.desc}</p>
+                        </div>
+
+                        <button
+                          onClick={() => handleSelectStyleOrColor('style', style.id)}
+                          className="w-full bg-white hover:bg-salon-primary hover:text-white text-stone-800 font-semibold py-2.5 rounded-xl text-xs transition-colors border border-salon-border flex items-center justify-center gap-1.5"
+                        >
+                          <span>Chọn kiểu này để đặt lịch</span>
+                          <i data-lucide="check-circle" className="w-3.5 h-3.5"></i>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {lookbookTab === 'màu tóc' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {HAIR_COLORS.filter(c => c.id !== 'color-none').map((color) => (
+                    <div 
+                      key={color.id}
+                      className="bg-salon-bg rounded-3xl overflow-hidden border border-salon-border shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between group"
+                    >
+                      <div className="relative aspect-[4/3] overflow-hidden bg-stone-100">
+                        <img 
+                          src={color.image} 
+                          alt={color.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                        />
+                        <div className="absolute inset-0 bg-stone-900/10"></div>
+                        
+                        <div className="absolute bottom-3 left-3 bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-2xl flex items-center gap-2 shadow-md">
+                          <span 
+                            className="w-5 h-5 rounded-full border border-stone-300 shadow-inner" 
+                            style={{ backgroundColor: color.hex }}
+                          ></span>
+                          <span className="text-xs font-bold text-stone-900">{color.name}</span>
+                        </div>
+
+                        <span className="absolute top-3 right-3 bg-salon-primary text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+                          {color.badge}
+                        </span>
+                      </div>
+
+                      <div className="p-5 space-y-3">
+                        <div>
+                          <h3 className="text-base font-bold text-stone-900">{color.name}</h3>
+                          <p className="text-xs text-salon-muted mt-1 leading-relaxed">{color.desc}</p>
+                        </div>
+
+                        <button
+                          onClick={() => handleSelectStyleOrColor('color', color.id)}
+                          className="w-full bg-white hover:bg-salon-primary hover:text-white text-stone-800 font-semibold py-2.5 rounded-xl text-xs transition-colors border border-salon-border flex items-center justify-center gap-1.5"
+                        >
+                          <span>Chọn màu nhuộm này</span>
+                          <i data-lucide="palette" className="w-3.5 h-3.5"></i>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+            </div>
+          </section>
+
+          {/* SERVICES MENU */}
+          <section id="services" className="py-16 bg-salon-bg">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              
+              <div className="text-center max-w-2xl mx-auto mb-10 space-y-3">
+                <span className="text-xs font-bold tracking-widest text-salon-secondary uppercase">
+                  DANH MỤC DỊCH VỤ
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-serif-accent font-bold text-stone-900">
+                  Dịch Vụ Tóc & Bảng Giá Niêm Yết
+                </h2>
+                <p className="text-sm sm:text-base text-salon-muted">
+                  Mọi dịch vụ đều bao gồm bước tư vấn chuyên sâu, gội đầu massage & sấy tạo kiểu hoàn thiện.
+                </p>
+              </div>
+
+              <div className="flex items-center justify-center gap-2 overflow-x-auto pb-4 mb-8 scrollbar-none">
+                {categories.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap transition-all duration-200 ${
+                      selectedCategory === cat
+                        ? 'bg-salon-primary text-white shadow-sm'
+                        : 'bg-white text-stone-600 hover:bg-salon-card hover:text-stone-900 border border-salon-border/60'
+                    }`}
+                  >
+                    {cat}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredServices.map((service) => (
+                  <div 
+                    key={service.id}
+                    className="bg-white rounded-3xl overflow-hidden border border-salon-border/80 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col justify-between group hover:-translate-y-1"
+                  >
+                    {/* Service Header Image */}
+                    <div className="relative h-44 overflow-hidden bg-stone-100">
+                      <img 
+                        src={service.image || 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&q=80&w=600'} 
+                        alt={service.name} 
+                        onError={(e) => {
+                          e.target.onerror = null; 
+                          e.target.src = 'https://images.unsplash.com/photo-1605497788044-5a32c7078486?auto=format&fit=crop&q=80&w=600';
+                        }}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-stone-900/70 via-stone-900/20 to-transparent"></div>
+                      
+                      <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-stone-800 shadow flex items-center gap-1.5">
+                        <span>{service.icon || '✂️'}</span>
+                        <span>{service.category}</span>
+                      </div>
+
+                      {service.badge && (
+                        <span className="absolute top-3 right-3 bg-salon-primary text-white text-[11px] font-bold px-3 py-1 rounded-full shadow">
+                          {service.badge}
+                        </span>
+                      )}
+
+                      <div className="absolute bottom-3 left-3 right-3 text-white">
+                        <h3 className="text-base font-bold drop-shadow">
+                          {service.name}
+                        </h3>
+                      </div>
+                    </div>
+
+                    <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
+                      <p className="text-xs sm:text-sm text-salon-muted leading-relaxed">
+                        {service.description}
+                      </p>
+
+                      <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
+                        <div>
+                          <span className="text-xs text-stone-400 font-medium block">
+                            ⏱ {service.duration}
+                          </span>
+                          <span className="text-lg font-serif-accent font-bold text-salon-primary">
+                            {formatVND(service.price)}
+                          </span>
+                        </div>
+
+                        <button
+                          onClick={() => handleSelectServiceFromMenu(service.id)}
+                          className="bg-salon-primary text-white hover:bg-salon-primaryHover font-semibold px-4 py-2.5 rounded-2xl text-xs shadow transition flex items-center gap-1.5"
+                        >
+                          <span>Đặt dịch vụ</span>
+                          <i data-lucide="chevron-right" className="w-3.5 h-3.5"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+            </div>
+          </section>
+
+          {/* STYLISTS TEAM */}
+          <section id="stylists" className="py-16 bg-white border-t border-salon-border/60">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              
+              <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
+                <span className="text-xs font-bold tracking-widest text-salon-secondary uppercase">
+                  TAY NGHỀ ĐẲNG CẤP
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-serif-accent font-bold text-stone-900">
+                  Đội Ngũ Stylist Chuyên Nghiệp
+                </h2>
+                <p className="text-sm sm:text-base text-salon-muted">
+                  Mỗi nhà tạo kiểu tại Lumière đều sở hữu chứng chỉ quốc tế và đam mê kiến tạo mái tóc hoàn hảo nhất cho khách hàng.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {STYLISTS.filter(s => !s.isAny).map((stylist) => (
+                  <div 
+                    key={stylist.id}
+                    className="bg-salon-bg rounded-3xl overflow-hidden border border-salon-border shadow-sm hover:shadow-md transition-all duration-300 group"
+                  >
+                    <div className="relative aspect-square overflow-hidden bg-stone-100">
+                      <img 
+                        src={stylist.avatar} 
+                        alt={stylist.name}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" 
+                      />
+                      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-md px-2.5 py-1 rounded-full text-xs font-bold text-stone-800 shadow-sm flex items-center gap-1">
+                        <span className="text-amber-500">★</span>
+                        <span>{stylist.rating}</span>
+                        <span className="text-stone-400 font-normal">({stylist.reviews})</span>
+                      </div>
+                    </div>
+
+                    <div className="p-5 space-y-3 text-center">
+                      <div>
+                        <h3 className="text-lg font-bold text-stone-900">{stylist.name}</h3>
+                        <p className="text-xs font-semibold text-salon-primary mt-0.5">{stylist.role}</p>
+                      </div>
+                      
+                      <div className="bg-white p-2.5 rounded-xl border border-salon-border/50">
+                        <p className="text-xs text-stone-600 font-medium">✨ {stylist.specialty}</p>
+                      </div>
+
+                      <div className="text-[11px] text-stone-400 font-medium">
+                        {stylist.experience}
+                      </div>
+
+                      <a 
+                        href="#booking"
+                        onClick={() => {
+                          setSelectedStylistId(stylist.id);
+                          setBookingStep(1);
+                        }}
+                        className="w-full inline-block bg-white hover:bg-salon-secondaryLight text-salon-primary border border-salon-primary/20 py-2 rounded-xl text-xs font-semibold transition"
+                      >
+                        Chọn {stylist.name}
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+            </div>
+          </section>
+
+          {/* BOOKING MULTI-STEP FORM */}
+          <section id="booking" className="py-16 bg-salon-secondaryLight/50 scroll-mt-20">
+            <div className="max-w-4xl mx-auto px-4 sm:px-6">
+              
+              <div className="text-center max-w-2xl mx-auto mb-10 space-y-2">
+                <span className="text-xs font-bold tracking-widest text-salon-primary uppercase bg-white px-3 py-1 rounded-full border border-salon-primary/20">
+                  ONLINE BOOKING
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-serif-accent font-bold text-stone-900">
+                  Đặt Lịch Chăm Sóc & Chọn Kiểu Tóc
+                </h2>
+                <p className="text-sm text-salon-muted">
+                  Chọn gói dịch vụ, kiểu tóc, màu nhuộm & stylist bạn yêu thích.
+                </p>
+              </div>
+
+              <div className="bg-white rounded-3xl border border-salon-border shadow-md overflow-hidden">
+                
+                {bookingConfirmed ? (
+                  <div className="p-8 sm:p-12 text-center space-y-6">
+                    <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-4xl mx-auto animate-bounce">
+                      ✓
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <span className="text-xs font-bold text-emerald-700 uppercase tracking-widest bg-emerald-50 px-3 py-1 rounded-full">
+                        XÁC NHẬN ĐẶT LỊCH THÀNH CÔNG
+                      </span>
+                      <h3 className="text-2xl font-serif-accent font-bold text-stone-900">
+                        Cảm ơn {bookingConfirmed.customer.name}!
+                      </h3>
+                      <p className="text-sm text-stone-600 max-w-md mx-auto">
+                        Chúng tôi đã ghi nhận lịch hẹn và giữ chỗ kiểu tóc/màu nhuộm đã chọn qua số điện thoại <strong className="text-stone-900">{bookingConfirmed.customer.phone}</strong>.
+                      </p>
+                    </div>
+
+                    <div className="bg-salon-bg p-6 rounded-2xl border border-salon-border max-w-md mx-auto text-left space-y-3">
+                      <div className="flex justify-between items-center pb-3 border-b border-salon-border">
+                        <span className="text-xs text-stone-500 font-medium">Mã đặt lịch:</span>
+                        <span className="font-mono font-bold text-salon-primary text-sm">{bookingConfirmed.code}</span>
+                      </div>
+                      
+                      <div>
+                        <span className="text-xs text-stone-500 font-medium block">Dịch vụ chọn:</span>
+                        <div className="space-y-1 mt-1">
+                          {bookingConfirmed.services.map(s => (
+                            <div key={s.id} className="flex justify-between text-xs font-semibold text-stone-800">
+                              <span>• {s.name}</span>
+                              <span>{formatVND(s.price)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-salon-border/60 space-y-1 text-xs">
+                        <div className="flex justify-between">
+                          <span className="text-stone-500">Kiểu tóc lựa chọn:</span>
+                          <span className="font-semibold text-stone-800">{bookingConfirmed.hairstyle.name}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-stone-500">Màu tóc nhuộm:</span>
+                          <span className="font-semibold text-stone-800">{bookingConfirmed.haircolor.name}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between text-xs pt-2 border-t border-salon-border/60">
+                        <span className="text-stone-500">Stylist phục vụ:</span>
+                        <span className="font-semibold text-stone-800">{bookingConfirmed.stylist.name}</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-stone-500">Thời gian hẹn:</span>
+                        <span className="font-semibold text-stone-800">{bookingConfirmed.time} ({bookingConfirmed.date})</span>
+                      </div>
+                      <div className="flex justify-between text-sm pt-2 border-t border-salon-border font-bold text-stone-900">
+                        <span>Tổng chi phí dự kiến:</span>
+                        <span className="text-salon-primary">{formatVND(bookingConfirmed.price)}</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+                      <button
+                        onClick={resetBookingForm}
+                        className="bg-salon-primary text-white px-6 py-3 rounded-2xl font-semibold text-sm shadow hover:bg-salon-primaryHover transition"
+                      >
+                        Đặt thêm lịch mới
+                      </button>
+                      <a
+                        href="#lookbook"
+                        className="bg-salon-bg border border-salon-border text-stone-800 px-6 py-3 rounded-2xl font-semibold text-sm hover:bg-salon-card transition"
+                      >
+                        Xem thêm mẫu tóc khác
+                      </a>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="bg-salon-bg px-4 sm:px-8 py-4 border-b border-salon-border flex items-center justify-between">
+                      {[
+                        { step: 1, title: 'Dịch Vụ' },
+                        { step: 2, title: 'Kiểu & Màu Tóc' },
+                        { step: 3, title: 'Thợ & Thời Gian' },
+                        { step: 4, title: 'Xác Nhận' }
+                      ].map((item) => (
+                        <button
+                          key={item.step}
+                          onClick={() => {
+                            if (item.step < bookingStep) setBookingStep(item.step);
+                          }}
+                          className={`flex items-center gap-2 text-xs sm:text-sm font-semibold transition ${
+                            bookingStep === item.step
+                              ? 'text-salon-primary font-bold'
+                              : item.step < bookingStep
+                              ? 'text-emerald-700 cursor-pointer'
+                              : 'text-stone-400 cursor-not-allowed'
+                          }`}
+                        >
+                          <span className={`w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-xs ${
+                            bookingStep === item.step
+                              ? 'bg-salon-primary text-white'
+                              : item.step < bookingStep
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-stone-200 text-stone-500'
+                          }`}>
+                            {item.step < bookingStep ? '✓' : item.step}
+                          </span>
+                          <span className="hidden sm:inline">{item.title}</span>
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="p-4 sm:p-8">
+                      
+                      {bookingStep === 1 && (
+                        <div className="space-y-6">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <h3 className="text-lg font-bold text-stone-900">Bước 1: Chọn Dịch Vụ Nhu Cầu</h3>
+                              <p className="text-xs text-salon-muted">Có thể chọn nhiều dịch vụ kết hợp cùng lúc</p>
+                            </div>
+                            <span className="text-xs font-semibold text-salon-primary bg-salon-secondaryLight px-3 py-1 rounded-full">
+                              Đã chọn: {selectedServiceIds.length} dịch vụ
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {SERVICES.map((s) => {
+                              const isSelected = selectedServiceIds.includes(s.id);
+                              return (
+                                <div
+                                  key={s.id}
+                                  onClick={() => toggleService(s.id)}
+                                  className={`p-4 rounded-2xl border transition-all cursor-pointer flex items-start gap-3.5 ${
+                                    isSelected
+                                      ? 'border-salon-primary bg-salon-secondaryLight/60 shadow-sm ring-1 ring-salon-primary'
+                                      : 'border-salon-border hover:border-stone-400 bg-white'
+                                  }`}
+                                >
+                                  <div className={`w-5 h-5 rounded-md mt-0.5 flex items-center justify-center transition-colors ${
+                                    isSelected ? 'bg-salon-primary text-white' : 'border border-stone-300 bg-white'
+                                  }`}>
+                                    {isSelected && <span className="text-xs">✓</span>}
+                                  </div>
+
+                                  <div className="flex-1">
+                                    <div className="flex justify-between items-start">
+                                      <h4 className="text-sm font-bold text-stone-900">{s.name}</h4>
+                                    </div>
+                                    <p className="text-xs text-salon-muted mt-1 leading-snug">{s.description}</p>
+                                    <div className="mt-3 flex items-center justify-between text-xs">
+                                      <span className="text-stone-400">⏱ {s.duration}</span>
+                                      <span className="font-serif-accent font-bold text-stone-900 text-sm">
+                                        {formatVND(s.price)}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {bookingStep === 2 && (
+                        <div className="space-y-8">
+                          <div className="space-y-3">
+                            <div>
+                              <h3 className="text-base font-bold text-stone-900 flex items-center gap-2">
+                                <span>✂️</span>
+                                <span>1. Chọn Phom Kiểu Tóc Mong Muốn:</span>
+                              </h3>
+                              <p className="text-xs text-salon-muted">Chọn mẫu bạn muốn làm hoặc chọn tư vấn tại chỗ</p>
+                            </div>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                              {HAIRSTYLES.map((h) => {
+                                const isSelected = selectedHairstyleId === h.id;
+                                return (
+                                  <div
+                                    key={h.id}
+                                    onClick={() => setSelectedHairstyleId(h.id)}
+                                    className={`rounded-2xl p-2.5 border transition-all cursor-pointer text-center relative ${
+                                      isSelected
+                                        ? 'border-salon-primary bg-salon-secondaryLight/70 ring-2 ring-salon-primary shadow-sm'
+                                        : 'border-salon-border hover:border-stone-300 bg-white'
+                                    }`}
+                                  >
+                                    <img 
+                                      src={h.image} 
+                                      alt={h.name} 
+                                      className="w-full aspect-square object-cover rounded-xl mb-2"
+                                    />
+                                    <h4 className="text-xs font-bold text-stone-900 truncate">{h.name}</h4>
+                                    <span className="text-[10px] text-stone-500 block">{h.category}</span>
+                                    
+                                    {isSelected && (
+                                      <span className="absolute top-1 right-1 bg-salon-primary text-white w-5 h-5 rounded-full text-[10px] flex items-center justify-center shadow">
+                                        ✓
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          <div className="space-y-3 pt-4 border-t border-salon-border">
+                            <div>
+                              <h3 className="text-base font-bold text-stone-900 flex items-center gap-2">
+                                <span>🎨</span>
+                                <span>2. Chọn Tông Màu Nhuộm (Nếu có):</span>
+                              </h3>
+                              <p className="text-xs text-salon-muted">Các tông màu được pha chế với thuốc hữu cơ giữ ẩm</p>
+                            </div>
+
+                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                              {HAIR_COLORS.map((c) => {
+                                const isSelected = selectedHairColorId === c.id;
+                                return (
+                                  <div
+                                    key={c.id}
+                                    onClick={() => setSelectedHairColorId(c.id)}
+                                    className={`rounded-2xl p-2.5 border transition-all cursor-pointer flex items-center gap-2.5 relative ${
+                                      isSelected
+                                        ? 'border-salon-primary bg-salon-secondaryLight/70 ring-2 ring-salon-primary shadow-sm'
+                                        : 'border-salon-border hover:border-stone-300 bg-white'
+                                    }`}
+                                  >
+                                    <span 
+                                      className="w-8 h-8 rounded-full border border-stone-300 flex-shrink-0 shadow-inner" 
+                                      style={{ backgroundColor: c.hex }}
+                                    ></span>
+                                    <div className="flex-1 min-w-0 text-left">
+                                      <h4 className="text-xs font-bold text-stone-900 truncate">{c.name}</h4>
+                                      <span className="text-[10px] text-salon-primary font-medium truncate block">{c.badge}</span>
+                                    </div>
+
+                                    {isSelected && (
+                                      <span className="absolute top-1 right-1 bg-salon-primary text-white w-4 h-4 rounded-full text-[9px] flex items-center justify-center">
+                                        ✓
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                        </div>
+                      )}
+
+                      {bookingStep === 3 && (
+                        <div className="space-y-6">
+                          <div className="space-y-3">
+                            <h3 className="text-sm font-bold text-stone-900">1. Chọn Stylist Phục Vụ</h3>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                              {STYLISTS.map((stylist) => {
+                                const isSelected = selectedStylistId === stylist.id;
+                                return (
+                                  <div
+                                    key={stylist.id}
+                                    onClick={() => setSelectedStylistId(stylist.id)}
+                                    className={`p-3 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 ${
+                                      isSelected
+                                        ? 'border-salon-primary bg-salon-secondaryLight/60 ring-1 ring-salon-primary'
+                                        : 'border-salon-border bg-white'
+                                    }`}
+                                  >
+                                    <img 
+                                      src={stylist.avatar} 
+                                      alt={stylist.name}
+                                      className="w-11 h-11 rounded-full object-cover border border-salon-border flex-shrink-0"
+                                    />
+                                    <div className="flex-1 min-w-0">
+                                      <h4 className="text-xs font-bold text-stone-900 truncate">{stylist.name}</h4>
+                                      <p className="text-[11px] text-salon-primary font-medium">{stylist.role}</p>
+                                    </div>
+                                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                                      isSelected ? 'bg-salon-primary text-white border-salon-primary' : 'border-stone-300'
+                                    }`}>
+                                      {isSelected && <span className="text-[9px]">✓</span>}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          <div className="space-y-4 pt-4 border-t border-salon-border">
+                            <h3 className="text-sm font-bold text-stone-900">2. Chọn Ngày & Khung Giờ Hẹn</h3>
+                            
+                            <div className="flex gap-2.5 overflow-x-auto pb-2 scrollbar-none">
+                              {daysList.map((day) => {
+                                const isSelected = selectedDate === day.dateString;
+                                return (
+                                  <button
+                                    key={day.dateString}
+                                    type="button"
+                                    onClick={() => setSelectedDate(day.dateString)}
+                                    className={`flex-1 min-w-[85px] p-2.5 rounded-xl border text-center transition-all ${
+                                      isSelected
+                                        ? 'bg-salon-primary text-white border-salon-primary shadow-sm'
+                                        : 'bg-white text-stone-700 border-salon-border'
+                                    }`}
+                                  >
+                                    <span className="text-[10px] font-medium block opacity-80">{day.dayName}</span>
+                                    <span className="text-xs font-bold block mt-0.5">{day.formattedDate}</span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+
+                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                              {TIME_SLOTS.map((slot) => {
+                                const isSelected = selectedTime === slot.time;
+                                return (
+                                  <button
+                                    key={slot.time}
+                                    type="button"
+                                    onClick={() => setSelectedTime(slot.time)}
+                                    className={`py-2 px-3 rounded-xl text-xs font-semibold border transition-all flex items-center justify-between ${
+                                      isSelected
+                                        ? 'bg-salon-primary text-white border-salon-primary shadow-sm'
+                                        : 'bg-white text-stone-800 border-salon-border'
+                                    }`}
+                                  >
+                                    <span>{slot.time}</span>
+                                    <span className={`text-[10px] opacity-75 ${isSelected ? 'text-white' : 'text-stone-400'}`}>
+                                      {slot.period}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                        </div>
+                      )}
+
+                      {bookingStep === 4 && (
+                        <form onSubmit={handleConfirmBooking} className="space-y-6">
+                          <div>
+                            <h3 className="text-lg font-bold text-stone-900">Bước 4: Thông Tin Liên Hệ</h3>
+                            <p className="text-xs text-salon-muted">Vui lòng điền đúng số điện thoại để giữ chỗ kiểu tóc & ưu đãi</p>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-semibold text-stone-700">
+                                Họ và Tên <span className="text-red-500">*</span>
+                              </label>
+                              <input 
+                                type="text"
+                                required
+                                placeholder="Ví dụ: Nguyễn Văn A"
+                                value={customerInfo.name}
+                                onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})}
+                                className="w-full px-4 py-3 rounded-xl border border-salon-border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 text-sm bg-salon-bg"
+                              />
+                            </div>
+
+                            <div className="space-y-1.5">
+                              <label className="text-xs font-semibold text-stone-700">
+                                Số Điện Thoại <span className="text-red-500">*</span>
+                              </label>
+                              <input 
+                                type="tel"
+                                required
+                                placeholder="Ví dụ: 0912 345 678"
+                                value={customerInfo.phone}
+                                onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
+                                className="w-full px-4 py-3 rounded-xl border border-salon-border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 text-sm bg-salon-bg"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="space-y-1.5">
+                            <label className="text-xs font-semibold text-stone-700">Ghi Chú Yêu Cầu Riêng (Không bắt buộc)</label>
+                            <textarea 
+                              rows="2"
+                              placeholder="Ví dụ: Tóc mình mỏng dễ gãy, muốn giữ độ dài không cắt ngắn quá..."
+                              value={customerInfo.note}
+                              onChange={(e) => setCustomerInfo({...customerInfo, note: e.target.value})}
+                              className="w-full px-4 py-3 rounded-xl border border-salon-border focus:outline-none focus:ring-2 focus:ring-salon-primary/40 text-sm bg-salon-bg resize-none"
+                            ></textarea>
+                          </div>
+                        </form>
+                      )}
+
+                      <div className="mt-8 pt-6 border-t border-salon-border space-y-4">
+                        
+                        <div className="bg-salon-bg p-4 rounded-2xl border border-salon-border/70 space-y-2 text-xs">
+                          <div className="flex flex-wrap justify-between items-center gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="text-stone-500 font-medium">Dịch vụ:</span>
+                              <span className="font-bold text-stone-900">
+                                {selectedServicesList.map(s => s.name).join(', ')}
+                              </span>
+                            </div>
+                            <span className="text-base font-serif-accent font-bold text-salon-primary">
+                              {formatVND(totalPrice)}
+                            </span>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-4 text-stone-600 border-t border-salon-border/50 pt-2">
+                            <span>✂️ Kiểu: <strong className="text-stone-800">{selectedHairstyle.name}</strong></span>
+                            <span>🎨 Màu: <strong className="text-stone-800">{selectedHairColor.name}</strong></span>
+                            <span>💈 Thợ: <strong className="text-stone-800">{selectedStylist.name}</strong></span>
+                            <span>⏱ Giờ: <strong className="text-stone-800">{selectedTime}</strong></span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between gap-3">
+                          {bookingStep > 1 ? (
+                            <button
+                              type="button"
+                              onClick={() => setBookingStep(bookingStep - 1)}
+                              className="px-5 py-3 rounded-2xl text-xs sm:text-sm font-semibold border border-salon-border text-stone-700 bg-white hover:bg-salon-card transition"
+                            >
+                              ← Quay lại
+                            </button>
+                          ) : (
+                            <div></div>
+                          )}
+
+                          {bookingStep < 4 ? (
+                            <button
+                              type="button"
+                              onClick={() => setBookingStep(bookingStep + 1)}
+                              className="bg-salon-primary hover:bg-salon-primaryHover text-white px-6 py-3 rounded-2xl text-xs sm:text-sm font-semibold shadow transition flex items-center gap-1.5"
+                            >
+                              <span>Tiếp tục (Bước {bookingStep + 1})</span>
+                              <i data-lucide="arrow-right" className="w-4 h-4"></i>
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={handleConfirmBooking}
+                              className="bg-salon-primary hover:bg-salon-primaryHover text-white px-8 py-3 rounded-2xl text-xs sm:text-sm font-bold shadow-md transition flex items-center gap-2"
+                            >
+                              <span>Xác Nhận Đặt Lịch Hẹn</span>
+                              <i data-lucide="check-circle" className="w-4 h-4"></i>
+                            </button>
+                          )}
+                        </div>
+
+                      </div>
+
+                    </div>
+                  </div>
+                )}
+
+              </div>
+
+            </div>
+          </section>
+
+          {/* REVIEWS */}
+          <section id="reviews" className="py-16 bg-white border-t border-salon-border/50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-10 text-center sm:text-left">
+                <div className="space-y-2">
+                  <span className="text-xs font-bold tracking-widest text-salon-secondary uppercase">
+                    CẢM NHẬN & ĐÁNH GIÁ THỰC TẾ
+                  </span>
+                  <h2 className="text-2xl sm:text-3xl font-serif-accent font-bold text-stone-900">
+                    Khách Hàng Nói Gì Về Lumière
+                  </h2>
+                  <p className="text-sm text-salon-muted">
+                    Đánh giá chân thực từ hàng ngàn khách hàng đã trải nghiệm làm tóc tại Salon
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => { 
+                    if (loggedInCustomer && loggedInCustomer.name) setNewReviewName(loggedInCustomer.name);
+                    setIsReviewModalOpen(true); 
+                    setReviewFormError('');
+                  }}
+                  className="bg-salon-primary hover:bg-salon-primaryHover text-white px-6 py-3 rounded-2xl text-xs sm:text-sm font-semibold shadow-md hover:shadow-lg transition-all flex items-center gap-2 flex-shrink-0"
+                >
+                  <span>✍️ Viết Đánh Giá Mới</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {reviewsList.map((r) => (
+                  <div key={r.id} className="bg-salon-bg p-6 rounded-3xl border border-salon-border space-y-4 shadow-sm hover:shadow-md transition flex flex-col justify-between">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1 text-amber-500 text-sm">
+                          {'★'.repeat(r.rating)}
+                          <span className="text-xs font-bold text-stone-700 ml-1">({r.rating}.0)</span>
+                        </div>
+                        {r.date && (
+                          <span className="text-[10px] text-stone-400 font-medium">{r.date}</span>
+                        )}
+                      </div>
+                      <p className="text-xs sm:text-sm text-stone-700 leading-relaxed italic">
+                        "{r.content}"
+                      </p>
+                    </div>
+
+                    <div className="pt-3 border-t border-salon-border/60 flex items-center gap-3 mt-2">
+                      <img src={r.avatar} alt={r.name} className="w-10 h-10 rounded-full object-cover border border-stone-200" />
+                      <div>
+                        <h4 className="text-xs font-bold text-stone-900">{r.name}</h4>
+                        <p className="text-[11px] text-salon-primary font-semibold">{r.service}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+            </div>
+          </section>
+
+          {/* SALON ATMOSPHERE & INTERIOR GALLERY */}
+          <section className="py-16 bg-salon-bg border-t border-salon-border/60">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
+                <span className="text-xs font-bold tracking-widest text-salon-secondary uppercase">
+                  TRẢI NGHIỆM ĐẲNG CẤP 5 SAO
+                </span>
+                <h2 className="text-2xl sm:text-3xl font-serif-accent font-bold text-stone-900">
+                  Không Gian Salon & Dịch Vụ Tận Tâm
+                </h2>
+                <p className="text-sm text-salon-muted">
+                  Thiết kế phong cách Tối Giản & Thảo Mộc ấm cúng, mang đến cho quý khách sự thư thái và trải nghiệm làm đẹp trọn vẹn nhất.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="group rounded-3xl overflow-hidden bg-white border border-salon-border shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className="h-56 overflow-hidden relative">
+                    <img 
+                      src="https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=800" 
+                      alt="Phòng Styling" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <span className="absolute top-3 left-3 bg-stone-900/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full shadow">
+                      ✂️ Khu Styling Premium
+                    </span>
+                  </div>
+                  <div className="p-5 space-y-1 text-center">
+                    <h4 className="font-bold text-stone-900 text-sm">Ghế Cắt Da Cao Cấp</h4>
+                    <p className="text-xs text-stone-500">Ánh sáng tiêu chuẩn Studio nét từng lọn tóc</p>
+                  </div>
+                </div>
+
+                <div className="group rounded-3xl overflow-hidden bg-white border border-salon-border shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className="h-56 overflow-hidden relative">
+                    <img 
+                      src="https://images.unsplash.com/photo-1633681926022-84c23e8cb2d6?auto=format&fit=crop&q=80&w=800" 
+                      alt="Gội Dưỡng Sinh" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <span className="absolute top-3 left-3 bg-stone-900/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full shadow">
+                      🌸 Khu Gội Dưỡng Sinh
+                    </span>
+                  </div>
+                  <div className="p-5 space-y-1 text-center">
+                    <h4 className="font-bold text-stone-900 text-sm">Massage Thảo Mộc Thư Giãn</h4>
+                    <p className="text-xs text-stone-500">Hương thơm tinh dầu bưởi & sả chanh tự nhiên</p>
+                  </div>
+                </div>
+
+                <div className="group rounded-3xl overflow-hidden bg-white border border-salon-border shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className="h-56 overflow-hidden relative">
+                    <img 
+                      src="https://images.unsplash.com/photo-1527799820374-dcf8d9d4a388?auto=format&fit=crop&q=80&w=800" 
+                      alt="Lounge Thư Giãn" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <span className="absolute top-3 left-3 bg-stone-900/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full shadow">
+                      🍹 Quầy Lounge Phục Vụ
+                    </span>
+                  </div>
+                  <div className="p-5 space-y-1 text-center">
+                    <h4 className="font-bold text-stone-900 text-sm">Nước Ép & Trà Thảo Dược</h4>
+                    <p className="text-xs text-stone-500">Phục vụ thức uống detox hoàn toàn miễn phí</p>
+                  </div>
+                </div>
+
+                <div className="group rounded-3xl overflow-hidden bg-white border border-salon-border shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                  <div className="h-56 overflow-hidden relative">
+                    <img 
+                      src="https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=800" 
+                      alt="Sản Phẩm Organic" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <span className="absolute top-3 left-3 bg-stone-900/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1 rounded-full shadow">
+                      🌿 Thuốc Hữu Cơ Organic
+                    </span>
+                  </div>
+                  <div className="p-5 space-y-1 text-center">
+                    <h4 className="font-bold text-stone-900 text-sm">Nhập Khẩu Ý & Hàn Quốc</h4>
+                    <p className="text-xs text-stone-500">Bảo vệ da đầu 100%, không rát không mùi hắc</p>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          {/* FOOTER */}
+          <footer id="footer" className="bg-stone-900 text-stone-300 pt-14 pb-8 border-t border-stone-800">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 pb-12 border-b border-stone-800">
+                
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-9 h-9 rounded-full bg-salon-primary text-white flex items-center justify-center font-serif text-lg font-bold">
+                      L
+                    </div>
+                    <div>
+                      <span className="font-serif-accent text-lg font-bold text-white block leading-none">LUMIÈRE</span>
+                      <span className="text-[9px] tracking-widest text-salon-secondary uppercase font-semibold">Hair Studio</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-stone-400 leading-relaxed">
+                    Không gian chăm sóc tóc chuẩn phong cách Hàn Quốc tối giản. Tinh tế trong từng đường kéo, dịu nhẹ cho mái tóc của bạn.
+                  </p>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-white">Giờ Mở Cửa</h4>
+                  <ul className="space-y-2 text-xs text-stone-400">
+                    <li className="flex justify-between">
+                      <span>Thứ 2 - Thứ 6:</span>
+                      <strong className="text-stone-200">08:30 - 20:30</strong>
+                    </li>
+                    <li className="flex justify-between">
+                      <span>Thứ 7 - Chủ Nhật:</span>
+                      <strong className="text-stone-200">08:00 - 21:00</strong>
+                    </li>
+                    <li className="pt-1 text-[11px] text-salon-secondary">
+                      * Khuyên dùng đặt lịch trước để được phục vụ tốt nhất
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-white">Địa Chỉ & Hotline</h4>
+                  <ul className="space-y-2 text-xs text-stone-400">
+                    <li className="flex items-start gap-2">
+                      <span>📍</span>
+                      <span>128 Đường Nguyễn Trãi, Quận Thanh Xuân, Hà Nội</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span>📞</span>
+                      <span className="text-stone-200 font-semibold">Hotline: 0988 123 456</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span>✉️</span>
+                      <span>booking@lumierehairstudio.vn</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="space-y-3">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-white">Mạng Xã Hội</h4>
+                  <p className="text-xs text-stone-400">Theo dõi Lumière để cập nhật các mẫu tóc hot trend mới nhất:</p>
+                  <div className="flex items-center gap-3 pt-1">
+                    {['Facebook', 'Instagram', 'TikTok', 'Zalo'].map(social => (
+                      <a key={social} href="#" className="w-9 h-9 rounded-xl bg-stone-800 hover:bg-salon-primary text-stone-300 hover:text-white flex items-center justify-center text-xs font-semibold transition">
+                        {social[0]}
+                      </a>
+                    ))}
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-500 gap-3">
+                <p>© 2026 LUMIÈRE Hair Studio. Tất cả quyền được bảo lưu.</p>
+                <div className="flex gap-4">
+                  <a href="#" className="hover:underline">Chính sách bảo mật</a>
+                  <a href="#" className="hover:underline">Điều khoản dịch vụ</a>
+                </div>
+              </div>
+            </div>
+          </footer>
+
+          {/* CUSTOMER AUTH MODAL */}
+          {isAuthModalOpen && (
+            <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl border border-stone-200 p-6 sm:p-8 space-y-5 relative animate-in fade-in zoom-in duration-200">
+                
+                {/* Close Button */}
+                <button 
+                  onClick={() => { setIsAuthModalOpen(false); setAuthError(''); }}
+                  className="absolute right-4 top-4 w-9 h-9 rounded-full bg-stone-100 text-stone-500 hover:text-stone-900 hover:bg-stone-200 flex items-center justify-center transition font-bold"
+                >
+                  ✕
+                </button>
+
+                {/* Brand Header */}
+                <div className="text-center space-y-1.5">
+                  <div className="w-12 h-12 rounded-full bg-salon-primary text-white flex items-center justify-center font-serif text-xl font-bold mx-auto shadow-md">
+                    L
+                  </div>
+                  <h3 className="font-serif-accent text-xl font-bold text-stone-900">LUMIÈRE Hair Studio</h3>
+                  <p className="text-xs text-stone-500">Đăng nhập tài khoản khách hàng để tự động giữ thông tin đặt lịch</p>
+                </div>
+
+                {/* Auth Mode Tabs */}
+                <div className="flex border-b border-stone-200 text-xs font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => { setAuthModalMode('login'); setAuthError(''); }}
+                    className={`flex-1 pb-3 text-center transition border-b-2 ${
+                      authModalMode === 'login'
+                        ? 'border-salon-primary text-salon-primary font-bold'
+                        : 'border-transparent text-stone-400 hover:text-stone-700'
+                    }`}
+                  >
+                    Đăng Nhập Khách Hàng
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setAuthModalMode('register'); setAuthError(''); }}
+                    className={`flex-1 pb-3 text-center transition border-b-2 ${
+                      authModalMode === 'register'
+                        ? 'border-salon-primary text-salon-primary font-bold'
+                        : 'border-transparent text-stone-400 hover:text-stone-700'
+                    }`}
+                  >
+                    Đăng Ký Tài Khoản
+                  </button>
+                </div>
+
+                {/* Error Message Alert */}
+                {authError && (
+                  <div className="bg-rose-50 text-rose-700 p-3 rounded-xl border border-rose-200 text-xs font-semibold text-center">
+                    ⚠️ {authError}
+                  </div>
+                )}
+
+                {/* LOGIN FORM */}
+                {authModalMode === 'login' ? (
+                  <form onSubmit={handleModalLogin} className="space-y-4 text-xs">
+                    <div className="space-y-1">
+                      <label className="font-semibold text-stone-700">Số Điện Thoại</label>
+                      <input 
+                        type="tel"
+                        required
+                        placeholder="Nhập số điện thoại (ví dụ: 0912345678)"
+                        value={authLoginPhone}
+                        onChange={(e) => setAuthLoginPhone(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 text-sm bg-salon-bg"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-semibold text-stone-700">Mật Khẩu</label>
+                      <input 
+                        type="password"
+                        required
+                        placeholder="Nhập mật khẩu"
+                        value={authLoginPassword}
+                        onChange={(e) => setAuthLoginPassword(e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 text-sm bg-salon-bg"
+                      />
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full bg-salon-primary hover:bg-salon-primaryHover text-white py-3.5 rounded-2xl font-bold text-sm shadow transition flex items-center justify-center gap-2"
+                    >
+                      <span>Xác Nhận Đăng Nhập</span>
+                    </button>
+                  </form>
+                ) : (
+                  /* REGISTER FORM */
+                  <form onSubmit={handleModalRegister} className="space-y-3 text-xs">
+                    <div className="space-y-1">
+                      <label className="font-semibold text-stone-700">Họ và Tên <span className="text-red-500">*</span></label>
+                      <input 
+                        type="text"
+                        required
+                        placeholder="Nhập họ và tên đầy đủ"
+                        value={authRegName}
+                        onChange={(e) => setAuthRegName(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-semibold text-stone-700">Số Điện Thoại <span className="text-red-500">*</span></label>
+                      <input 
+                        type="tel"
+                        required
+                        placeholder="Số điện thoại"
+                        value={authRegPhone}
+                        onChange={(e) => setAuthRegPhone(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-semibold text-stone-700">Email (Không bắt buộc)</label>
+                      <input 
+                        type="email"
+                        placeholder="khachhang@gmail.com"
+                        value={authRegEmail}
+                        onChange={(e) => setAuthRegEmail(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="space-y-1">
+                        <label className="font-semibold text-stone-700">Mật Khẩu <span className="text-red-500">*</span></label>
+                        <input 
+                          type="password"
+                          required
+                          placeholder="Mật khẩu"
+                          value={authRegPassword}
+                          onChange={(e) => setAuthRegPassword(e.target.value)}
+                          className="w-full px-3 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="font-semibold text-stone-700">Xác Nhận <span className="text-red-500">*</span></label>
+                        <input 
+                          type="password"
+                          required
+                          placeholder="Nhập lại mật khẩu"
+                          value={authRegConfirm}
+                          onChange={(e) => setAuthRegConfirm(e.target.value)}
+                          className="w-full px-3 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full bg-salon-primary hover:bg-salon-primaryHover text-white py-3.5 rounded-2xl font-bold text-sm shadow transition mt-2 flex items-center justify-center gap-2"
+                    >
+                      <span>Tạo Tài Khoản Khách Hàng</span>
+                    </button>
+                  </form>
+                )}
+
+                {/* Footer links inside Modal */}
+                <div className="pt-3 border-t border-stone-100 text-center flex items-center justify-between text-xs text-stone-500">
+                  <a href="login.html" className="hover:text-salon-primary font-semibold underline">
+                    Mở trang đăng nhập riêng
+                  </a>
+                  <a href="admin.html" className="hover:text-stone-900 font-semibold underline flex items-center gap-1">
+                    🔐 Trang Admin Quản Trị
+                  </a>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {/* WRITE REVIEW MODAL */}
+          {isReviewModalOpen && (
+            <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+              <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl border border-stone-200 p-6 sm:p-8 space-y-5 relative animate-in fade-in zoom-in duration-200">
+                
+                {/* Close Button */}
+                <button 
+                  onClick={() => { setIsReviewModalOpen(false); setReviewFormError(''); }}
+                  className="absolute right-4 top-4 w-9 h-9 rounded-full bg-stone-100 text-stone-500 hover:text-stone-900 hover:bg-stone-200 flex items-center justify-center transition font-bold"
+                >
+                  ✕
+                </button>
+
+                {/* Header */}
+                <div className="text-center space-y-1">
+                  <div className="w-12 h-12 rounded-full bg-salon-secondaryLight text-salon-primary flex items-center justify-center text-xl font-bold mx-auto mb-1">
+                    ✍️
+                  </div>
+                  <h3 className="font-serif-accent text-xl font-bold text-stone-900">Viết Đánh Giá Trải Nghiệm</h3>
+                  <p className="text-xs text-stone-500">Chia sẻ cảm nhận của quý khách để Lumière ngày càng hoàn thiện hơn</p>
+                </div>
+
+                {/* Error alert */}
+                {reviewFormError && (
+                  <div className="bg-rose-50 text-rose-700 p-3 rounded-xl border border-rose-200 text-xs font-semibold text-center">
+                    ⚠️ {reviewFormError}
+                  </div>
+                )}
+
+                <form onSubmit={handleSubmitReview} className="space-y-4 text-xs">
+                  
+                  {/* Star Rating Picker */}
+                  <div className="space-y-1 text-center bg-salon-bg p-4 rounded-2xl border border-salon-border">
+                    <label className="font-semibold text-stone-700 block">Đánh giá chất lượng dịch vụ (*)</label>
+                    <div className="flex items-center justify-center gap-2 pt-1">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onMouseEnter={() => setHoverRating(star)}
+                          onMouseLeave={() => setHoverRating(0)}
+                          onClick={() => setNewReviewRating(star)}
+                          className="text-2xl transition-transform hover:scale-125 focus:outline-none"
+                        >
+                          <span className={(hoverRating || newReviewRating) >= star ? 'text-amber-400' : 'text-stone-300'}>
+                            ★
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                    <span className="text-xs font-bold text-stone-600 block pt-1">
+                      {newReviewRating === 5 && '🌟 Tuyệt vời (5/5 sao)'}
+                      {newReviewRating === 4 && '😊 Rất tốt (4/5 sao)'}
+                      {newReviewRating === 3 && '😐 Hài lòng (3/5 sao)'}
+                      {newReviewRating === 2 && '🙁 Trung bình (2/5 sao)'}
+                      {newReviewRating === 1 && '😞 Cần cải thiện (1/5 sao)'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="font-semibold text-stone-700">Họ và Tên (*)</label>
+                      <input 
+                        type="text"
+                        required
+                        placeholder="Nhập tên của bạn"
+                        value={newReviewName}
+                        onChange={(e) => setNewReviewName(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg text-sm"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="font-semibold text-stone-700">Dịch Vụ Đã Làm (*)</label>
+                      <select
+                        value={newReviewService}
+                        onChange={(e) => setNewReviewService(e.target.value)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg text-sm"
+                      >
+                        <option value="Cắt & Tạo Kiểu Nữ">✂️ Cắt & Tạo Kiểu Nữ</option>
+                        <option value="Cắt & Styling Nam Premium">💈 Cắt & Styling Nam Premium</option>
+                        <option value="Nhuộm Màu Thời Trang Premium">🎨 Nhuộm Màu Thời Trang Premium</option>
+                        <option value="Uốn Sóng Lơi Hàn Quốc">✨ Uốn Sóng Lơi Hàn Quốc</option>
+                        <option value="Ép Tóc Lụa Organic">💫 Ép Tóc Lụa Organic</option>
+                        <option value="Phục Hồi Keratin Chuyên Sâu">🌿 Phục Hồi Keratin Chuyên Sâu</option>
+                        <option value="Gội Đầu Dưỡng Sinh Thảo Dược">🌸 Gội Đầu Dưỡng Sinh Thảo Dược</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-semibold text-stone-700">Nội Dung Nhận Xét (*)</label>
+                    <textarea
+                      rows="3"
+                      required
+                      placeholder="Chia sẻ về trải nghiệm uốn, nhuộm, cắt tóc hoặc thái độ phục vụ..."
+                      value={newReviewContent}
+                      onChange={(e) => setNewReviewContent(e.target.value)}
+                      className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg text-sm resize-none"
+                    ></textarea>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-salon-primary hover:bg-salon-primaryHover text-white py-3.5 rounded-2xl font-bold text-sm shadow transition flex items-center justify-center gap-2"
+                  >
+                    <span>Gửi Đánh Giá Ngay</span>
+                    <i data-lucide="send" className="w-4 h-4"></i>
+                  </button>
+                </form>
+
+              </div>
+            </div>
+          )}
+
+        </div>
+      );
+    }
+
+    const rootElement = document.getElementById('root');
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(<App />);
+  </script>
+</body>
+</html>

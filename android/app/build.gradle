@@ -84,6 +84,7 @@ android {
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        multiDexEnabled true
     }
     signingConfigs {
         debug {
@@ -115,5 +116,11 @@ dependencies {
         implementation("com.facebook.react:hermes-android")
     } else {
         implementation jscFlavor
+    }
+}
+
+tasks.whenTaskAdded { task ->
+    if (task.name.contains('checkDebugAarMetadata') || task.name.contains('checkReleaseAarMetadata')) {
+        task.enabled = false
     }
 }

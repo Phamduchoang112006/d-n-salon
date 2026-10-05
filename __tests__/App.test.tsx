@@ -3,6 +3,7 @@
  */
 
 import 'react-native';
+import 'react-native-gesture-handler/jestSetup';
 import React from 'react';
 import App from '../App';
 

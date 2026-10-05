@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sổ Học Bạ Điện Tử - THCS Minh Khai</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white !important; color: black !important; }
+    }
+  </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 flex flex-col">
+
+  <!-- HEADER -->
+  <header class="bg-sky-700 text-white shadow-md no-print">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-2">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">🏫</span>
+        <div>
+          <h1 class="font-extrabold text-lg tracking-wide uppercase">THCS MINH KHAI</h1>
+          <p class="text-xs text-sky-200 font-medium">Sổ Học Bạ Điện Tử Thông Minh</p>
+        </div>
+      </div>
+
+      <div id="userHeaderControls" class="flex items-center gap-3">
+        <button onclick="openRoleModal()" class="bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-3 py-1.5 rounded-lg border border-sky-400 transition">
+          🔁 Đổi vai trò nhanh
+        </button>
+        <button onclick="handleLogout()" class="bg-red-500 hover:bg-red-600 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+          Đăng xuất
+        </button>
+      </div>
+    </div>
+
+    <!-- User Banner -->
+    <div id="userBanner" class="bg-sky-800 text-sky-100 px-4 py-1.5 text-xs border-t border-sky-600">
+      <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <div class="flex items-center gap-2">
+          <span id="bannerUserName" class="font-bold text-white text-sm">--</span>
+          <span id="bannerRoleBadge" class="px-2 py-0.5 rounded font-bold text-[10px] bg-blue-100 text-blue-800">--</span>
+        </div>
+        <span>Tài khoản: <strong id="bannerUsername">--</strong></span>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4" id="mainContainer">
+    <!-- Content rendered via JavaScript -->
+  </main>
+
+  <!-- ROLE SWITCHER MODAL -->
+  <div id="roleModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center pb-2 border-b">
+        <h3 class="font-bold text-slate-800 text-base">⚡ Đổi Vai Trò Nhanh</h3>
+        <button onclick="closeRoleModal()" class="text-slate-400 hover:text-slate-600 font-bold">✖</button>
+      </div>
+      <div id="roleModalUserList" class="space-y-2 max-h-80 overflow-y-auto pr-1">
+        <!-- User list rendered via JS -->
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-white border-t border-slate-200 py-3 text-center text-xs text-slate-500 no-print">
+    © 2024 Trường THCS Minh Khai - Hệ thống Sổ học bạ điện tử đạt chuẩn Bộ GD&ĐT
+  </footer>
+
+  <!-- APPLICATION SCRIPT (PURE VANILLA JS) -->
+  <script>
+    // --- INITIAL DATA ---
+    const INITIAL_SEMESTERS = [
+      { id: 'sem1', name: 'Học kỳ I', academicYear: '2024-2025', isCurrent: true, entryDeadline: '2024-12-30', isLocked: false },
+      { id: 'sem2', name: 'Học kỳ II', academicYear: '2024-2025', isCurrent: false, entryDeadline: '2025-05-25', isLocked: true }
+    ];
+
+    const INITIAL_SUBJECTS = [
+      { id: 'sub_toan', code: 'TOAN', name: 'Toán học', lessonsPerWeek: 4 },
+      { id: 'sub_van', code: 'VAN', name: 'Ngữ văn', lessonsPerWeek: 4 },
+      { id: 'sub_anh', code: 'ANH', name: 'Tiếng Anh', lessonsPerWeek: 3 },
+      { id: 'sub_ly', code: 'LY', name: 'Vật lý', lessonsPerWeek: 2 },
+      { id: 'sub_hoa', code: 'HOA', name: 'Hóa học', lessonsPerWeek: 2 },
+      { id: 'sub_sinh', code: 'SINH', name: 'Sinh học', lessonsPerWeek: 2 },
+      { id: 'sub_su', code: 'SU', name: 'Lịch sử', lessonsPerWeek: 2 },
+      { id: 'sub_dia', code: 'DIA', name: 'Địa lý', lessonsPerWeek: 2 },
+      { id: 'sub_gdcd', code: 'GDCD', name: 'Giáo dục công dân', lessonsPerWeek: 1 },
+      { id: 'sub_tin', code: 'TIN', name: 'Tin học', lessonsPerWeek: 2 },
+      { id: 'sub_td', code: 'TD', name: 'Thể dục', lessonsPerWeek: 2 }
+    ];
+
+    const INITIAL_TEACHERS = [
+      { id: 'gv01', code: 'GV01', name: 'Phạm Thị Mai', phone: '0912345678', email: 'ptmai@thcsminhkhai.edu.vn', mainSubjectId: 'sub_toan', gender: 'Nữ', title: 'Thạc sĩ Toán học - GVCN Lớp 6A1' },
+      { id: 'gv02', code: 'GV02', name: 'Trần Đức Anh', phone: '0923456789', email: 'tdanh@thcsminhkhai.edu.vn', mainSubjectId: 'sub_van', gender: 'Nam', title: 'Cử nhân Sư phạm Văn - GVCN Lớp 7A1' },
+      { id: 'gv03', code: 'GV03', name: 'Hoàng Thu Trang', phone: '0934567890', email: 'httrang@thcsminhkhai.edu.vn', mainSubjectId: 'sub_anh', gender: 'Nữ', title: 'Thạc sĩ Ngôn ngữ Anh - GVCN Lớp 8A1' },
+      { id: 'gv04', code: 'GV04', name: 'Nguyễn Tiến Dũng', phone: '0945678901', email: 'ntdung@thcsminhkhai.edu.vn', mainSubjectId: 'sub_ly', gender: 'Nam', title: 'Cử nhân Vật lý - GVCN Lớp 9A1' },
+      { id: 'gv05', code: 'GV05', name: 'Vũ Thị Bích', phone: '0956789012', email: 'vtbich@thcsminhkhai.edu.vn', mainSubjectId: 'sub_su', gender: 'Nữ', title: 'Cử nhân Lịch sử' }
+    ];
+
+    const INITIAL_CLASSES = [
+      { id: 'class_6a1', name: '6A1', grade: 6, homeroomTeacherId: 'gv01', room: 'P.101 - Tầng 1', academicYear: '2024-2025' },
+      { id: 'class_6a2', name: '6A2', grade: 6, homeroomTeacherId: 'gv05', room: 'P.102 - Tầng 1', academicYear: '2024-2025' },
+      { id: 'class_7a1', name: '7A1', grade: 7, homeroomTeacherId: 'gv02', room: 'P.201 - Tầng 2', academicYear: '2024-2025' },
+      { id: 'class_8a1', name: '8A1', grade: 8, homeroomTeacherId: 'gv03', room: 'P.301 - Tầng 3', academicYear: '2024-2025' },
+      { id: 'class_9a1', name: '9A1', grade: 9, homeroomTeacherId: 'gv04', room: 'P.401 - Tầng 4', academicYear: '2024-2025' }
+    ];
+
+    const INITIAL_STUDENTS = [
+      { id: 'hs6001', code: 'HS6001', name: 'Nguyễn An Nhiên', classId: 'class_6a1', dob: '12/04/2013', gender: 'Nữ', parentName: 'Nguyễn Văn Hoàn', parentPhone: '0988111222', address: 'Số 15 Lê Lợi, P. Minh Khai', conduct: 'Tốt' },
+      { id: 'hs6002', code: 'HS6002', name: 'Trần Minh Khôi', classId: 'class_6a1', dob: '05/09/2013', gender: 'Nam', parentName: 'Trần Đình Trọng', parentPhone: '0988333444', address: 'Số 42 Hai Bà Trưng, P. Minh Khai', conduct: 'Tốt' },
+      { id: 'hs6003', code: 'HS6003', name: 'Lê Hoàng Nam', classId: 'class_6a1', dob: '20/11/2013', gender: 'Nam', parentName: 'Lê Văn Thắng', parentPhone: '0988555666', address: 'Số 88 Trần Phú, P. Minh Khai', conduct: 'Khá' },
+      { id: 'hs6004', code: 'HS6004', name: 'Phạm Bảo Anh', classId: 'class_6a1', dob: '18/01/2013', gender: 'Nữ', parentName: 'Phạm Quốc Bảo', parentPhone: '0988777888', address: 'Số 03 Nguyễn Du, P. Minh Khai', conduct: 'Tốt' },
+      { id: 'hs6005', code: 'HS6005', name: 'Hoàng Quốc Việt', classId: 'class_6a2', dob: '10/02/2013', gender: 'Nam', parentName: 'Hoàng Anh Tuấn', parentPhone: '0977112233', address: 'Số 10 Lý Thường Kiệt', conduct: 'Tốt' },
+      { id: 'hs6006', code: 'HS6006', name: 'Đặng Thảo Chi', classId: 'class_6a2', dob: '25/08/2013', gender: 'Nữ', parentName: 'Đặng Văn Hùng', parentPhone: '0977445566', address: 'Số 22 Quang Trung', conduct: 'Khá' },
+      { id: 'hs7001', code: 'HS7001', name: 'Vũ Đức Mạnh', classId: 'class_7a1', dob: '03/03/2012', gender: 'Nam', parentName: 'Vũ Văn Hùng', parentPhone: '0911223344', address: 'Số 50 Điện Biên Phủ', conduct: 'Tốt' },
+      { id: 'hs8001', code: 'HS8001', name: 'Đỗ Khánh Linh', classId: 'class_8a1', dob: '14/10/2011', gender: 'Nữ', parentName: 'Đỗ Tiến Thành', parentPhone: '0922334455', address: 'Số 12 Ngô Quyền', conduct: 'Tốt' },
+      { id: 'hs9001', code: 'HS9001', name: 'Bùi Hoàng Long', classId: 'class_9a1', dob: '08/06/2010', gender: 'Nam', parentName: 'Bùi Văn Hải', parentPhone: '0933445566', address: 'Số 99 Hùng Vương', conduct: 'Tốt' }
+    ];
+
+    const INITIAL_USERS = [
+      { id: 'u_admin', username: 'admin', password: '123', name: 'Thầy Nguyễn Văn Minh (Hiệu trưởng)', role: 'admin', email: 'admin@thcsminhkhai.edu.vn', phone: '0901234567' },
+      { id: 'u_gv01', username: 'gv_mai', password: '123', name: 'Cô Phạm Thị Mai', role: 'teacher', teacherId: 'gv01', email: 'ptmai@thcsminhkhai.edu.vn', phone: '0912345678' },
+      { id: 'u_gv02', username: 'gv_anh', password: '123', name: 'Thầy Trần Đức Anh', role: 'teacher', teacherId: 'gv02', email: 'tdanh@thcsminhkhai.edu.vn', phone: '0923456789' },
+      { id: 'u_hs6001', username: 'hocsinh_nhien', password: '123', name: 'Phụ huynh em Nguyễn An Nhiên', role: 'student', studentId: 'hs6001', email: 'ph_nhien@gmail.com', phone: '0988111222' },
+      { id: 'u_hs6002', username: 'hocsinh_khoi', password: '123', name: 'Phụ huynh em Trần Minh Khôi', role: 'student', studentId: 'hs6002', email: 'ph_khoi@gmail.com', phone: '0988333444' }
+    ];
+
+    const INITIAL_ASSIGNMENTS = [
+      { id: 'ta1', teacherId: 'gv01', subjectId: 'sub_toan', classId: 'class_6a1', semesterId: 'sem1' },
+      { id: 'ta2', teacherId: 'gv02', subjectId: 'sub_van', classId: 'class_6a1', semesterId: 'sem1' },
+      { id: 'ta3', teacherId: 'gv03', subjectId: 'sub_anh', classId: 'class_6a1', semesterId: 'sem1' },
+      { id: 'ta4', teacherId: 'gv04', subjectId: 'sub_ly', classId: 'class_6a1', semesterId: 'sem1' },
+      { id: 'ta5', teacherId: 'gv05', subjectId: 'sub_su', classId: 'class_6a1', semesterId: 'sem1' },
+      { id: 'ta6', teacherId: 'gv01', subjectId: 'sub_toan', classId: 'class_7a1', semesterId: 'sem1' },
+      { id: 'ta7', teacherId: 'gv02', subjectId: 'sub_van', classId: 'class_7a1', semesterId: 'sem1' }
+    ];
+
+    const INITIAL_GRADES = [
+      { id: 'g_nhien_toan', studentId: 'hs6001', subjectId: 'sub_toan', semesterId: 'sem1', tx1: 9.0, tx2: 8.5, tx3: 9.5, tx4: 9.0, gk: 9.0, ck: 9.5, dtb: 9.1, teacherNote: 'Học sinh rất thông minh, giải toán nhanh và chính xác.', lastUpdated: '15/12/2024' },
+      { id: 'g_nhien_van', studentId: 'hs6001', subjectId: 'sub_van', semesterId: 'sem1', tx1: 8.0, tx2: 8.5, tx3: 9.0, tx4: 8.5, gk: 8.5, ck: 9.0, dtb: 8.7, teacherNote: 'Diễn đạt lưu khoát, cảm thụ văn học tốt.', lastUpdated: '16/12/2024' },
+      { id: 'g_nhien_anh', studentId: 'hs6001', subjectId: 'sub_anh', semesterId: 'sem1', tx1: 9.5, tx2: 10.0, tx3: 9.0, tx4: 9.5, gk: 9.5, ck: 10.0, dtb: 9.7, teacherNote: 'Phát âm chuẩn, giao tiếp Tiếng Anh rất tự tin.', lastUpdated: '18/12/2024' },
+      { id: 'g_nhien_ly', studentId: 'hs6001', subjectId: 'sub_ly', semesterId: 'sem1', tx1: 8.5, tx2: 9.0, tx3: 8.5, tx4: 9.0, gk: 8.5, ck: 9.0, dtb: 8.8, teacherNote: 'Nắm vững lý thuyết và thực hành tốt.', lastUpdated: '17/12/2024' },
+      { id: 'g_nhien_su', studentId: 'hs6001', subjectId: 'sub_su', semesterId: 'sem1', tx1: 9.0, tx2: 8.5, tx3: 9.0, tx4: 9.5, gk: 9.0, ck: 9.5, dtb: 9.2, teacherNote: 'Hăng hái phát biểu xây dựng bài.', lastUpdated: '19/12/2024' },
+      { id: 'g_khoi_toan', studentId: 'hs6002', subjectId: 'sub_toan', semesterId: 'sem1', tx1: 7.5, tx2: 8.0, tx3: 7.0, tx4: 8.5, gk: 8.0, ck: 8.0, dtb: 7.9, teacherNote: 'Cần cẩn thận hơn trong tính toán.', lastUpdated: '15/12/2024' },
+      { id: 'g_khoi_van', studentId: 'hs6002', subjectId: 'sub_van', semesterId: 'sem1', tx1: 7.0, tx2: 7.5, tx3: 8.0, tx4: 7.5, gk: 7.5, ck: 7.5, dtb: 7.5, teacherNote: 'Viết văn logic nhưng cần trau dồi vốn từ.', lastUpdated: '16/12/2024' },
+      { id: 'g_khoi_anh', studentId: 'hs6002', subjectId: 'sub_anh', semesterId: 'sem1', tx1: 8.0, tx2: 8.5, tx3: 8.0, tx4: 8.5, gk: 8.0, ck: 8.5, dtb: 8.3, teacherNote: 'Từ vựng khá tốt.', lastUpdated: '18/12/2024' },
+      { id: 'g_nam_toan', studentId: 'hs6003', subjectId: 'sub_toan', semesterId: 'sem1', tx1: 6.0, tx2: 6.5, tx3: 5.5, tx4: 6.0, gk: 6.0, ck: 6.5, dtb: 6.2, teacherNote: 'Cần chăm chỉ làm bài tập về nhà hơn.', lastUpdated: '15/12/2024' },
+      { id: 'g_nam_van', studentId: 'hs6003', subjectId: 'sub_van', semesterId: 'sem1', tx1: 6.5, tx2: 6.0, tx3: 6.5, tx4: 7.0, gk: 6.5, ck: 6.5, dtb: 6.5, teacherNote: 'Cần tập trung lắng nghe giảng.', lastUpdated: '16/12/2024' },
+      { id: 'g_baoanh_toan', studentId: 'hs6004', subjectId: 'sub_toan', semesterId: 'sem1', tx1: 8.5, tx2: 9.0, tx3: 8.5, tx4: 9.0, gk: 8.5, ck: 9.0, dtb: 8.8, teacherNote: 'Học tập tích cực, bài làm cẩn thận.', lastUpdated: '15/12/2024' },
+      { id: 'g_baoanh_van', studentId: 'hs6004', subjectId: 'sub_van', semesterId: 'sem1', tx1: 9.0, tx2: 8.5, tx3: 9.0, tx4: 9.5, gk: 9.0, ck: 9.0, dtb: 9.0, teacherNote: 'Bài viết giàu cảm xúc, có góc nhìn sâu sắc.', lastUpdated: '16/12/2024' }
+    ];
+
+    const INITIAL_REMARKS = [
+      { id: 'rem_nhien', studentId: 'hs6001', semesterId: 'sem1', homeroomRemark: 'Em Nguyễn An Nhiên học giỏi toàn diện, gương mẫu, tích cực tham gia các phong trào lớp và trường. Là Lớp trưởng xuất sắc.', strengths: 'Thông minh, tự giác, giao tiếp tiếng Anh lưu khoát, năng nổ.', weaknesses: 'Cần chú ý giữ gìn sức khỏe trong mùa thi.', conduct: 'Tốt', updatedAt: '20/12/2024' },
+      { id: 'rem_khoi', studentId: 'hs6002', semesterId: 'sem1', homeroomRemark: 'Học sinh ngoan ngoãn, có tinh thần giúp đỡ bạn bè, học lực Khá.', strengths: 'Chăm chỉ, trung thực, đoàn kết với tập thể.', weaknesses: 'Đôi lúc còn trình bày cẩu thả trong môn Toán.', conduct: 'Tốt', updatedAt: '20/12/2024' },
+      { id: 'rem_nam', studentId: 'hs6003', semesterId: 'sem1', homeroomRemark: 'Học sinh có tiến bộ ở nửa sau học kỳ. Cần rèn luyện thêm tính tự giác.', strengths: 'Hòa đồng, yêu thích thể thao.', weaknesses: 'Còn mất tập trung trong giờ học môn Văn và Toán.', conduct: 'Khá', updatedAt: '20/12/2024' },
+      { id: 'rem_baoanh', studentId: 'hs6004', semesterId: 'sem1', homeroomRemark: 'Học sinh giỏi, lễ phép, cẩn thận và có trách nhiệm cao với công việc được giao.', strengths: 'Cẩn thận, tiếp thu bài nhanh, viết văn hay.', weaknesses: 'Nên tích cực phát biểu hơn nữa.', conduct: 'Tốt', updatedAt: '20/12/2024' }
+    ];
+
+    const INITIAL_TIMETABLE = [
+      { id: 'tt_6a1_t2_1', classId: 'class_6a1', dayOfWeek: 'Thứ 2', period: 1, session: 'Sáng', subjectId: 'sub_gdcd', teacherId: 'gv01', room: 'P.101' },
+      { id: 'tt_6a1_t2_2', classId: 'class_6a1', dayOfWeek: 'Thứ 2', period: 2, session: 'Sáng', subjectId: 'sub_toan', teacherId: 'gv01', room: 'P.101' },
+      { id: 'tt_6a1_t2_3', classId: 'class_6a1', dayOfWeek: 'Thứ 2', period: 3, session: 'Sáng', subjectId: 'sub_van', teacherId: 'gv02', room: 'P.101' },
+      { id: 'tt_6a1_t2_4', classId: 'class_6a1', dayOfWeek: 'Thứ 2', period: 4, session: 'Sáng', subjectId: 'sub_anh', teacherId: 'gv03', room: 'P.101' },
+      { id: 'tt_6a1_t3_1', classId: 'class_6a1', dayOfWeek: 'Thứ 3', period: 1, session: 'Sáng', subjectId: 'sub_toan', teacherId: 'gv01', room: 'P.101' },
+      { id: 'tt_6a1_t3_2', classId: 'class_6a1', dayOfWeek: 'Thứ 3', period: 2, session: 'Sáng', subjectId: 'sub_ly', teacherId: 'gv04', room: 'P.101' },
+      { id: 'tt_6a1_t3_3', classId: 'class_6a1', dayOfWeek: 'Thứ 3', period: 3, session: 'Sáng', subjectId: 'sub_van', teacherId: 'gv02', room: 'P.101' },
+      { id: 'tt_6a1_t3_4', classId: 'class_6a1', dayOfWeek: 'Thứ 3', period: 4, session: 'Sáng', subjectId: 'sub_su', teacherId: 'gv05', room: 'P.101' },
+      { id: 'tt_6a1_t4_1', classId: 'class_6a1', dayOfWeek: 'Thứ 4', period: 1, session: 'Sáng', subjectId: 'sub_anh', teacherId: 'gv03', room: 'P.101' },
+      { id: 'tt_6a1_t4_2', classId: 'class_6a1', dayOfWeek: 'Thứ 4', period: 2, session: 'Sáng', subjectId: 'sub_toan', teacherId: 'gv01', room: 'P.101' },
+      { id: 'tt_6a1_t4_3', classId: 'class_6a1', dayOfWeek: 'Thứ 4', period: 3, session: 'Sáng', subjectId: 'sub_tin', teacherId: 'gv04', room: 'P.Tin học' },
+      { id: 'tt_6a1_t4_4', classId: 'class_6a1', dayOfWeek: 'Thứ 4', period: 4, session: 'Sáng', subjectId: 'sub_td', teacherId: 'gv05', room: 'Sân trường' },
+      { id: 'tt_6a1_t5_1', classId: 'class_6a1', dayOfWeek: 'Thứ 5', period: 1, session: 'Sáng', subjectId: 'sub_van', teacherId: 'gv02', room: 'P.101' },
+      { id: 'tt_6a1_t5_2', classId: 'class_6a1', dayOfWeek: 'Thứ 5', period: 2, session: 'Sáng', subjectId: 'sub_van', teacherId: 'gv02', room: 'P.101' },
+      { id: 'tt_6a1_t5_3', classId: 'class_6a1', dayOfWeek: 'Thứ 5', period: 3, session: 'Sáng', subjectId: 'sub_toan', teacherId: 'gv01', room: 'P.101' },
+      { id: 'tt_6a1_t5_4', classId: 'class_6a1', dayOfWeek: 'Thứ 5', period: 4, session: 'Sáng', subjectId: 'sub_dia', teacherId: 'gv05', room: 'P.101' },
+      { id: 'tt_6a1_t6_1', classId: 'class_6a1', dayOfWeek: 'Thứ 6', period: 1, session: 'Sáng', subjectId: 'sub_anh', teacherId: 'gv03', room: 'P.101' },
+      { id: 'tt_6a1_t6_2', classId: 'class_6a1', dayOfWeek: 'Thứ 6', period: 2, session: 'Sáng', subjectId: 'sub_sinh', teacherId: 'gv04', room: 'P.101' },
+      { id: 'tt_6a1_t6_3', classId: 'class_6a1', dayOfWeek: 'Thứ 6', period: 3, session: 'Sáng', subjectId: 'sub_ly', teacherId: 'gv04', room: 'P.101' },
+      { id: 'tt_6a1_t6_4', classId: 'class_6a1', dayOfWeek: 'Thứ 6', period: 4, session: 'Sáng', subjectId: 'sub_su', teacherId: 'gv05', room: 'P.101' },
+      { id: 'tt_6a1_t7_1', classId: 'class_6a1', dayOfWeek: 'Thứ 7', period: 1, session: 'Sáng', subjectId: 'sub_toan', teacherId: 'gv01', room: 'P.101' },
+      { id: 'tt_6a1_t7_2', classId: 'class_6a1', dayOfWeek: 'Thứ 7', period: 2, session: 'Sáng', subjectId: 'sub_van', teacherId: 'gv02', room: 'P.101' },
+      { id: 'tt_6a1_t7_3', classId: 'class_6a1', dayOfWeek: 'Thứ 7', period: 3, session: 'Sáng', subjectId: 'sub_td', teacherId: 'gv05', room: 'Sân trường' }
+    ];
+
+    // --- STATE ENGINE ---
+    let state = {
+      currentUser: INITIAL_USERS[0],
+      users: [...INITIAL_USERS],
+      semesters: [...INITIAL_SEMESTERS],
+      activeSemesterId: 'sem1',
+      classes: [...INITIAL_CLASSES],
+      teachers: [...INITIAL_TEACHERS],
+      students: [...INITIAL_STUDENTS],
+      subjects: [...INITIAL_SUBJECTS],
+      assignments: [...INITIAL_ASSIGNMENTS],
+      grades: [...INITIAL_GRADES],
+      remarks: [...INITIAL_REMARKS],
+      timetables: [...INITIAL_TIMETABLE],
+      adminTab: 'results',
+      adminSelectedClassId: 'class_6a1',
+      adminSearchQuery: '',
+      teacherTab: 'grades',
+      teacherSelectedClassId: 'class_6a1',
+      teacherSelectedSubjectId: 'sub_toan',
+      studentTab: 'hocba',
+      studentSelectedDay: 'Thứ 2'
+    };
+
+    function computeDTB(tx1, tx2, tx3, tx4, gk, ck) {
+      const txScores = [tx1, tx2, tx3, tx4].filter(s => s !== undefined && s !== null && !isNaN(s) && s !== '');
+      if (txScores.length === 0 || gk === undefined || gk === null || isNaN(gk) || gk === '' || ck === undefined || ck === null || isNaN(ck) || ck === '') return undefined;
+      const avgTx = txScores.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / txScores.length;
+      const dtb = (avgTx + parseFloat(gk) * 2 + parseFloat(ck) * 3) / 6;
+      return Math.round(dtb * 10) / 10;
+    }
+
+    function getStudentGrades(studentId, semId = state.activeSemesterId) {
+      return state.grades.filter(g => g.studentId === studentId && g.semesterId === semId);
+    }
+
+    function getStudentGPA(studentId, semId = state.activeSemesterId) {
+      const stGrades = getStudentGrades(studentId, semId);
+      const validDtbs = stGrades.map(g => g.dtb).filter(d => d !== undefined && d !== null && !isNaN(d));
+      if (validDtbs.length === 0) return undefined;
+      const avg = validDtbs.reduce((a, b) => a + b, 0) / validDtbs.length;
+      return Math.round(avg * 10) / 10;
+    }
+
+    function getAcademicClassification(gpa) {
+      if (gpa === undefined || gpa === null) return 'Chưa xếp loại';
+      if (gpa >= 8.0) return 'Giỏi';
+      if (gpa >= 6.5) return 'Khá';
+      if (gpa >= 5.0) return 'Trung bình';
+      return 'Yếu';
+    }
+
+    function getRoleInfo(role) {
+      switch (role) {
+        case 'admin': return { label: 'Ban Giám Hiệu', bg: 'bg-blue-100 text-blue-800', emoji: '🛡️' };
+        case 'teacher': return { label: 'Giáo Viên', bg: 'bg-emerald-100 text-emerald-800', emoji: '👩‍🏫' };
+        default: return { label: 'Phụ Huynh / Học Sinh', bg: 'bg-amber-100 text-amber-800', emoji: '🎓' };
+      }
+    }
+
+    // --- RENDER MAIN UI ---
+    function renderApp() {
+      const main = document.getElementById('mainContainer');
+      const userBanner = document.getElementById('userBanner');
+      const userControls = document.getElementById('userHeaderControls');
+
+      if (!state.currentUser) {
+        userBanner.classList.add('hidden');
+        userControls.classList.add('hidden');
+        main.innerHTML = renderLoginView();
+        return;
+      }
+
+      userBanner.classList.remove('hidden');
+      userControls.classList.remove('hidden');
+
+      const roleBadge = getRoleInfo(state.currentUser.role);
+      document.getElementById('bannerUserName').innerText = state.currentUser.name;
+      document.getElementById('bannerUsername').innerText = state.currentUser.username;
+      
+      const badgeElem = document.getElementById('bannerRoleBadge');
+      badgeElem.innerText = roleBadge.label;
+      badgeElem.className = `px-2 py-0.5 rounded font-bold text-[10px] ${roleBadge.bg}`;
+
+      if (state.currentUser.role === 'admin') {
+        main.innerHTML = renderAdminDashboard();
+      } else if (state.currentUser.role === 'teacher') {
+        main.innerHTML = renderTeacherDashboard();
+      } else {
+        main.innerHTML = renderStudentDashboard();
+      }
+    }
+
+    // --- LOGIN VIEW ---
+    function renderLoginView() {
+      return `
+        <div class="max-w-md mx-auto my-8 space-y-6">
+          <div class="text-center space-y-2">
+            <div class="w-16 h-16 bg-sky-600 text-white rounded-full flex items-center justify-center text-3xl mx-auto shadow-lg shadow-sky-600/30">
+              🏫
+            </div>
+            <h2 class="text-xs font-extrabold text-sky-700 tracking-wider uppercase">TRƯỜNG THCS MINH KHAI</h2>
+            <h1 class="text-2xl font-black text-slate-800">SỔ HỌC BẠ ĐIỆN TỬ</h1>
+            <p class="text-xs text-slate-500">Hệ thống Quản lý Điểm số & Đánh giá Học sinh</p>
+          </div>
+
+          <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+            <h3 class="font-bold text-slate-800 border-b pb-2 text-sm">🔑 Đăng nhập hệ thống</h3>
+            <div id="loginError" class="hidden bg-red-50 text-red-600 p-3 rounded-lg text-xs font-semibold border border-red-200"></div>
+
+            <form onsubmit="handleLoginSubmit(event)" class="space-y-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Tên đăng nhập:</label>
+                <input id="loginUsername" type="text" placeholder="Nhập tên đăng nhập..." class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">Mật khẩu:</label>
+                <input id="loginPassword" type="password" placeholder="Mật khẩu mặc định: 123" class="w-full px-3 py-2 text-sm rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+              </div>
+              <button type="submit" class="w-full bg-sky-600 hover:bg-sky-700 text-white font-bold py-2.5 rounded-lg text-sm shadow-md transition">
+                ĐĂNG NHẬP HỆ THỐNG
+              </button>
+            </form>
+          </div>
+
+          <!-- Quick 1-click accounts -->
+          <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+            <div>
+              <h3 class="font-bold text-slate-800 text-sm">⚡ Đăng nhập 1-chạm dùng thử</h3>
+              <p class="text-xs text-slate-500">Chọn vai trò cần trải nghiệm ngay:</p>
+            </div>
+            <div class="space-y-2">
+              ${state.users.map(u => {
+                const b = getRoleInfo(u.role);
+                return `
+                  <button onclick="quickSwitchUser('${u.id}')" class="w-full p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-sky-50 hover:border-sky-300 flex items-center justify-between text-left transition group">
+                    <div class="flex items-center gap-3">
+                      <span class="text-2xl">${b.emoji}</span>
+                      <div>
+                        <div class="font-bold text-slate-800 text-xs group-hover:text-sky-700">${u.name}</div>
+                        <div class="flex items-center gap-2 mt-0.5">
+                          <span class="px-2 py-0.5 rounded text-[9px] font-extrabold ${b.bg}">${b.label}</span>
+                          <span class="text-[11px] text-slate-500">tk: ${u.username}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <span class="text-slate-400 group-hover:text-sky-600 font-bold">➔</span>
+                  </button>
+                `;
+              }).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // --- ADMIN DASHBOARD ---
+    function renderAdminDashboard() {
+      const activeSem = state.semesters.find(s => s.id === state.activeSemesterId) || state.semesters[0];
+      const curClass = state.classes.find(c => c.id === state.adminSelectedClassId) || state.classes[0];
+
+      const filteredSts = state.students
+        .filter(s => s.classId === curClass.id)
+        .filter(s => s.name.toLowerCase().includes(state.adminSearchQuery.toLowerCase()) || s.code.toLowerCase().includes(state.adminSearchQuery.toLowerCase()));
+
+      return `
+        <div class="space-y-4">
+          <!-- Admin Tabs Header -->
+          <div class="flex bg-white rounded-xl p-1 shadow-sm border border-slate-200">
+            <button onclick="setAdminTab('results')" class="flex-1 py-2 rounded-lg text-xs font-bold transition ${state.adminTab==='results'?'bg-sky-600 text-white shadow':'text-slate-600 hover:bg-slate-50'}">
+              📋 Kết quả học tập
+            </button>
+            <button onclick="setAdminTab('assignments')" class="flex-1 py-2 rounded-lg text-xs font-bold transition ${state.adminTab==='assignments'?'bg-sky-600 text-white shadow':'text-slate-600 hover:bg-slate-50'}">
+              👨‍🏫 Phân công giảng dạy
+            </button>
+            <button onclick="setAdminTab('stats')" class="flex-1 py-2 rounded-lg text-xs font-bold transition ${state.adminTab==='stats'?'bg-sky-600 text-white shadow':'text-slate-600 hover:bg-slate-50'}">
+              📊 Thống kê học lực
+            </button>
+            <button onclick="setAdminTab('system')" class="flex-1 py-2 rounded-lg text-xs font-bold transition ${state.adminTab==='system'?'bg-sky-600 text-white shadow':'text-slate-600 hover:bg-slate-50'}">
+              ⚙️ Quản lý hệ thống
+            </button>
+          </div>
+
+          ${state.adminTab === 'results' ? `
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+              <div>
+                <h2 class="font-extrabold text-slate-800 text-base">📋 Kết Quả Học Tập Học Sinh</h2>
+                <p class="text-xs text-slate-500">Học kỳ: ${activeSem.name} (${activeSem.academicYear})</p>
+              </div>
+
+              <!-- Class selector chips -->
+              <div class="flex gap-2 overflow-x-auto pb-1">
+                ${state.classes.map(c => `
+                  <button onclick="setAdminClass('${c.id}')" class="px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition ${curClass.id===c.id?'bg-sky-600 text-white shadow':'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                    Lớp ${c.name}
+                  </button>
+                `).join('')}
+              </div>
+
+              <input type="text" value="${state.adminSearchQuery}" oninput="setAdminSearch(this.value)" placeholder="🔎 Tìm học sinh theo tên hoặc mã HS..." class="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-sky-500" />
+
+              <div class="space-y-3">
+                ${filteredSts.length === 0 ? `<div class="text-center py-6 text-slate-400 text-xs">Chưa có học sinh nào.</div>` : 
+                  filteredSts.map(st => {
+                    const gpa = getStudentGPA(st.id, activeSem.id);
+                    const rank = getAcademicClassification(gpa);
+                    const stGrades = getStudentGrades(st.id, activeSem.id);
+
+                    return `
+                      <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 space-y-3">
+                        <div class="flex justify-between items-start">
+                          <div>
+                            <h3 class="font-bold text-slate-800 text-sm">${st.name} <span class="text-sky-600 text-xs">(${st.code})</span></h3>
+                            <p class="text-xs text-slate-500">Lớp: <strong>${curClass.name}</strong> | Hạnh kiểm: <strong class="text-emerald-700">${st.conduct}</strong></p>
+                          </div>
+                          <div class="text-right">
+                            <div class="text-[10px] text-slate-400 font-bold uppercase">ĐTB Chung</div>
+                            <div class="text-lg font-black text-sky-700">${gpa !== undefined ? gpa.toFixed(1) : 'N/A'}</div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold ${rank==='Giỏi'?'bg-emerald-100 text-emerald-800':rank==='Khá'?'bg-blue-100 text-blue-800':'bg-amber-100 text-amber-800'}">${rank}</span>
+                          </div>
+                        </div>
+
+                        <div class="bg-white p-3 rounded-lg border border-slate-200 text-xs space-y-1.5">
+                          <div class="font-bold text-slate-700 text-[11px]">Điểm các môn học:</div>
+                          <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            ${state.subjects.map(sub => {
+                              const gr = stGrades.find(g => g.subjectId === sub.id);
+                              return `
+                                <div class="flex justify-between items-center border-b border-slate-100 pb-1">
+                                  <span class="font-medium text-slate-700">${sub.name}:</span>
+                                  <div class="flex gap-2 text-[11px]">
+                                    <span class="text-slate-500">TX: ${[gr?.tx1, gr?.tx2, gr?.tx3, gr?.tx4].filter(x => x!==undefined&&x!=='').join(', ') || '-'}</span>
+                                    <span class="text-amber-700 font-semibold">GK: ${gr?.gk ?? '-'}</span>
+                                    <span class="text-blue-700 font-semibold">CK: ${gr?.ck ?? '-'}</span>
+                                    <span class="font-bold text-sky-700">ĐTB: ${gr?.dtb !== undefined ? gr.dtb.toFixed(1) : '-'}</span>
+                                  </div>
+                                </div>
+                              `;
+                            }).join('')}
+                          </div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')
+                }
+              </div>
+            </div>
+          ` : state.adminTab === 'assignments' ? `
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+              <div class="flex justify-between items-center">
+                <div>
+                  <h2 class="font-extrabold text-slate-800 text-base">👨‍🏫 Phân Công Giảng Dạy</h2>
+                  <p class="text-xs text-slate-500">Giao Giáo viên phụ trách môn học cho từng Lớp</p>
+                </div>
+                <button onclick="addMockAssignment()" class="bg-sky-600 text-white text-xs font-bold px-3 py-2 rounded-xl shadow">+ Phân công mới</button>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                ${state.assignments.map(a => {
+                  const t = state.teachers.find(x => x.id === a.teacherId);
+                  const sub = state.subjects.find(x => x.id === a.subjectId);
+                  const cls = state.classes.find(x => x.id === a.classId);
+                  return `
+                    <div class="border border-slate-200 rounded-xl p-3.5 flex items-center justify-between bg-slate-50">
+                      <div class="flex items-center gap-3">
+                        <span class="text-2xl">📘</span>
+                        <div>
+                          <div class="font-bold text-slate-800 text-sm">${sub?.name} (${sub?.code})</div>
+                          <div class="text-slate-600">Lớp: <strong class="text-sky-700">${cls?.name}</strong> | GV: <strong>${t?.name}</strong></div>
+                        </div>
+                      </div>
+                      <button onclick="deleteAssignment('${a.id}')" class="text-red-500 font-bold p-1">🗑️</button>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          ` : state.adminTab === 'stats' ? `
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+              <h2 class="font-extrabold text-slate-800 text-base">📊 Thống Kê Học Lực Theo Lớp</h2>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                ${state.classes.map(c => {
+                  const classSts = state.students.filter(s => s.classId === c.id);
+                  const total = classSts.length;
+                  let gioit = 0, kha = 0, tb = 0, yeu = 0;
+                  classSts.forEach(st => {
+                    const r = getAcademicClassification(getStudentGPA(st.id, activeSem.id));
+                    if (r === 'Giỏi') gioit++;
+                    else if (r === 'Khá') kha++;
+                    else if (r === 'Trung bình') tb++;
+                    else yeu++;
+                  });
+
+                  return `
+                    <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 space-y-3">
+                      <div class="flex justify-between items-center border-b pb-2 font-bold text-slate-800">
+                        <span>Lớp ${c.name}</span>
+                        <span class="text-slate-500 font-normal">Sĩ số: ${total} HS</span>
+                      </div>
+                      ${total === 0 ? `<p class="text-slate-400 italic">Chưa có dữ liệu học sinh</p>` : `
+                        <div class="space-y-2">
+                          <div>
+                            <div class="flex justify-between mb-1"><span class="font-bold text-emerald-700">🥇 Giỏi: ${gioit} HS</span><span>${Math.round((gioit/total)*100)}%</span></div>
+                            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden"><div class="bg-emerald-500 h-full" style="width: ${(gioit/total)*100}%"></div></div>
+                          </div>
+                          <div>
+                            <div class="flex justify-between mb-1"><span class="font-bold text-blue-700">🥈 Khá: ${kha} HS</span><span>${Math.round((kha/total)*100)}%</span></div>
+                            <div class="w-full bg-slate-200 h-2 rounded-full overflow-hidden"><div class="bg-blue-500 h-full" style="width: ${(kha/total)*100}%"></div></div>
+                          </div>
+                        </div>
+                      `}
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          ` : `
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4 text-xs">
+              <h2 class="font-extrabold text-slate-800 text-base">⚙️ Quản Lý Hệ Thống</h2>
+              <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 space-y-3">
+                <h3 class="font-bold text-slate-800 uppercase tracking-wider">🔒 Khóa / Mở Thời Hạn Nhập Điểm</h3>
+                ${state.semesters.map(s => `
+                  <div class="flex justify-between items-center bg-white p-3 rounded-lg border border-slate-200">
+                    <div>
+                      <div class="font-bold text-slate-800">${s.name} (${s.academicYear})</div>
+                      <div class="text-[11px] text-slate-500">Hạn chót: ${s.entryDeadline}</div>
+                    </div>
+                    <button onclick="toggleSemesterLock('${s.id}')" class="px-3 py-1.5 rounded-lg font-bold transition ${s.isLocked ? 'bg-red-100 text-red-700':'bg-emerald-100 text-emerald-700'}">
+                      ${s.isLocked ? '🔒 ĐANG KHÓA (Bấm để Mở)' : '🔓 ĐANG MỞ (Bấm để Khóa)'}
+                    </button>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    // --- TEACHER DASHBOARD ---
+    function renderTeacherDashboard() {
+      const activeSem = state.semesters.find(s => s.id === state.activeSemesterId) || state.semesters[0];
+      const curTeacher = state.teachers.find(t => t.id === state.currentUser?.teacherId) || state.teachers[0];
+      const isLocked = activeSem.isLocked;
+
+      const curClass = state.classes.find(c => c.id === state.teacherSelectedClassId) || state.classes[0];
+      const curSub = state.subjects.find(s => s.id === state.teacherSelectedSubjectId) || state.subjects[0];
+      const classSts = state.students.filter(s => s.classId === curClass.id);
+
+      return `
+        <div class="space-y-4">
+          <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-3">
+            <div class="w-12 h-12 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center text-2xl font-bold">👩‍🏫</div>
+            <div>
+              <h2 class="font-extrabold text-slate-800 text-base">${curTeacher.name}</h2>
+              <p class="text-xs text-slate-500">Mã GV: <strong>${curTeacher.code}</strong> | Lớp phụ trách: <strong>${curClass.name}</strong></p>
+            </div>
+          </div>
+
+          ${isLocked ? `<div class="bg-red-100 border border-red-300 text-red-800 p-3 rounded-xl text-xs font-bold text-center">🔒 HẠN NHẬP ĐIỂM ĐÃ BỊ KHÓA BỞI BAN GIÁM HIỆU</div>` : ''}
+
+          <div class="flex bg-white rounded-xl p-1 shadow-sm border border-slate-200">
+            <button onclick="setTeacherTab('grades')" class="flex-1 py-2 rounded-lg text-xs font-bold transition ${state.teacherTab==='grades'?'bg-emerald-600 text-white shadow':'text-slate-600'}">📝 Nhập Điểm</button>
+            <button onclick="setTeacherTab('remarks')" class="flex-1 py-2 rounded-lg text-xs font-bold transition ${state.teacherTab==='remarks'?'bg-emerald-600 text-white shadow':'text-slate-600'}">💬 Ghi Nhận Xét GVCN</button>
+          </div>
+
+          ${state.teacherTab === 'grades' ? `
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+              <h3 class="font-bold text-slate-800 text-sm">Lớp ${curClass.name} - Môn ${curSub.name}</h3>
+              <div class="space-y-3">
+                ${classSts.map(st => {
+                  const gr = state.grades.find(g => g.studentId === st.id && g.subjectId === curSub.id && g.semesterId === activeSem.id);
+                  return `
+                    <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 space-y-3 text-xs">
+                      <div class="flex justify-between items-center border-b pb-2 font-bold">
+                        <span>${st.name} (${st.code})</span>
+                        <span class="text-emerald-700 text-base">ĐTB Môn: ${gr?.dtb !== undefined ? gr.dtb.toFixed(1) : 'N/A'}</span>
+                      </div>
+
+                      <div class="grid grid-cols-4 gap-2 text-center">
+                        <div><label class="block text-[10px] text-slate-400">TX1</label><input type="number" step="0.1" id="tx1_${st.id}" ${isLocked?'disabled':''} value="${gr?.tx1??''}" class="w-full text-center border p-1 rounded font-bold bg-white" placeholder="0-10"/></div>
+                        <div><label class="block text-[10px] text-slate-400">TX2</label><input type="number" step="0.1" id="tx2_${st.id}" ${isLocked?'disabled':''} value="${gr?.tx2??''}" class="w-full text-center border p-1 rounded font-bold bg-white" placeholder="0-10"/></div>
+                        <div><label class="block text-[10px] text-amber-700 font-bold">GK</label><input type="number" step="0.1" id="gk_${st.id}" ${isLocked?'disabled':''} value="${gr?.gk??''}" class="w-full text-center border border-amber-300 p-1 rounded font-bold bg-amber-50" placeholder="0-10"/></div>
+                        <div><label class="block text-[10px] text-blue-700 font-bold">CK</label><input type="number" step="0.1" id="ck_${st.id}" ${isLocked?'disabled':''} value="${gr?.ck??''}" class="w-full text-center border border-blue-300 p-1 rounded font-bold bg-blue-50" placeholder="0-10"/></div>
+                      </div>
+
+                      ${!isLocked ? `<button onclick="saveStudentGrade('${st.id}')" class="w-full bg-emerald-600 text-white font-bold py-1.5 rounded-lg">💾 Lưu Điểm Học Sinh</button>` : ''}
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+            </div>
+          ` : `
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4 text-xs">
+              <h3 class="font-bold text-slate-800 text-sm">Ghi Nhận Xét Cho Lớp ${curClass.name}</h3>
+              ${classSts.map(st => {
+                const rem = state.remarks.find(r => r.studentId === st.id && r.semesterId === activeSem.id);
+                return `
+                  <div class="border border-slate-200 rounded-xl p-4 bg-slate-50 space-y-2">
+                    <div class="font-bold text-slate-800 text-sm">${st.name} (${st.code})</div>
+                    <textarea id="rem_${st.id}" rows="2" class="w-full p-2 border rounded-lg bg-white" placeholder="Nhập nhận xét của GVCN...">${rem?.homeroomRemark || ''}</textarea>
+                    <button onclick="saveStudentRemark('${st.id}')" class="w-full bg-emerald-600 text-white font-bold py-1.5 rounded-lg">💾 Lưu Nhận Xét</button>
+                  </div>
+                `;
+              }).join('')}
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    // --- STUDENT & PARENT DASHBOARD ---
+    function renderStudentDashboard() {
+      const activeSem = state.semesters.find(s => s.id === state.activeSemesterId) || state.semesters[0];
+      const curSt = state.students.find(s => s.id === state.currentUser?.studentId) || state.students[0];
+      const curClass = state.classes.find(c => c.id === curSt.classId) || state.classes[0];
+      const gpa = getStudentGPA(curSt.id, activeSem.id);
+      const rank = getAcademicClassification(gpa);
+      const stGrades = getStudentGrades(curSt.id, activeSem.id);
+      const stRemark = state.remarks.find(r => r.studentId === curSt.id && r.semesterId === activeSem.id);
+
+      const curTimetable = state.timetables.filter(t => t.classId === curSt.classId && t.dayOfWeek === state.studentSelectedDay);
+
+      return `
+        <div class="space-y-4">
+          <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded-full bg-amber-100 text-amber-800 flex items-center justify-center text-2xl font-bold">🎓</div>
+              <div>
+                <h2 class="font-black text-slate-800 text-lg">${curSt.name}</h2>
+                <p class="text-xs text-slate-500">Mã HS: <strong class="text-sky-700">${curSt.code}</strong> | Lớp: <strong>${curClass.name}</strong></p>
+              </div>
+            </div>
+            <button onclick="window.print()" class="no-print bg-slate-800 text-white text-xs font-bold px-3 py-2 rounded-xl">🖨️ In Học Bạ</button>
+          </div>
+
+          <div class="flex bg-white rounded-xl p-1 shadow-sm border border-slate-200 no-print">
+            <button onclick="setStudentTab('hocba')" class="flex-1 py-2 rounded-lg text-xs font-bold transition ${state.studentTab==='hocba'?'bg-sky-600 text-white shadow':'text-slate-600'}">📜 Sổ Học Bạ Điện Tử</button>
+            <button onclick="setStudentTab('timetable')" class="flex-1 py-2 rounded-lg text-xs font-bold transition ${state.studentTab==='timetable'?'bg-sky-600 text-white shadow':'text-slate-600'}">📅 Thời Khóa Biểu</button>
+          </div>
+
+          ${state.studentTab === 'hocba' ? `
+            <div class="space-y-4">
+              <div class="bg-sky-700 text-white p-5 rounded-2xl shadow-lg space-y-3">
+                <div class="flex justify-between items-center border-b border-sky-500 pb-2">
+                  <h3 class="font-extrabold text-sm">🏆 TỔNG HỢP HỌC LỰC & HẠNH KIỂM</h3>
+                  <span class="text-xs text-sky-200">${activeSem.name} (${activeSem.academicYear})</span>
+                </div>
+                <div class="grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <div class="text-[10px] text-sky-200 uppercase font-bold">ĐTB Tất cả môn</div>
+                    <div class="text-2xl font-black">${gpa !== undefined ? gpa.toFixed(1) : 'N/A'}</div>
+                  </div>
+                  <div>
+                    <div class="text-[10px] text-sky-200 uppercase font-bold mb-1">Xếp loại</div>
+                    <span class="px-2 py-0.5 rounded text-xs font-extrabold ${rank==='Giỏi'?'bg-emerald-100 text-emerald-800':'bg-blue-100 text-blue-800'}">${rank}</span>
+                  </div>
+                  <div>
+                    <div class="text-[10px] text-sky-200 uppercase font-bold mb-1">Hạnh kiểm</div>
+                    <span class="px-2 py-0.5 rounded text-xs font-extrabold bg-indigo-100 text-indigo-800">${stRemark?.conduct || curSt.conduct || 'Tốt'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3 text-xs">
+                <h3 class="font-extrabold text-slate-800 text-sm">📚 Bảng Điểm Chi Tiết Các Môn Học</h3>
+                <div class="space-y-3">
+                  ${state.subjects.map(sub => {
+                    const gr = stGrades.find(g => g.subjectId === sub.id);
+                    return `
+                      <div class="border border-slate-200 rounded-xl p-3.5 bg-slate-50 space-y-2">
+                        <div class="flex justify-between items-center border-b pb-1">
+                          <span class="font-bold text-slate-800">${sub.name} (${sub.code})</span>
+                          <span class="font-black text-sky-700 text-sm">ĐTB: ${gr?.dtb !== undefined ? gr.dtb.toFixed(1) : '-'}</span>
+                        </div>
+                        <div class="grid grid-cols-6 gap-1 text-center font-bold text-[11px]">
+                          <div class="bg-white p-1 rounded border">TX1: ${gr?.tx1??'-'}</div>
+                          <div class="bg-white p-1 rounded border">TX2: ${gr?.tx2??'-'}</div>
+                          <div class="bg-white p-1 rounded border">TX3: ${gr?.tx3??'-'}</div>
+                          <div class="bg-white p-1 rounded border">TX4: ${gr?.tx4??'-'}</div>
+                          <div class="bg-amber-50 text-amber-800 p-1 rounded border">GK: ${gr?.gk??'-'}</div>
+                          <div class="bg-blue-50 text-blue-800 p-1 rounded border">CK: ${gr?.ck??'-'}</div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')}
+                </div>
+              </div>
+
+              <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-2 text-xs">
+                <h3 class="font-extrabold text-slate-800 text-sm">💬 Nhận Xét Của Giáo Viên Chủ Nhiệm</h3>
+                <p class="italic text-slate-800 bg-slate-50 p-3 rounded-xl border border-slate-200">"${stRemark?.homeroomRemark || 'Chưa có nhận xét.'}"</p>
+              </div>
+            </div>
+          ` : `
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4 text-xs">
+              <h3 class="font-extrabold text-slate-800 text-sm">📅 Thời Khóa Biểu - Lớp ${curClass.name}</h3>
+              <div class="flex gap-2 overflow-x-auto">
+                ${['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'].map(d => `
+                  <button onclick="setStudentDay('${d}')" class="px-3 py-1.5 rounded-full font-bold whitespace-nowrap ${state.studentSelectedDay===d?'bg-sky-600 text-white':'bg-slate-100 text-slate-600'}">${d}</button>
+                `).join('')}
+              </div>
+
+              <div class="space-y-2">
+                ${curTimetable.length === 0 ? `<p class="text-slate-400 italic">Không có tiết học nào.</p>` : 
+                  curTimetable.map(slot => {
+                    const sub = state.subjects.find(s => s.id === slot.subjectId);
+                    const t = state.teachers.find(x => x.id === slot.teacherId);
+                    return `
+                      <div class="border border-slate-200 rounded-xl p-3 flex items-center gap-3 bg-slate-50">
+                        <div class="w-12 h-10 bg-sky-600 text-white rounded-lg flex flex-col items-center justify-center font-bold">
+                          <span>Tiết ${slot.period}</span>
+                        </div>
+                        <div>
+                          <div class="font-bold text-slate-800 text-sm">${sub?.name}</div>
+                          <div class="text-slate-500">Phòng: ${slot.room} | GV: ${t?.name}</div>
+                        </div>
+                      </div>
+                    `;
+                  }).join('')
+                }
+              </div>
+            </div>
+          `}
+        </div>
+      `;
+    }
+
+    // --- USER EVENT HANDLERS ---
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const u = document.getElementById('loginUsername').value;
+      const p = document.getElementById('loginPassword').value;
+      const user = state.users.find(x => x.username.toLowerCase() === u.trim().toLowerCase());
+      if (user && (!p || user.password === p)) {
+        state.currentUser = user;
+        renderApp();
+      } else {
+        const err = document.getElementById('loginError');
+        err.innerText = 'Tên đăng nhập hoặc mật khẩu không chính xác';
+        err.classList.remove('hidden');
+      }
+    }
+
+    function handleLogout() {
+      state.currentUser = null;
+      renderApp();
+    }
+
+    function quickSwitchUser(userId) {
+      const user = state.users.find(x => x.id === userId);
+      if (user) {
+        state.currentUser = user;
+        closeRoleModal();
+        renderApp();
+      }
+    }
+
+    function openRoleModal() {
+      const list = document.getElementById('roleModalUserList');
+      list.innerHTML = state.users.map(u => {
+        const b = getRoleInfo(u.role);
+        return `
+          <button onclick="quickSwitchUser('${u.id}')" class="w-full text-left p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-sky-50 flex items-center gap-3">
+            <span class="text-2xl">${b.emoji}</span>
+            <div>
+              <div class="font-bold text-slate-800 text-xs">${u.name}</div>
+              <div class="text-[11px] text-slate-500">${b.label} • tk: ${u.username}</div>
+            </div>
+          </button>
+        `;
+      }).join('');
+      document.getElementById('roleModal').classList.remove('hidden');
+    }
+
+    function closeRoleModal() {
+      document.getElementById('roleModal').classList.add('hidden');
+    }
+
+    function setAdminTab(tab) {
+      state.adminTab = tab;
+      renderApp();
+    }
+
+    function setAdminClass(clsId) {
+      state.adminSelectedClassId = clsId;
+      renderApp();
+    }
+
+    function setAdminSearch(q) {
+      state.adminSearchQuery = q;
+      renderApp();
+    }
+
+    function toggleSemesterLock(semId) {
+      const sem = state.semesters.find(s => s.id === semId);
+      if (sem) {
+        sem.isLocked = !sem.isLocked;
+        renderApp();
+      }
+    }
+
+    function setTeacherTab(tab) {
+      state.teacherTab = tab;
+      renderApp();
+    }
+
+    function saveStudentGrade(stId) {
+      const tx1 = parseFloat(document.getElementById('tx1_' + stId)?.value);
+      const tx2 = parseFloat(document.getElementById('tx2_' + stId)?.value);
+      const gk = parseFloat(document.getElementById('gk_' + stId)?.value);
+      const ck = parseFloat(document.getElementById('ck_' + stId)?.value);
+
+      const activeSem = state.semesters.find(s => s.id === state.activeSemesterId) || state.semesters[0];
+      const curSub = state.subjects.find(s => s.id === state.teacherSelectedSubjectId) || state.subjects[0];
+
+      const idx = state.grades.findIndex(g => g.studentId === stId && g.subjectId === curSub.id && g.semesterId === activeSem.id);
+      const dtbVal = computeDTB(tx1, tx2, undefined, undefined, gk, ck);
+
+      if (idx >= 0) {
+        state.grades[idx] = { ...state.grades[idx], tx1, tx2, gk, ck, dtb: dtbVal };
+      } else {
+        state.grades.push({ id: 'g_' + Date.now(), studentId: stId, subjectId: curSub.id, semesterId: activeSem.id, tx1, tx2, gk, ck, dtb: dtbVal });
+      }
+
+      alert('Đã lưu điểm thành công!');
+      renderApp();
+    }
+
+    function saveStudentRemark(stId) {
+      const txt = document.getElementById('rem_' + stId)?.value;
+      const activeSem = state.semesters.find(s => s.id === state.activeSemesterId) || state.semesters[0];
+      const idx = state.remarks.findIndex(r => r.studentId === stId && r.semesterId === activeSem.id);
+      if (idx >= 0) {
+        state.remarks[idx].homeroomRemark = txt;
+      } else {
+        state.remarks.push({ id: 'rem_' + Date.now(), studentId: stId, semesterId: activeSem.id, homeroomRemark: txt, conduct: 'Tốt', updatedAt: new Date().toLocaleDateString('vi-VN') });
+      }
+      alert('Đã lưu nhận xét thành công!');
+      renderApp();
+    }
+
+    function setStudentTab(tab) {
+      state.studentTab = tab;
+      renderApp();
+    }
+
+    function setStudentDay(day) {
+      state.studentSelectedDay = day;
+      renderApp();
+    }
+
+    // INITIAL LAUNCH
+    renderApp();
+  </script>
+</body>
+</html>

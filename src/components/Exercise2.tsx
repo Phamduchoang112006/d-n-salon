@@ -33,7 +33,8 @@ const Exercise2 = () => {
     { value: 'compare', label: 'So sánh', symbol: 'a & b' },
   ];
 
-  const handleCalculate = () => {
+  const handleCalculate = (op: Operation = selectedOp) => {
+    Keyboard.dismiss();
     setError('');
     setResult('');
 
@@ -50,7 +51,7 @@ const Exercise2 = () => {
       return;
     }
 
-    switch (selectedOp) {
+    switch (op) {
       case 'add':
         setResult(`Tổng: ${a} + ${b} = ${parseFloat((a + b).toFixed(10))}`);
         break;
@@ -133,8 +134,7 @@ const Exercise2 = () => {
                   ]}
                   onPress={() => {
                     setSelectedOp(option.value);
-                    setResult('');
-                    setError('');
+                    handleCalculate(option.value);
                   }}
                   activeOpacity={0.7}
                 >
@@ -164,7 +164,7 @@ const Exercise2 = () => {
 
         <TouchableOpacity
           style={styles.calculateBtn}
-          onPress={handleCalculate}
+          onPress={() => handleCalculate()}
           activeOpacity={0.8}
         >
           <Text style={styles.calculateBtnText}>TÍNH KẾT QUẢ</Text>

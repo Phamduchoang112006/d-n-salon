@@ -1,0 +1,1816 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Quản Trị & Vận Hành Cho Thuê Sách Enterprise</title>
+    
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- React 18 & Babel Local Assets -->
+    <script src="assets/react.development.js"></script>
+    <script src="assets/react-dom.development.js"></script>
+    <script src="assets/babel.min.js"></script>
+    <script>
+        window.addEventListener('error', function(e) {
+            console.error('Global Error caught:', e);
+            var root = document.getElementById('root');
+            if (root && root.innerHTML.includes('Đang Khởi Chạy')) {
+                root.innerHTML = '<div style="padding: 40px; text-align: center; font-family: system-ui, sans-serif;"><div style="background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 20px; border-radius: 12px; max-width: 600px; margin: 0 auto; text-align: left;"><h3 style="margin-top:0;">⚠️ Lỗi Khởi Chạy Trình Duyệt:</h3><p><b>' + (e.message || 'Lỗi tải Script') + '</b></p><p style="font-size:0.85rem; color:#b91c1c;">Vui lòng nhấn tổ hợp phím <b>Ctrl + F5</b> hoặc thử mở trên cửa sổ Ẩn danh (Incognito Window) để tải lại bản mới nhất.</p></div></div>';
+            }
+        });
+    </script>
+
+    <!-- Custom Modern UI CSS -->
+    <link rel="stylesheet" href="library_style.css">
+
+    <style>
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15,23,42,0.65);
+            backdrop-filter: blur(5px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2000; padding: 20px;
+        }
+        .modal-card {
+            background: #ffffff;
+            border-radius: 16px;
+            width: 100%; max-width: 680px;
+            max-height: 90vh; overflow-y: auto;
+            padding: 24px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+        .modal-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding-bottom: 16px; border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+        .modal-header h3 { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
+        .close-btn { background: none; border: none; font-size: 1.4rem; color: var(--text-muted); cursor: pointer; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        .form-group { margin-bottom: 16px; }
+        .form-group.full { grid-column: span 2; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-primary); margin-bottom: 6px; }
+        .form-control { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: var(--radius-md); font-size: 0.9rem; transition: border-color 0.2s; }
+        .form-control:focus { outline: none; border-color: var(--primary); }
+        .table-responsive { width: 100%; overflow-x: auto; background: #fff; border-radius: 16px; border: 1px solid var(--border-color); }
+        .custom-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+        .custom-table th { background: #f8fafc; padding: 14px 18px; font-weight: 700; color: var(--text-muted); border-bottom: 1px solid var(--border-color); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+        .custom-table td { padding: 14px 18px; border-bottom: 1px solid #f1f5f9; color: var(--text-primary); vertical-align: middle; }
+        .custom-table tr:hover { background-color: #f8fafc; }
+        .book-thumb { width: 44px; height: 56px; object-fit: cover; border-radius: 6px; }
+        .badge { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+        .badge-success { background: #d1fae5; color: #065f46; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+        .badge-info { background: #e0f2fe; color: #075985; }
+        .btn-group { display: flex; gap: 8px; }
+
+        /* ANALYTICS CHARTS CSS */
+        .chart-bar-container { display: flex; align-items: flex-end; gap: 16px; height: 160px; padding: 20px 0; border-bottom: 2px solid #e2e8f0; margin-bottom: 16px; }
+        .chart-bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .chart-bar-wrapper { display: flex; gap: 6px; align-items: flex-end; height: 120px; width: 100%; justify-content: center; }
+        .chart-bar { width: 18px; border-radius: 6px 6px 0 0; transition: height 0.5s ease; }
+        .chart-bar.borrow { background: #3b82f6; }
+        .chart-bar.return { background: #10b981; }
+
+        .rbac-badge-pill {
+            padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; font-family: 'Inter', system-ui, sans-serif; color: #3b82f6;">
+            <div style="width: 52px; height: 52px; border: 4px solid #e0f2fe; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 20px;"></div>
+            <h3 style="font-weight: 800; font-size: 1.2rem; color: #1e293b;">Đang Khởi Chạy Cổng Quản Trị Enterprise...</h3>
+            <p style="color: #64748b; font-size: 0.9rem; margin-top: 6px;">Vui lòng chờ trong giây lát</p>
+        </div>
+        <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+    </div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const API_BASE = 'library_api.php';
+
+        function BookCover({ src, title, author, category, style, className }) {
+            const [imgError, setImgError] = useState(false);
+
+            useEffect(() => {
+                setImgError(false);
+            }, [src]);
+
+            const isDataUri = src && src.startsWith('data:image');
+            
+            if (src && !imgError && !isDataUri) {
+                return (
+                    <img 
+                        src={src} 
+                        className={className} 
+                        style={{
+                            width: '44px',
+                            height: '56px',
+                            objectFit: 'contain',
+                            background: '#ffffff',
+                            borderRadius: '6px',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                            ...style
+                        }} 
+                        alt={title} 
+                        onError={() => setImgError(true)} 
+                    />
+                );
+            }
+
+            let bgGrad = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
+            let iconClass = 'fas fa-book-open';
+            let catBadge = 'THƯ VIỆN SỐ';
+
+            const cleanCat = String(category || '');
+            if (cleanCat.includes('Truyện') || cleanCat.includes('Manga') || cleanCat.includes('Comic')) {
+                bgGrad = 'linear-gradient(135deg, #db2777 0%, #831843 100%)';
+                iconClass = 'fas fa-paint-brush';
+                catBadge = 'MANGA & COMIC';
+            } else if (cleanCat.includes('Công Nghệ') || cleanCat.includes('Lập Trình') || cleanCat.includes('IT')) {
+                bgGrad = 'linear-gradient(135deg, #0f172a 0%, #0284c7 100%)';
+                iconClass = 'fas fa-laptop-code';
+                catBadge = 'CÔNG NGHỆ IT';
+            } else if (cleanCat.includes('Kỹ Năng') || cleanCat.includes('Kinh Tế')) {
+                bgGrad = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+                iconClass = 'fas fa-bolt';
+                catBadge = 'KỸ NĂNG & KINH TẾ';
+            } else if (cleanCat.includes('Tiểu Thuyết') || cleanCat.includes('Trinh Thám')) {
+                bgGrad = 'linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%)';
+                iconClass = 'fas fa-search-location';
+                catBadge = 'TIỂU THUYẾT';
+            }
+
+            return (
+                <div 
+                    className={className} 
+                    style={{
+                        background: bgGrad,
+                        borderRadius: '8px',
+                        position: 'relative',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justify: 'center',
+                        padding: '4px',
+                        color: '#ffffff',
+                        boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
+                        boxSizing: 'border-box',
+                        overflow: 'hidden',
+                        userSelect: 'none',
+                        textAlign: 'center',
+                        ...style
+                    }}
+                >
+                    <div style={{fontSize: '1rem', marginBottom: '2px'}}><i className={iconClass}></i></div>
+                    <div style={{fontSize: '0.55rem', fontWeight: 800, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%'}}>{title}</div>
+                </div>
+            );
+        }
+
+        function getSVGBookCover(title, author, category) {
+            const cleanTitle = String(title || 'Sách Thư Viện').replace(/[<>&"]/g, '');
+            const cleanAuthor = String(author || 'Tác giả').replace(/[<>&"]/g, '');
+            const cleanCategory = String(category || 'Sách').replace(/[<>&"]/g, '');
+
+            let bgGrad = ['#3b82f6', '#1d4ed8'];
+            let icon = '📖';
+            let catBadge = 'THƯ VIỆN SỐ';
+
+            if (cleanCategory.includes('Truyện') || cleanCategory.includes('Manga') || cleanCategory.includes('Comic')) {
+                bgGrad = ['#ec4899', '#831843'];
+                icon = '🎨';
+                catBadge = 'MANGA & COMIC';
+            } else if (cleanCategory.includes('Công Nghệ') || cleanCategory.includes('Lập Trình') || cleanCategory.includes('IT')) {
+                bgGrad = ['#0f172a', '#0284c7'];
+                icon = '💻';
+                catBadge = 'CÔNG NGHỆ IT';
+            } else if (cleanCategory.includes('Kỹ Năng') || cleanCategory.includes('Kinh Tế')) {
+                bgGrad = ['#10b981', '#047857'];
+                icon = '⚡';
+                catBadge = 'KỸ NĂNG & KINH TẾ';
+            } else if (cleanCategory.includes('Tiểu Thuyết') || cleanCategory.includes('Trinh Thám')) {
+                bgGrad = ['#8b5cf6', '#4c1d95'];
+                icon = '🔍';
+                catBadge = 'TIỂU THUYẾT';
+            }
+
+            const words = cleanTitle.split(' ');
+            const lines = [];
+            let currentLine = '';
+            words.forEach(w => {
+                if ((currentLine + ' ' + w).length > 16) {
+                    if (currentLine) lines.push(currentLine.trim());
+                    currentLine = w;
+                } else {
+                    currentLine += ' ' + w;
+                }
+            });
+            if (currentLine.trim()) lines.push(currentLine.trim());
+            const finalLines = lines.slice(0, 4);
+
+            const titleY = 200 - (finalLines.length * 10);
+            const titleXml = finalLines.map((l, idx) => `<text x="150" y="${titleY + (idx * 24)}" fill="#ffffff" font-size="15" font-weight="bold" font-family="sans-serif" text-anchor="middle">${l}</text>`).join('');
+
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="420" viewBox="0 0 300 420">
+                <defs>
+                    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="${bgGrad[0]}"/>
+                        <stop offset="100%" stop-color="${bgGrad[1]}"/>
+                    </linearGradient>
+                    <linearGradient id="spine" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35"/>
+                        <stop offset="100%" stop-color="#000000" stop-opacity="0.2"/>
+                    </linearGradient>
+                </defs>
+                <rect width="300" height="420" rx="12" fill="url(#bg)"/>
+                <rect x="0" y="0" width="18" height="420" fill="url(#spine)"/>
+                <rect x="30" y="24" width="240" height="372" rx="8" fill="none" stroke="#ffffff" stroke-opacity="0.25" stroke-width="2"/>
+                <rect x="45" y="45" width="140" height="24" rx="12" fill="#ffffff" fill-opacity="0.2"/>
+                <text x="115" y="61" fill="#ffffff" font-size="11" font-weight="bold" font-family="sans-serif" text-anchor="middle" letter-spacing="1">${catBadge}</text>
+                <text x="150" y="135" font-size="48" text-anchor="middle">${icon}</text>
+                ${titleXml}
+                <line x1="60" y1="340" x2="240" y2="340" stroke="#ffffff" stroke-opacity="0.3" stroke-width="1"/>
+                <text x="150" y="365" fill="#f8fafc" font-size="12" font-weight="600" font-family="sans-serif" text-anchor="middle">Tác giả: ${cleanAuthor.slice(0, 24)}</text>
+                <text x="150" y="390" fill="#93c5fd" font-size="10" font-family="sans-serif" text-anchor="middle">★ THƯ VIỆN SỐ ENTERPRISE ★</text>
+            </svg>`;
+
+            return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+        }
+
+        function handleCoverError(e, title, author, category) {
+            e.target.onerror = null;
+            e.target.src = getSVGBookCover(title, author, category);
+        }
+
+        function AdminApp() {
+            const [currentAdmin, setCurrentAdmin] = useState(null);
+            const [activeTab, setActiveTab] = useState('dashboard');
+            
+            // 3-Tier RBAC Role State ('super_admin', 'librarian', 'cataloger')
+            const [adminRole, setAdminRole] = useState('super_admin');
+
+            // Data states
+            const [stats, setStats] = useState(null);
+            const [books, setBooks] = useState([]);
+            const [categories, setCategories] = useState([]);
+            const [physicalCopies, setPhysicalCopies] = useState([]);
+            const [readers, setReaders] = useState([]);
+            const [borrows, setBorrows] = useState([]);
+            const [webReservations, setWebReservations] = useState([]);
+            const [donations, setDonations] = useState([]);
+            const [analytics, setAnalytics] = useState(null);
+
+            // ADMIN LIVE CHAT STATE
+            const [conversations, setConversations] = useState([]);
+            const [selectedReaderChat, setSelectedReaderChat] = useState(null);
+            const [adminChatMessages, setAdminChatMessages] = useState([]);
+            const [adminChatInput, setAdminChatInput] = useState('');
+
+            const [searchQuery, setSearchQuery] = useState('');
+            const [filterCategory, setFilterCategory] = useState('');
+
+            // Modals State
+            const [showAdminLogin, setShowAdminLogin] = useState(false);
+            const [adminLoginForm, setAdminLoginForm] = useState({ username: 'admin', password: '123' });
+
+            const [showBookModal, setShowBookModal] = useState(false);
+            const [editingBook, setEditingBook] = useState(null);
+            const [bookForm, setBookForm] = useState({
+                ma_sach: '', ten_sach: '', tac_gia: '', category_id: 1,
+                nha_xuat_ban: 'NXB Kim Đồng', nam_xuat_ban: 2023, gia_bia: 50000,
+                gia_thue_ngay: 3000, so_luong: 5, hinh_anh: '', isbn: '', mo_ta: ''
+            });
+
+            const [isbnInput, setIsbnInput] = useState('9780132350884');
+            const [isFetchingIsbn, setIsFetchingIsbn] = useState(false);
+
+            // Batch Import & Issue Member Card Modals
+            const [showBatchImportModal, setShowBatchImportModal] = useState(false);
+            const [batchJsonText, setBatchJsonText] = useState('');
+
+            const [showIssueCardModal, setShowIssueCardModal] = useState(false);
+            const [issueCardForm, setIssueCardForm] = useState({ ho_ten: '', email: '', so_dien_thoai: '', loai_doc_gia: 'Thẻ VIP Gold' });
+
+            const [showCategoryModal, setShowCategoryModal] = useState(false);
+            const [categoryForm, setCategoryForm] = useState({ ma_danh_muc: '', ten_danh_muc: '', mo_ta: '' });
+
+            const [showBarcodeModal, setShowBarcodeModal] = useState(false);
+            const [barcodeForm, setBarcodeForm] = useState({ book_id: 1, barcode: '', tu_ke_kho: 'Kệ A1-Tủ 01', tinh_trang_hao_mon: 'Mới 99%' });
+
+            const [showTopupModal, setShowTopupModal] = useState(null);
+            const [topupAmount, setTopupAmount] = useState(100000);
+
+            // Check-in Scanner State
+            const [scanBarcode, setScanBarcode] = useState('');
+            const [scanDamageLevel, setScanDamageLevel] = useState('Bình thường');
+            const [scanFine, setScanFine] = useState(0);
+
+            useEffect(() => {
+                const savedAdmin = localStorage.getItem('admin_user');
+                if (savedAdmin) {
+                    try { setCurrentAdmin(JSON.parse(savedAdmin)); } catch (e) {}
+                } else {
+                    setShowAdminLogin(true);
+                }
+
+                refreshAllData();
+            }, []);
+
+            useEffect(() => {
+                fetchBooks();
+            }, [searchQuery, filterCategory]);
+
+            const refreshAllData = () => {
+                fetchStats();
+                fetchBooks();
+                fetchCategories();
+                fetchReaders();
+                fetchBorrows();
+                fetchWebReservations();
+                fetchDonations();
+                fetchAnalytics();
+            };
+
+            const fetchStats = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=stats`);
+                    const json = await res.json();
+                    if (json.status === 'success') {
+                        setStats(json.data.stats);
+                        setPhysicalCopies(json.data.physical_copies);
+                    }
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchBooks = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_books&search=${encodeURIComponent(searchQuery)}&category_id=${filterCategory}`);
+                    const json = await res.json();
+                    if (json.status === 'success') setBooks(json.data.books);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchCategories = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_categories`);
+                    const json = await res.json();
+                    if (json.status === 'success') setCategories(json.data.categories);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchReaders = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_readers`);
+                    const json = await res.json();
+                    if (json.status === 'success') setReaders(json.data.readers);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchBorrows = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_orders`);
+                    const json = await res.json();
+                    if (json.status === 'success') setBorrows(json.data.borrows);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchWebReservations = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_all_reservations`);
+                    const json = await res.json();
+                    if (json.status === 'success') setWebReservations(json.data.reservations);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchDonations = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_all_donations`);
+                    const json = await res.json();
+                    if (json.status === 'success') setDonations(json.data.donations);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchAnalytics = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_admin_analytics`);
+                    const json = await res.json();
+                    if (json.status === 'success') setAnalytics(json.data);
+                } catch (e) { console.error(e); }
+            };
+
+            // LIVE CHAT POLLING & API HANDLERS
+            useEffect(() => {
+                let interval;
+                fetchChatConversations();
+                if (activeTab === 'chat') {
+                    interval = setInterval(() => {
+                        fetchChatConversations();
+                        if (selectedReaderChat) {
+                            fetchAdminChatMessages(selectedReaderChat.reader_id);
+                        }
+                    }, 3000);
+                }
+                return () => { if (interval) clearInterval(interval); };
+            }, [activeTab, selectedReaderChat]);
+
+            const fetchChatConversations = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_chat_conversations`);
+                    const json = await res.json();
+                    if (json.status === 'success') {
+                        const list = json.data.conversations || [];
+                        setConversations(list);
+                        if (!selectedReaderChat && list.length > 0) {
+                            setSelectedReaderChat(list[0]);
+                            fetchAdminChatMessages(list[0].reader_id);
+                        }
+                    }
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchAdminChatMessages = async (readerId) => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_chat_messages&reader_id=${readerId}&is_admin=1`);
+                    const json = await res.json();
+                    if (json.status === 'success') setAdminChatMessages(json.data.messages || []);
+                } catch (e) { console.error(e); }
+            };
+
+            const handleSendAdminChatMessage = async (e) => {
+                e.preventDefault();
+                if (!selectedReaderChat) return alert('Vui lòng chọn độc giả để gửi tin nhắn!');
+                if (!adminChatInput.trim()) return;
+
+                try {
+                    const res = await fetch(`${API_BASE}?action=send_chat_message`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            reader_id: selectedReaderChat.reader_id,
+                            sender_type: 'admin',
+                            message_text: adminChatInput.trim()
+                        })
+                    });
+                    const json = await res.json();
+                    if (json.status === 'success') {
+                        setAdminChatInput('');
+                        setAdminChatMessages(json.data.messages || []);
+                        fetchChatConversations();
+                    }
+                } catch (e) { alert('Lỗi gửi tin nhắn phản hồi'); }
+            };
+
+            const totalUnreadChat = conversations.reduce((acc, c) => acc + Number(c.unread_count || 0), 0);
+
+            // GOOGLE BOOKS ISBN AUTO-FETCH API HANDLER
+            const handleFetchGoogleBooksIsbn = async () => {
+                if (!isbnInput.trim()) return alert('Vui lòng nhập mã ISBN!');
+                setIsFetchingIsbn(true);
+                try {
+                    const res = await fetch(`${API_BASE}?action=fetch_google_books_isbn&isbn=${encodeURIComponent(isbnInput.trim())}`);
+                    const json = await res.json();
+                    setIsFetchingIsbn(false);
+                    if (json.status === 'success' && json.data.book) {
+                        const b = json.data.book;
+                        setBookForm(prev => ({
+                            ...prev,
+                            ten_sach: b.ten_sach || prev.ten_sach,
+                            tac_gia: b.tac_gia || prev.tac_gia,
+                            nha_xuat_ban: b.nha_xuat_ban || prev.nha_xuat_ban,
+                            nam_xuat_ban: b.nam_xuat_ban || prev.nam_xuat_ban,
+                            gia_bia: b.gia_bia || prev.gia_bia,
+                            hinh_anh: b.hinh_anh || prev.hinh_anh,
+                            mo_ta: b.mo_ta || prev.mo_ta,
+                            isbn: b.isbn || isbnInput
+                        }));
+                        alert(`✅ Đã kéo dữ liệu Google Books thành công cho cuốn: "${b.ten_sach}"!`);
+                    } else {
+                        alert(json.message || 'Không tìm thấy thông tin ISBN này.');
+                    }
+                } catch (e) {
+                    setIsFetchingIsbn(false);
+                    alert('Lỗi kết nối API Google Books!');
+                }
+            };
+
+            // APPROVE DONATION HANDLER
+            const handleApproveDonation = async (donationId) => {
+                if (!confirm('Xác nhận phê duyệt sách quyên góp này và cộng 50.000đ điểm thưởng vào Ví độc giả?')) return;
+                try {
+                    const res = await fetch(`${API_BASE}?action=approve_donation`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: donationId, bonus_wallet: 50000 })
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') fetchDonations();
+                } catch (e) { alert('Lỗi phê duyệt quyên góp'); }
+            };
+
+            // CSV EXPORT UTILITIES
+            const downloadCSV = (filename, csvContent) => {
+                const blob = new Blob(["\uFEFF" + csvContent], { type: 'text/csv;charset=utf-8;' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.setAttribute('download', filename);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            };
+
+            const exportBooksCSV = () => {
+                let csv = 'Mã Sách,Tên Sách,Tác Giả,Thể Loại,Giá Bìa,Phí Thuê/Ngày,Số Lượng,Còn Sẵn,Kệ Kho\n';
+                books.forEach(b => {
+                    csv += `"${b.ma_sach}","${b.ten_sach}","${b.tac_gia}","${b.ten_danh_muc}",${b.gia_bia},${b.gia_thue_ngay},${b.so_luong},${b.co_san},"${b.tu_ke_kho}"\n`;
+                });
+                downloadCSV('Bao_Cao_Kho_Sach.csv', csv);
+            };
+
+            const exportReadersCSV = () => {
+                let csv = 'Mã Độc Giả,Họ Và Tên,Email,Số Điện Thoại,Loại Thẻ,Số Dư Ví,Cọc Đóng Băng\n';
+                readers.forEach(r => {
+                    csv += `"${r.ma_doc_gia}","${r.ho_ten}","${r.email}","${r.so_dien_thoai}","${r.loai_doc_gia}",${r.so_du_vi},${r.tien_coc_dong_bang}\n`;
+                });
+                downloadCSV('Bao_Cao_Doc_Gia.csv', csv);
+            };
+
+            const exportDonationsCSV = () => {
+                let csv = 'ID,Tên Sách,Tác Giả,Thể Loại,Tình Trạng,Tên Độc Giả,Trạng Thái,Ngày Đăng Ký\n';
+                donations.forEach(d => {
+                    csv += `${d.id},"${d.ten_sach}","${d.tac_gia}","${d.danh_muc}","${d.tinh_trang}","${d.ho_ten}","${d.trang_thai}","${d.created_at}"\n`;
+                });
+                downloadCSV('Bao_Cao_Quyen_Gop.csv', csv);
+            };
+
+            // Auth Handler
+            const handleAdminLogin = async (e) => {
+                e.preventDefault();
+                try {
+                    const res = await fetch(`${API_BASE}?action=admin_login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(adminLoginForm)
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') {
+                        setCurrentAdmin(json.data.user);
+                        localStorage.setItem('admin_user', JSON.stringify(json.data.user));
+                        setShowAdminLogin(false);
+                    }
+                } catch (e) { alert('Lỗi hệ thống đăng nhập'); }
+            };
+
+            const handleAdminLogout = () => {
+                setCurrentAdmin(null);
+                localStorage.removeItem('admin_user');
+                setShowAdminLogin(true);
+            };
+
+            // Add/Edit Book Handler
+            const handleSaveBook = async (e) => {
+                e.preventDefault();
+                const action = editingBook ? 'update_book' : 'add_book';
+                const payload = editingBook ? { ...bookForm, id: editingBook.id } : bookForm;
+
+                try {
+                    const res = await fetch(`${API_BASE}?action=${action}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') {
+                        setShowBookModal(false);
+                        setEditingBook(null);
+                        fetchBooks();
+                        fetchStats();
+                    }
+                } catch (e) { alert('Lỗi lưu thông tin sách'); }
+            };
+
+            const handleDeleteBook = async (id) => {
+                if (adminRole === 'cataloger') return alert('Tài khoản Biên mục không có quyền xóa dữ liệu!');
+                if (!confirm('Bạn có chắc muốn xóa đầu sách này khỏi cơ sở dữ liệu?')) return;
+                try {
+                    const res = await fetch(`${API_BASE}?action=delete_book`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id })
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') { fetchBooks(); fetchStats(); }
+                } catch (e) { alert('Lỗi xóa sách'); }
+            };
+
+            const handleSaveCategory = async (e) => {
+                e.preventDefault();
+                try {
+                    const res = await fetch(`${API_BASE}?action=add_category`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(categoryForm)
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') {
+                        setShowCategoryModal(false);
+                        setCategoryForm({ ma_danh_muc: '', ten_danh_muc: '', mo_ta: '' });
+                        fetchCategories();
+                    }
+                } catch (e) { alert('Lỗi thêm danh mục'); }
+            };
+
+            const handleSaveBarcodeCopy = async (e) => {
+                e.preventDefault();
+                try {
+                    const res = await fetch(`${API_BASE}?action=add_barcode_copy`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(barcodeForm)
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') {
+                        setShowBarcodeModal(false);
+                        fetchStats();
+                    }
+                } catch (e) { alert('Lỗi thêm bản sao mã vạch'); }
+            };
+
+            const handleIssueMemberCard = async (e) => {
+                e.preventDefault();
+                try {
+                    const res = await fetch(`${API_BASE}?action=reader_register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...issueCardForm, password: '123' })
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') {
+                        setShowIssueCardModal(false);
+                        setIssueCardForm({ ho_ten: '', email: '', so_dien_thoai: '', loai_doc_gia: 'Thẻ VIP Gold' });
+                        fetchReaders();
+                        fetchStats();
+                    }
+                } catch (e) { alert('Lỗi cấp thẻ thành viên'); }
+            };
+
+            const handleManualTopup = async (e) => {
+                e.preventDefault();
+                if (!showTopupModal) return;
+                try {
+                    const res = await fetch(`${API_BASE}?action=wallet_topup`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reader_id: showTopupModal.id, so_tien: Number(topupAmount) })
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') {
+                        setShowTopupModal(null);
+                        fetchReaders();
+                    }
+                } catch (e) { alert('Lỗi nạp tiền ví'); }
+            };
+
+            // Check-in Scanner Handler
+            const handleScanCheckinReturn = async (e) => {
+                e.preventDefault();
+                if (!scanBarcode.trim()) return alert('Vui lòng nhập hoặc quét mã vạch Barcode!');
+
+                try {
+                    const res = await fetch(`${API_BASE}?action=checkin_return_barcode`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            barcode: scanBarcode.trim(),
+                            tinh_trang_tra: scanDamageLevel,
+                            tien_phat_tra_tre: Number(scanFine)
+                        })
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') {
+                        setScanBarcode('');
+                        setScanFine(0);
+                        refreshAllData();
+                    }
+                } catch (e) { alert('Lỗi quét mã vạch nhận trả sách'); }
+            };
+
+            const handleFulfillReservation = async (resId) => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=fulfill_reservation`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reservation_id: resId })
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') refreshAllData();
+                } catch (e) { alert('Lỗi duyệt mượn'); }
+            };
+
+            return (
+                <div className="fl-app-layout">
+                    {/* TOPBAR WITH RBAC ROLE SWITCHER */}
+                    <header className="fl-header">
+                        <div className="fl-nav-container">
+                            <a href="#" className="fl-brand">
+                                <i className="fas fa-shield-alt" style={{color: '#3b82f6', fontSize: '1.6rem'}}></i>
+                                <span>Bảng Điều Khiển Quản Trị Enterprise</span>
+                            </a>
+
+                            {/* 3-TIER RBAC ROLE SELECTOR */}
+                            <div style={{display: 'flex', alignItems: 'center', gap: '10px', background: 'rgba(255,255,255,0.1)', padding: '6px 14px', borderRadius: '20px'}}>
+                                <span style={{fontSize: '0.8rem', color: '#cbd5e1', fontWeight: 700}}>Phân Quyền Vận Hành:</span>
+                                <select 
+                                    value={adminRole} 
+                                    onChange={e => setAdminRole(e.target.value)}
+                                    style={{padding: '4px 10px', borderRadius: '12px', background: '#1e293b', color: '#fff', border: '1px solid #3b82f6', fontWeight: 700, fontSize: '0.82rem'}}
+                                >
+                                    <option value="super_admin">👑 Super Admin (Full Power)</option>
+                                    <option value="librarian">📚 Thủ Thư (Kho & Mượn Trả)</option>
+                                    <option value="cataloger">🏷️ Biên Mục (Sách & Thể Loại)</option>
+                                </select>
+                            </div>
+
+                            <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+                                <a href="library_user.html" className="btn-tab" style={{background: 'rgba(255,255,255,0.15)', color: '#fff'}}>
+                                    <i className="fas fa-eye" style={{color: '#60a5fa'}}></i> Xem Trang Độc Giả
+                                </a>
+
+                                {currentAdmin ? (
+                                    <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                                        <span style={{fontSize: '0.85rem', color: '#e2e8f0'}}>👤 <strong>{currentAdmin.ho_ten}</strong></span>
+                                        <button className="btn-tab" style={{background: '#fee2e2', color: '#ef4444', padding: '8px 12px'}} onClick={handleAdminLogout} title="Đăng xuất"><i className="fas fa-sign-out-alt"></i></button>
+                                    </div>
+                                ) : (
+                                    <button className="btn-auth" onClick={() => setShowAdminLogin(true)}>Đăng Nhập Admin</button>
+                                )}
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* MAIN CONTAINER WITH SIDEBAR & DASHBOARD */}
+                    <div style={{maxWidth: '1360px', margin: '24px auto', padding: '0 24px', display: 'grid', gridTemplateColumns: '260px 1fr', gap: '24px'}}>
+                        
+                        {/* SIDEBAR NAVIGATION (STICKY FIXED) */}
+                        <aside style={{background: '#ffffff', borderRadius: '20px', padding: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-soft)', position: 'sticky', top: '90px', alignSelf: 'start', maxHeight: 'calc(100vh - 110px)', overflowY: 'auto'}}>
+                            <div style={{fontSize: '0.75rem', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '12px', letterSpacing: '0.5px'}}>
+                                MENUS QUẢN TRỊ ({adminRole.toUpperCase()})
+                            </div>
+                            <nav style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                                <button className={`btn-tab ${activeTab === 'dashboard' ? 'active' : ''}`} style={{justifyContent: 'flex-start', padding: '12px 16px'}} onClick={() => setActiveTab('dashboard')}>
+                                    <i className="fas fa-chart-line" style={{width: '24px', color: activeTab === 'dashboard' ? '#fff' : '#3b82f6'}}></i>
+                                    <span>Tổng Quan Dashboard</span>
+                                </button>
+                                <button className={`btn-tab ${activeTab === 'books' ? 'active' : ''}`} style={{justifyContent: 'flex-start', padding: '12px 16px'}} onClick={() => setActiveTab('books')}>
+                                    <i className="fas fa-book" style={{width: '24px', color: activeTab === 'books' ? '#fff' : '#3b82f6'}}></i>
+                                    <span>Quản Lý Kho Sách ({books.length})</span>
+                                </button>
+                                <button className={`btn-tab ${activeTab === 'categories' ? 'active' : ''}`} style={{justifyContent: 'flex-start', padding: '12px 16px'}} onClick={() => setActiveTab('categories')}>
+                                    <i className="fas fa-list-alt" style={{width: '24px', color: activeTab === 'categories' ? '#fff' : '#3b82f6'}}></i>
+                                    <span>Danh Mục Sách ({categories.length})</span>
+                                </button>
+
+                                {adminRole !== 'cataloger' && (
+                                    <>
+                                        <button className={`btn-tab ${activeTab === 'barcodes' ? 'active' : ''}`} style={{justifyContent: 'flex-start', padding: '12px 16px'}} onClick={() => setActiveTab('barcodes')}>
+                                            <i className="fas fa-barcode" style={{width: '24px', color: activeTab === 'barcodes' ? '#fff' : '#3b82f6'}}></i>
+                                            <span>Mã Vạch Barcode ({physicalCopies.length})</span>
+                                        </button>
+                                        <button className={`btn-tab ${activeTab === 'readers' ? 'active' : ''}`} style={{justifyContent: 'flex-start', padding: '12px 16px'}} onClick={() => setActiveTab('readers')}>
+                                            <i className="fas fa-id-card" style={{width: '24px', color: activeTab === 'readers' ? '#fff' : '#3b82f6'}}></i>
+                                            <span>Quản Lý Độc Giả ({readers.length})</span>
+                                        </button>
+                                        <button className={`btn-tab ${activeTab === 'borrows' ? 'active' : ''}`} style={{justifyContent: 'flex-start', padding: '12px 16px'}} onClick={() => setActiveTab('borrows')}>
+                                            <i className="fas fa-exchange-alt" style={{width: '24px', color: activeTab === 'borrows' ? '#fff' : '#3b82f6'}}></i>
+                                            <span>Quản Lý Mượn/Trả ({borrows.length})</span>
+                                        </button>
+                                        <button className={`btn-tab ${activeTab === 'checkin' ? 'active' : ''}`} style={{justifyContent: 'flex-start', padding: '12px 16px'}} onClick={() => setActiveTab('checkin')}>
+                                            <i className="fas fa-qrcode" style={{width: '24px', color: activeTab === 'checkin' ? '#fff' : '#10b981'}}></i>
+                                            <span>Quét Quầy Nhận Trả Sách</span>
+                                        </button>
+                                        <button className={`btn-tab ${activeTab === 'donations' ? 'active' : ''}`} style={{justifyContent: 'flex-start', padding: '12px 16px'}} onClick={() => setActiveTab('donations')}>
+                                            <i className="fas fa-gift" style={{width: '24px', color: activeTab === 'donations' ? '#fff' : '#f59e0b'}}></i>
+                                            <span>Duyệt Sách Quyên Góp ({donations.length})</span>
+                                        </button>
+                                        <button className={`btn-tab ${activeTab === 'chat' ? 'active' : ''}`} style={{justifyContent: 'flex-start', padding: '12px 16px', position: 'relative'}} onClick={() => setActiveTab('chat')}>
+                                            <i className="fas fa-comments" style={{width: '24px', color: activeTab === 'chat' ? '#fff' : '#06b6d4'}}></i>
+                                            <span style={{flex: 1, textAlign: 'left'}}>Chat Hỗ Trợ Độc Giả</span>
+                                            {totalUnreadChat > 0 && (
+                                                <span style={{background: '#ef4444', color: '#fff', fontSize: '0.72rem', padding: '2px 8px', borderRadius: '10px', fontWeight: 800}}>
+                                                    {totalUnreadChat}
+                                                </span>
+                                            )}
+                                        </button>
+                                    </>
+                                )}
+
+                                {adminRole === 'super_admin' && (
+                                    <button className={`btn-tab ${activeTab === 'analytics' ? 'active' : ''}`} style={{justifyContent: 'flex-start', padding: '12px 16px'}} onClick={() => setActiveTab('analytics')}>
+                                        <i className="fas fa-chart-pie" style={{width: '24px', color: activeTab === 'analytics' ? '#fff' : '#8b5cf6'}}></i>
+                                        <span>Thống Kê & Báo Cáo Top</span>
+                                    </button>
+                                )}
+                            </nav>
+                        </aside>
+
+                        {/* CONTENT AREA - ALL 9 TABS IMPLEMENTED */}
+                        <main>
+                            
+                            {/* TAB 1: DASHBOARD OVERVIEW */}
+                            {activeTab === 'dashboard' && stats && (
+                                <div>
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+                                        <h2 style={{fontSize: '1.4rem', fontWeight: 800, color: '#1e293b'}}>📊 Thống Kê Vận Hành Hệ Thống</h2>
+                                        <div style={{display: 'flex', gap: '10px'}}>
+                                            <button className="btn-rent" style={{padding: '8px 16px', fontSize: '0.82rem'}} onClick={exportBooksCSV}>
+                                                <i className="fas fa-file-csv"></i> Xuất CSV Kho Sách
+                                            </button>
+                                            <button className="btn-rent secondary" style={{padding: '8px 16px', fontSize: '0.82rem'}} onClick={exportReadersCSV}>
+                                                <i className="fas fa-file-csv"></i> Xuất CSV Độc Giả
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* METRIC CARDS GRID */}
+                                    <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px', marginBottom: '24px'}}>
+                                        <div style={{background: '#ffffff', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-soft)'}}>
+                                            <p style={{fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase'}}>TỔNG ĐẦU SÁCH</p>
+                                            <h3 style={{fontSize: '1.6rem', fontWeight: 800, color: '#2563eb', marginTop: '6px'}}>{stats.total_books}</h3>
+                                            <small style={{color: '#10b981', fontWeight: 700}}>Khả dụng: {stats.available_copies} cuốn</small>
+                                        </div>
+
+                                        <div style={{background: '#ffffff', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-soft)'}}>
+                                            <p style={{fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase'}}>SÁCH ĐANG CHO THUÊ</p>
+                                            <h3 style={{fontSize: '1.6rem', fontWeight: 800, color: '#f59e0b', marginTop: '6px'}}>{stats.rented_copies}</h3>
+                                            <small style={{color: '#ef4444', fontWeight: 700}}>Quá hạn: {stats.overdue_borrows} bản</small>
+                                        </div>
+
+                                        <div style={{background: '#ffffff', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-soft)'}}>
+                                            <p style={{fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase'}}>TỔNG ĐỘC GIẢ REG</p>
+                                            <h3 style={{fontSize: '1.6rem', fontWeight: 800, color: '#10b981', marginTop: '6px'}}>{stats.total_readers}</h3>
+                                            <small style={{color: '#64748b'}}>Thẻ VIP: {stats.active_readers} thành viên</small>
+                                        </div>
+
+                                        <div style={{background: '#ffffff', borderRadius: '16px', padding: '20px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-soft)'}}>
+                                            <p style={{fontSize: '0.75rem', fontWeight: 700, color: '#64748b', textTransform: 'uppercase'}}>TỔNG TIỀN THẠT ĐÃ THU</p>
+                                            <h3 style={{fontSize: '1.4rem', fontWeight: 800, color: '#ef4444', marginTop: '6px'}}>{Number(stats.total_fines_collected || 0).toLocaleString('vi-VN')} ₫</h3>
+                                            <small style={{color: '#64748b'}}>Tự động cấn trừ Ví</small>
+                                        </div>
+                                    </div>
+
+                                    {/* CHARTS & ANALYTICS SECTION */}
+                                    <div style={{display: 'grid', gridTemplateColumns: '1.4fr 1fr', gap: '20px', marginBottom: '24px'}}>
+                                        
+                                        {/* CHART 1: MONTHLY BORROWS & REVENUE TRENDS */}
+                                        <div style={{background: '#ffffff', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-soft)'}}>
+                                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+                                                <div>
+                                                    <h3 style={{fontSize: '1.05rem', fontWeight: 800, color: '#1e293b'}}>📈 Biểu Đồ Lượt Mượn & Doanh Thu Theo Tháng</h3>
+                                                    <p style={{fontSize: '0.78rem', color: '#64748b'}}>Thống kê xu hướng vận hành 6 tháng gần nhất (T4/2026 - T9/2026)</p>
+                                                </div>
+                                                <div style={{display: 'flex', gap: '14px', fontSize: '0.75rem', fontWeight: 700}}>
+                                                    <span style={{display: 'flex', alignItems: 'center', gap: '6px', color: '#2563eb'}}>
+                                                        <span style={{width: '10px', height: '10px', background: '#3b82f6', borderRadius: '3px'}}></span> Lượt Mượn
+                                                    </span>
+                                                    <span style={{display: 'flex', alignItems: 'center', gap: '6px', color: '#10b981'}}>
+                                                        <span style={{width: '10px', height: '10px', background: '#10b981', borderRadius: '3px'}}></span> Doanh Thu (Trđ)
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* BAR CHART GRAPH */}
+                                            <div style={{display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', height: '180px', padding: '16px 10px 0 10px', borderBottom: '2px dashed #e2e8f0', gap: '12px'}}>
+                                                {[
+                                                    { month: 'Thg 4', borrow: 340, rev: 1.8, hB: '40%', hR: '30%' },
+                                                    { month: 'Thg 5', borrow: 480, rev: 2.5, hB: '55%', hR: '42%' },
+                                                    { month: 'Thg 6', borrow: 620, rev: 3.4, hB: '70%', hR: '58%' },
+                                                    { month: 'Thg 7', borrow: 750, rev: 4.2, hB: '82%', hR: '72%' },
+                                                    { month: 'Thg 8', borrow: 890, rev: 5.1, hB: '92%', hR: '86%' },
+                                                    { month: 'Thg 9', borrow: 980, rev: 6.4, hB: '100%', hR: '96%' },
+                                                ].map((item, idx) => (
+                                                    <div key={idx} style={{flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', height: '100%', justifyContent: 'flex-end'}}>
+                                                        <div style={{display: 'flex', gap: '6px', alignItems: 'flex-end', height: '140px', width: '100%', justifyContent: 'center'}}>
+                                                            <div 
+                                                                title={`Lượt mượn: ${item.borrow}`} 
+                                                                style={{
+                                                                    flex: 1, 
+                                                                    height: item.hB, 
+                                                                    background: 'linear-gradient(180deg, #3b82f6 0%, #1d4ed8 100%)', 
+                                                                    borderRadius: '6px 6px 0 0',
+                                                                    transition: 'all 0.3s ease',
+                                                                    position: 'relative'
+                                                                }}
+                                                            >
+                                                                <span style={{position: 'absolute', top: '-18px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.68rem', fontWeight: 800, color: '#2563eb'}}>{item.borrow}</span>
+                                                            </div>
+                                                            <div 
+                                                                title={`Doanh thu: ${item.rev}tr`} 
+                                                                style={{
+                                                                    flex: 1, 
+                                                                    height: item.hR, 
+                                                                    background: 'linear-gradient(180deg, #10b981 0%, #047857 100%)', 
+                                                                    borderRadius: '6px 6px 0 0',
+                                                                    transition: 'all 0.3s ease',
+                                                                    position: 'relative'
+                                                                }}
+                                                            >
+                                                                <span style={{position: 'absolute', top: '-18px', left: '50%', transform: 'translateX(-50%)', fontSize: '0.68rem', fontWeight: 800, color: '#059669'}}>{item.rev}M</span>
+                                                            </div>
+                                                        </div>
+                                                        <span style={{fontSize: '0.75rem', fontWeight: 700, color: '#64748b', marginTop: '10px'}}>{item.month}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', fontSize: '0.78rem', color: '#64748b'}}>
+                                                <span>⚡ Tốc độ tăng trưởng lượt mượn: <strong style={{color: '#10b981'}}>+24.5%</strong> tháng này</span>
+                                                <span>🏆 Thể loại mượn nhiều nhất: <strong style={{color: '#2563eb'}}>Manga & Comic</strong></span>
+                                            </div>
+                                        </div>
+
+                                        {/* CHART 2: CATEGORY DISTRIBUTION & INVENTORY CAPACITY */}
+                                        <div style={{background: '#ffffff', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-soft)'}}>
+                                            <h3 style={{fontSize: '1.05rem', fontWeight: 800, color: '#1e293b', marginBottom: '4px'}}>📊 Cơ Cấu Danh Mục & Tỷ Lệ Kho</h3>
+                                            <p style={{fontSize: '0.78rem', color: '#64748b', marginBottom: '16px'}}>Tỷ lệ phân bổ đầu sách theo thể loại hiện có</p>
+
+                                            <div style={{display: 'flex', flexDirection: 'column', gap: '14px'}}>
+                                                {[
+                                                    { name: 'Manga & Comic', pct: 45, count: '284 sách', color: '#ec4899', grad: 'linear-gradient(90deg, #ec4899, #db2777)' },
+                                                    { name: 'Kỹ Năng & Kinh Tế', pct: 25, count: '158 sách', color: '#10b981', grad: 'linear-gradient(90deg, #10b981, #059669)' },
+                                                    { name: 'Công Nghệ & IT', pct: 18, count: '114 sách', color: '#3b82f6', grad: 'linear-gradient(90deg, #3b82f6, #1d4ed8)' },
+                                                    { name: 'Tiểu Thuyết & Văn Học', pct: 12, count: '75 sách', color: '#8b5cf6', grad: 'linear-gradient(90deg, #8b5cf6, #6d28d9)' },
+                                                ].map((cat, idx) => (
+                                                    <div key={idx}>
+                                                        <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', fontWeight: 700, marginBottom: '4px'}}>
+                                                            <span style={{color: '#1e293b'}}>{cat.name}</span>
+                                                            <span style={{color: cat.color}}>{cat.pct}% ({cat.count})</span>
+                                                        </div>
+                                                        <div style={{width: '100%', height: '10px', background: '#f1f5f9', borderRadius: '10px', overflow: 'hidden'}}>
+                                                            <div style={{width: `${cat.pct}%`, height: '100%', background: cat.grad, borderRadius: '10px', transition: 'width 0.6s ease'}}></div>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+
+                                            <div style={{marginTop: '20px', padding: '12px', background: '#f8fafc', borderRadius: '12px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                                                <div style={{fontSize: '0.78rem'}}>
+                                                    <span style={{fontWeight: 700, color: '#475569'}}>Tỷ Lệ Khai Thác Bản Sao:</span>
+                                                    <p style={{fontSize: '0.72rem', color: '#64748b', margin: 0}}>Bản sao rảnh tại kho: <strong>88.5%</strong> | Đang mượn ngoài: <strong>11.5%</strong></p>
+                                                </div>
+                                                <span style={{fontSize: '1.1rem', color: '#10b981', fontWeight: 800}}>⚡ 98.2%</span>
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    {/* WEB RESERVATIONS QUEUE */}
+                                    <div style={{background: '#ffffff', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-soft)'}}>
+                                        <h3 style={{fontSize: '1.1rem', fontWeight: 800, color: '#1e293b', marginBottom: '16px'}}>📌 Đơn Đặt Giữ Chỗ Online Đang Chờ Thủ Thư Nhận Bài ({webReservations.length})</h3>
+                                        <div className="table-responsive">
+                                            <table className="custom-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Mã Giữ Chỗ</th>
+                                                        <th>Tên Sách</th>
+                                                        <th>Độc Giả</th>
+                                                        <th>Ngày Đặt</th>
+                                                        <th>Trạng Thái</th>
+                                                        <th>Hành Động Quầy</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {webReservations.map(r => (
+                                                        <tr key={r.id}>
+                                                            <td><strong>{r.ma_giu_cho}</strong></td>
+                                                            <td>{r.ten_sach}</td>
+                                                            <td>{r.ho_ten} ({r.so_dien_thoai})</td>
+                                                            <td>{r.ngay_dat}</td>
+                                                            <td><span className="badge badge-warning">{r.trang_thai}</span></td>
+                                                            <td>
+                                                                <button className="btn-rent" style={{padding: '6px 12px', fontSize: '0.78rem', background: '#10b981'}} onClick={() => handleFulfillReservation(r.id)}>
+                                                                    <i className="fas fa-check-circle"></i> Quét Xuất Sách
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* TAB 2: QUẢN LÝ KHO SÁCH WITH GOOGLE BOOKS ISBN AUTO-FETCH */}
+                            {activeTab === 'books' && (
+                                <div>
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+                                        <h2 style={{fontSize: '1.4rem', fontWeight: 800, color: '#1e293b'}}>📚 Quản Lý Kho Sách & Biên Mục</h2>
+                                        <div style={{display: 'flex', gap: '10px'}}>
+                                            <button className="btn-rent" style={{padding: '10px 18px'}} onClick={() => { setEditingBook(null); setBookForm({ ma_sach: `MS${Date.now().toString().slice(-4)}`, ten_sach: '', tac_gia: '', category_id: 1, nha_xuat_ban: 'NXB Kim Đồng', nam_xuat_ban: 2023, gia_bia: 50000, gia_thue_ngay: 3000, so_luong: 5, hinh_anh: '', isbn: '9780132350884', mo_ta: '' }); setShowBookModal(true); }}>
+                                                <i className="fas fa-plus"></i> Thêm Cuốn Sách Mới
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* SEARCH & FILTER BAR */}
+                                    <div style={{display: 'flex', gap: '12px', marginBottom: '20px'}}>
+                                        <input 
+                                            type="text" 
+                                            className="form-control" 
+                                            placeholder="🔍 Tìm kiếm theo tên sách, tác giả, mã ISBN..." 
+                                            value={searchQuery} 
+                                            onChange={e => setSearchQuery(e.target.value)} 
+                                            style={{flex: 2}}
+                                        />
+                                        <select className="form-control" value={filterCategory} onChange={e => setFilterCategory(e.target.value)} style={{flex: 1}}>
+                                            <option value="">Tất cả danh mục</option>
+                                            {categories.map(c => <option key={c.id} value={c.id}>{c.ten_danh_muc}</option>)}
+                                        </select>
+                                    </div>
+
+                                    {/* BOOKS TABLE */}
+                                    <div className="table-responsive">
+                                        <table className="custom-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Bìa</th>
+                                                    <th>Tên Sách / Tác Giả</th>
+                                                    <th>Thể Loại</th>
+                                                    <th>Giá Bìa</th>
+                                                    <th>Phí Thuê/Ngày</th>
+                                                    <th>Số Lượng Kho</th>
+                                                    <th>Kệ Kho</th>
+                                                    <th>Thao Tác</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                 {books.map(b => (
+                                                     <tr key={b.id}>
+                                                         <td><BookCover src={b.hinh_anh} title={b.ten_sach} author={b.tac_gia} category={b.ten_danh_muc} className="book-thumb" /></td>
+                                                        <td>
+                                                            <strong>{b.ten_sach}</strong>
+                                                            <div style={{fontSize: '0.78rem', color: '#64748b'}}>Tác giả: {b.tac_gia} | Code: {b.ma_sach}</div>
+                                                        </td>
+                                                        <td><span className="badge badge-info">{b.ten_danh_muc}</span></td>
+                                                        <td>{Number(b.gia_bia).toLocaleString('vi-VN')} ₫</td>
+                                                        <td><strong style={{color: '#2563eb'}}>{Number(b.gia_thue_ngay).toLocaleString('vi-VN')} ₫</strong></td>
+                                                        <td>
+                                                            <span className={`badge ${b.co_san > 0 ? 'badge-success' : 'badge-danger'}`}>
+                                                                Còn {b.co_san} / {b.so_luong} bản
+                                                            </span>
+                                                        </td>
+                                                        <td>{b.tu_ke_kho || 'Kệ A1'}</td>
+                                                        <td>
+                                                            <div className="btn-group">
+                                                                <button className="btn-rent secondary" style={{padding: '6px 10px', fontSize: '0.78rem'}} onClick={() => { setEditingBook(b); setBookForm(b); setShowBookModal(true); }}><i className="fas fa-edit"></i> Sửa</button>
+                                                                {adminRole !== 'cataloger' && (
+                                                                    <button className="btn-rent" style={{padding: '6px 10px', fontSize: '0.78rem', background: '#ef4444'}} onClick={() => handleDeleteBook(b.id)}><i className="fas fa-trash"></i> Xóa</button>
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* TAB 3: DANH MỤC SÁCH */}
+                            {activeTab === 'categories' && (
+                                <div>
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+                                        <h2 style={{fontSize: '1.4rem', fontWeight: 800, color: '#1e293b'}}>🏷️ Quản Lý Danh Mục Sách ({categories.length})</h2>
+                                        <button className="btn-rent" style={{padding: '10px 18px'}} onClick={() => setShowCategoryModal(true)}>
+                                            <i className="fas fa-plus"></i> Thêm Danh Mục Mới
+                                        </button>
+                                    </div>
+
+                                    <div className="table-responsive">
+                                        <table className="custom-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Mã Danh Mục</th>
+                                                    <th>Tên Thể Loại</th>
+                                                    <th>Mô Tả</th>
+                                                    <th>Số Đầu Sách</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {categories.map(c => (
+                                                    <tr key={c.id}>
+                                                        <td>#{c.id}</td>
+                                                        <td><strong>{c.ma_danh_muc}</strong></td>
+                                                        <td><span className="badge badge-info">{c.ten_danh_muc}</span></td>
+                                                        <td>{c.mo_ta || 'Danh mục sách phân loại kho'}</td>
+                                                        <td><strong style={{color: '#2563eb'}}>{c.total_books || 5} đầu sách</strong></td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* TAB 4: MÃ VẠCH BARCODE KHO SÁCH */}
+                            {activeTab === 'barcodes' && (
+                                <div>
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+                                        <h2 style={{fontSize: '1.4rem', fontWeight: 800, color: '#1e293b'}}>║▌ Quản Lý Bản Sao Mã Vạch Barcode ({physicalCopies.length})</h2>
+                                        <button className="btn-rent" style={{padding: '10px 18px'}} onClick={() => setShowBarcodeModal(true)}>
+                                            <i className="fas fa-barcode"></i> Tạo Bản Sao Mã Vạch
+                                        </button>
+                                    </div>
+
+                                    <div className="table-responsive">
+                                        <table className="custom-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Mã Vạch Barcode</th>
+                                                    <th>Tên Sách Gốc</th>
+                                                    <th>Kệ Kho Trưng Bày</th>
+                                                    <th>Tình Trạng Hào Mòn</th>
+                                                    <th>Trạng Thái Cho Thuê</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {physicalCopies.map(p => (
+                                                    <tr key={p.id}>
+                                                        <td>#{p.id}</td>
+                                                        <td><strong style={{fontFamily: 'monospace', fontSize: '1rem', color: '#2563eb'}}>║ {p.barcode}</strong></td>
+                                                        <td>{p.ten_sach}</td>
+                                                        <td>{p.tu_ke_kho}</td>
+                                                        <td><span className="badge badge-warning">{p.tinh_trang_hao_mon}</span></td>
+                                                        <td>
+                                                            <span className={`badge ${p.trang_thai === 'Có sẵn' ? 'badge-success' : 'badge-danger'}`}>
+                                                                {p.trang_thai}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* TAB 5: QUẢN LÝ ĐỘC GIẢ & THẺ THÀNH VIÊN */}
+                            {activeTab === 'readers' && (
+                                <div>
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+                                        <h2 style={{fontSize: '1.4rem', fontWeight: 800, color: '#1e293b'}}>💳 Quản Lý Danh Sách Độc Giả ({readers.length})</h2>
+                                        <div style={{display: 'flex', gap: '10px'}}>
+                                            <button className="btn-rent secondary" style={{padding: '8px 16px', fontSize: '0.82rem'}} onClick={exportReadersCSV}>
+                                                <i className="fas fa-file-csv"></i> Xuất CSV Độc Giả
+                                            </button>
+                                            <button className="btn-rent" style={{padding: '10px 18px'}} onClick={() => setShowIssueCardModal(true)}>
+                                                <i className="fas fa-id-card"></i> Cấp Thẻ Độc Giả Mới
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="table-responsive">
+                                        <table className="custom-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Mã Độc Giả</th>
+                                                    <th>Họ Và Tên</th>
+                                                    <th>Thông Tin Liên Hệ</th>
+                                                    <th>Hạng Thẻ</th>
+                                                    <th>Số Dư Ví</th>
+                                                    <th>Cọc Đóng Băng</th>
+                                                    <th>Hành Động</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {readers.map(r => (
+                                                    <tr key={r.id}>
+                                                        <td><strong style={{color: '#2563eb'}}>{r.ma_doc_gia}</strong></td>
+                                                        <td><strong>{r.ho_ten}</strong></td>
+                                                        <td>{r.email}<br/><small style={{color: '#64748b'}}>{r.so_dien_thoai}</small></td>
+                                                        <td><span className="badge badge-warning">{r.loai_doc_gia || 'Thẻ VIP Gold'}</span></td>
+                                                        <td><strong style={{color: '#10b981'}}>{Number(r.so_du_vi).toLocaleString('vi-VN')} ₫</strong></td>
+                                                        <td><strong style={{color: '#d97706'}}>🔒 {Number(r.tien_coc_dong_bang).toLocaleString('vi-VN')} ₫</strong></td>
+                                                        <td>
+                                                            <button className="btn-rent secondary" style={{padding: '6px 12px', fontSize: '0.78rem'}} onClick={() => setShowTopupModal(r)}>
+                                                                <i className="fas fa-coins"></i> Nạp Ví
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* TAB 6: QUẢN LÝ MƯỢN TRẢ & ĐƠN THUÊ */}
+                            {activeTab === 'borrows' && (
+                                <div>
+                                    <h2 style={{fontSize: '1.4rem', fontWeight: 800, color: '#1e293b', marginBottom: '20px'}}>🔄 Quản Lý Lịch Sử Cho Thuê Sách ({borrows.length})</h2>
+                                    <div className="table-responsive">
+                                        <table className="custom-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Mã Đơn</th>
+                                                    <th>Tên Sách Cho Thuê</th>
+                                                    <th>Độc Giả</th>
+                                                    <th>Ngày Mượn</th>
+                                                    <th>Hạn Trả</th>
+                                                    <th>Cọc Giữ</th>
+                                                    <th>Trạng Thái</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {borrows.map(b => (
+                                                    <tr key={b.id}>
+                                                        <td><strong style={{color: '#2563eb'}}>{b.ma_don}</strong></td>
+                                                        <td>{b.ten_sach}</td>
+                                                        <td><strong>{b.ho_ten}</strong><br/><small>{b.so_dien_thoai}</small></td>
+                                                        <td>{b.ngay_bat_dau}</td>
+                                                        <td><strong style={{color: '#ef4444'}}>{b.ngay_ket_thuc}</strong></td>
+                                                        <td>{Number(b.tong_tien_coc).toLocaleString('vi-VN')} ₫</td>
+                                                        <td>
+                                                            <span className={`badge ${b.trang_thai === 'Hoàn tất' ? 'badge-success' : b.trang_thai === 'Quá hạn' ? 'badge-danger' : 'badge-warning'}`}>
+                                                                {b.trang_thai}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* TAB 7: QUÉT MÃ VẠCH QUẦY CHECK-IN */}
+                            {activeTab === 'checkin' && (
+                                <div>
+                                    <h2 style={{fontSize: '1.4rem', fontWeight: 800, color: '#1e293b', marginBottom: '20px'}}>📌 Quét Mã Vạch Barcode Nhận Trả Sách Tại Quầy</h2>
+                                    <div style={{background: '#ffffff', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)', maxWidth: '600px', boxShadow: 'var(--shadow-soft)'}}>
+                                        <form onSubmit={handleScanCheckinReturn}>
+                                            <div style={{marginBottom: '16px'}}>
+                                                <label style={{display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px'}}>Quét / Nhập Mã Vạch Barcode Khung Sách (*):</label>
+                                                <input 
+                                                    type="text" 
+                                                    className="form-control" 
+                                                    placeholder="VD: BC987013235088401..." 
+                                                    value={scanBarcode}
+                                                    onChange={e => setScanBarcode(e.target.value)}
+                                                    required
+                                                    style={{fontSize: '1.1rem', fontWeight: 'bold'}}
+                                                />
+                                            </div>
+
+                                            <div style={{marginBottom: '16px'}}>
+                                                <label style={{display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px'}}>Đánh Giá Tình Trạng Sách Khi Trả:</label>
+                                                <select className="form-control" value={scanDamageLevel} onChange={e => setScanDamageLevel(e.target.value)}>
+                                                    <option value="Bình thường">Bình thường (Mới đẹp)</option>
+                                                    <option value="Rách trang nhẹ">Rách trang nhẹ (Phạt 10k)</option>
+                                                    <option value="Mất bìa / Hư hỏng nặng">Mất bìa / Hư hỏng nặng (Phạt 50k)</option>
+                                                </select>
+                                            </div>
+
+                                            <div style={{marginBottom: '20px'}}>
+                                                <label style={{display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '6px'}}>Tiền Phạt Phụ Thu Nhanh (VNĐ):</label>
+                                                <input 
+                                                    type="number" 
+                                                    className="form-control" 
+                                                    value={scanFine}
+                                                    onChange={e => setScanFine(e.target.value)}
+                                                />
+                                            </div>
+
+                                            <button type="submit" className="btn-rent" style={{width: '100%', padding: '14px', background: '#10b981', fontSize: '1rem'}}>
+                                                <i className="fas fa-barcode"></i> Quét & Hoàn Tất Nhận Trả Sách Quầy
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* TAB 8: DUYỆT SÁCH QUYÊN GÓP */}
+                            {activeTab === 'donations' && (
+                                <div>
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+                                        <h2 style={{fontSize: '1.4rem', fontWeight: 800, color: '#1e293b'}}>🎁 Quản Lý Sách Quyên Góp Từ Độc Giả</h2>
+                                        <button className="btn-rent secondary" style={{padding: '8px 16px', fontSize: '0.82rem'}} onClick={exportDonationsCSV}>
+                                            <i className="fas fa-file-csv"></i> Xuất CSV Quyên Góp
+                                        </button>
+                                    </div>
+
+                                    <div className="table-responsive">
+                                        <table className="custom-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>ID</th>
+                                                    <th>Tên Sách Quyên Góp</th>
+                                                    <th>Tác Giả & Thể Loại</th>
+                                                    <th>Tình Trạng</th>
+                                                    <th>Độc Giả Quyên Góp</th>
+                                                    <th>Ghi Chú Liên Hệ</th>
+                                                    <th>Trạng Thái</th>
+                                                    <th>Hành Động</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {donations.map(d => (
+                                                    <tr key={d.id}>
+                                                        <td>#{d.id}</td>
+                                                        <td><strong>{d.ten_sach}</strong></td>
+                                                        <td>{d.tac_gia} <br/><small style={{color: '#64748b'}}>{d.danh_muc}</small></td>
+                                                        <td><span className="badge badge-info">{d.tinh_trang}</span></td>
+                                                        <td><strong>{d.ho_ten}</strong><br/><small>{d.so_dien_thoai}</small></td>
+                                                        <td>{d.ghi_chu_lien_he}</td>
+                                                        <td><span className={`badge ${d.trang_thai === 'Đã duyệt' ? 'badge-success' : 'badge-warning'}`}>{d.trang_thai}</span></td>
+                                                        <td>
+                                                            {d.trang_thai !== 'Đã duyệt' && (
+                                                                <button className="btn-rent" style={{padding: '6px 12px', fontSize: '0.78rem', background: '#10b981'}} onClick={() => handleApproveDonation(d.id)}>
+                                                                    <i className="fas fa-check-circle"></i> Duyệt (+50k Ví)
+                                                                </button>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* TAB 9: THỐNG KÊ & BÁO CÁO TOP (ANALYTICS) */}
+                            {activeTab === 'analytics' && (
+                                <div>
+                                    <h2 style={{fontSize: '1.4rem', fontWeight: 800, color: '#1e293b', marginBottom: '20px'}}>📈 Biểu Đồ Thống Kê & Báo Cáo Vận Hành</h2>
+
+                                    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px'}}>
+                                        <div style={{background: '#ffffff', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-soft)'}}>
+                                            <h3 style={{fontSize: '1.1rem', fontWeight: 800, marginBottom: '16px'}}>📊 Tỉ Lệ Mượn/Trả Theo Tháng (2023)</h3>
+                                            <div className="chart-bar-container">
+                                                <div className="chart-bar-group">
+                                                    <div className="chart-bar-wrapper">
+                                                        <div className="chart-bar borrow" style={{height: '60%'}}></div>
+                                                        <div className="chart-bar return" style={{height: '50%'}}></div>
+                                                    </div>
+                                                    <small style={{fontSize: '0.75rem', fontWeight: 700}}>Tháng 6</small>
+                                                </div>
+                                                <div className="chart-bar-group">
+                                                    <div className="chart-bar-wrapper">
+                                                        <div className="chart-bar borrow" style={{height: '80%'}}></div>
+                                                        <div className="chart-bar return" style={{height: '75%'}}></div>
+                                                    </div>
+                                                    <small style={{fontSize: '0.75rem', fontWeight: 700}}>Tháng 7</small>
+                                                </div>
+                                                <div className="chart-bar-group">
+                                                    <div className="chart-bar-wrapper">
+                                                        <div className="chart-bar borrow" style={{height: '95%'}}></div>
+                                                        <div className="chart-bar return" style={{height: '90%'}}></div>
+                                                    </div>
+                                                    <small style={{fontSize: '0.75rem', fontWeight: 700}}>Tháng 8</small>
+                                                </div>
+                                                <div className="chart-bar-group">
+                                                    <div className="chart-bar-wrapper">
+                                                        <div className="chart-bar borrow" style={{height: '70%'}}></div>
+                                                        <div className="chart-bar return" style={{height: '65%'}}></div>
+                                                    </div>
+                                                    <small style={{fontSize: '0.75rem', fontWeight: 700}}>Tháng 9</small>
+                                                </div>
+                                            </div>
+                                            <div style={{display: 'flex', gap: '20px', justifyContent: 'center', fontSize: '0.82rem', fontWeight: 700}}>
+                                                <span style={{color: '#3b82f6'}}>■ Lượt mượn sách</span>
+                                                <span style={{color: '#10b981'}}>■ Lượt trả sách</span>
+                                            </div>
+                                        </div>
+
+                                        <div style={{background: '#ffffff', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-soft)'}}>
+                                            <h3 style={{fontSize: '1.1rem', fontWeight: 800, marginBottom: '16px'}}>🔥 Top 5 Sách Đón Nhận Nhiều Lượt Mượn Nhất</h3>
+                                            <div style={{display: 'flex', flexDirection: 'column', gap: '12px'}}>
+                                                {books.slice().sort((a,b) => (b.luot_muon||0)-(a.luot_muon||0)).slice(0,5).map((b, idx) => (
+                                                    <div key={b.id} style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#f8fafc', padding: '10px 14px', borderRadius: '12px'}}>
+                                                        <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                                                            <span style={{background: '#3b82f6', color: '#fff', width: '24px', height: '24px', borderRadius: '50%', display: 'flex', alignItems: 'center', justify: 'center', fontSize: '0.75rem', fontWeight: 800}}>#{idx+1}</span>
+                                                            <strong>{b.ten_sach}</strong>
+                                                        </div>
+                                                        <span style={{color: '#ef4444', fontWeight: 800, fontSize: '0.9rem'}}>{b.luot_muon || 18 - idx*3} lượt mượn</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* TAB 10: CHAT HỖ TRỢ ĐỘC GIẢ */}
+                            {activeTab === 'chat' && (
+                                <div>
+                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px'}}>
+                                        <h2 style={{fontSize: '1.4rem', fontWeight: 800, color: '#1e293b'}}>💬 Trung Tâm Hỗ Trợ & Chat Trực Tuyến Độc Giả</h2>
+                                        <div style={{fontSize: '0.85rem', color: '#64748b', fontWeight: 600}}>
+                                            Tự động cập nhật mỗi 3s • Tổng hội thoại: {conversations.length}
+                                        </div>
+                                    </div>
+
+                                    <div style={{display: 'grid', gridTemplateColumns: '320px 1fr', background: '#ffffff', borderRadius: '20px', border: '1px solid var(--border-color)', height: 'calc(100vh - 200px)', minHeight: '560px', maxHeight: '680px', overflow: 'hidden', boxShadow: 'var(--shadow-soft)'}}>
+                                        
+                                        {/* LEFT COLUMN: CONVERSATIONS LIST */}
+                                        <div style={{borderRight: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', flexDirection: 'column'}}>
+                                            <div style={{padding: '16px 20px', borderBottom: '1px solid #e2e8f0', background: '#ffffff', fontWeight: 800, fontSize: '0.9rem', color: '#1e293b'}}>
+                                                📬 Danh Sách Hội Thoại ({conversations.length})
+                                            </div>
+
+                                            <div style={{flex: 1, overflowY: 'auto'}}>
+                                                {conversations.length === 0 ? (
+                                                    <div style={{padding: '30px 20px', textAlign: 'center', color: '#64748b', fontSize: '0.85rem'}}>
+                                                        Chưa có cuộc trò chuyện nào từ độc giả.
+                                                    </div>
+                                                ) : (
+                                                    conversations.map(conv => {
+                                                        const isSelected = selectedReaderChat?.reader_id === conv.reader_id;
+                                                        return (
+                                                            <div 
+                                                                key={conv.reader_id}
+                                                                onClick={() => {
+                                                                    setSelectedReaderChat(conv);
+                                                                    fetchAdminChatMessages(conv.reader_id);
+                                                                }}
+                                                                style={{
+                                                                    padding: '14px 18px',
+                                                                    borderBottom: '1px solid #f1f5f9',
+                                                                    cursor: 'pointer',
+                                                                    background: isSelected ? '#e0f2fe' : '#ffffff',
+                                                                    borderLeft: isSelected ? '4px solid #2563eb' : '4px solid transparent',
+                                                                    transition: 'background 0.2s'
+                                                                }}
+                                                            >
+                                                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px'}}>
+                                                                    <strong style={{fontSize: '0.9rem', color: '#1e293b'}}>{conv.ho_ten}</strong>
+                                                                    {Number(conv.unread_count) > 0 && (
+                                                                        <span className="badge badge-danger" style={{fontSize: '0.7rem', padding: '2px 6px'}}>
+                                                                            {conv.unread_count} mới
+                                                                        </span>
+                                                                    )}
+                                                                </div>
+                                                                <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: '#64748b'}}>
+                                                                    <span>Mã ĐG: {conv.ma_doc_gia}</span>
+                                                                    <span className="badge badge-info" style={{fontSize: '0.68rem'}}>{conv.loai_doc_gia}</span>
+                                                                </div>
+                                                                <div style={{fontSize: '0.82rem', color: '#475569', marginTop: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'}}>
+                                                                    {conv.last_message || 'Chưa có tin nhắn'}
+                                                                </div>
+                                                                <div style={{fontSize: '0.68rem', color: '#94a3b8', marginTop: '4px', textAlign: 'right'}}>
+                                                                    {conv.last_time ? conv.last_time.slice(11, 16) : ''}
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        {/* RIGHT COLUMN: ACTIVE CHAT THREAD */}
+                                        <div style={{display: 'flex', flexDirection: 'column', background: '#ffffff'}}>
+                                            {selectedReaderChat ? (
+                                                <>
+                                                    {/* READER HEADER */}
+                                                    <div style={{padding: '16px 24px', borderBottom: '1px solid #e2e8f0', background: '#f8fafc', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                                        <div>
+                                                            <h4 style={{margin: 0, fontSize: '1.05rem', fontWeight: 800, color: '#1e293b'}}>
+                                                                👤 {selectedReaderChat.ho_ten}
+                                                            </h4>
+                                                            <div style={{fontSize: '0.8rem', color: '#64748b', marginTop: '2px'}}>
+                                                                Mã: {selectedReaderChat.ma_doc_gia} | SĐT: {selectedReaderChat.so_dien_thoai} | Loaị thẻ: <strong>{selectedReaderChat.loai_doc_gia}</strong>
+                                                            </div>
+                                                        </div>
+                                                        <span className="badge badge-success" style={{fontSize: '0.75rem'}}>
+                                                            🟢 Đang trực tuyến
+                                                        </span>
+                                                    </div>
+
+                                                    {/* MESSAGES BODY */}
+                                                    <div style={{flex: 1, padding: '20px', overflowY: 'auto', background: '#f1f5f9', display: 'flex', flexDirection: 'column', gap: '14px'}}>
+                                                        {adminChatMessages.length === 0 ? (
+                                                            <div style={{textAlign: 'center', color: '#64748b', marginTop: '40px'}}>
+                                                                Chưa có tin nhắn nào trong cuộc hội thoại này.
+                                                            </div>
+                                                        ) : (
+                                                            adminChatMessages.map(msg => {
+                                                                const isAdminMsg = msg.sender_type === 'admin';
+                                                                return (
+                                                                    <div 
+                                                                        key={msg.id} 
+                                                                        style={{
+                                                                            alignSelf: isAdminMsg ? 'flex-end' : 'flex-start',
+                                                                            maxWidth: '75%'
+                                                                        }}
+                                                                    >
+                                                                        <div style={{
+                                                                            background: isAdminMsg ? '#2563eb' : '#ffffff',
+                                                                            color: isAdminMsg ? '#ffffff' : '#1e293b',
+                                                                            padding: '12px 18px',
+                                                                            borderRadius: isAdminMsg ? '18px 18px 4px 18px' : '18px 18px 18px 4px',
+                                                                            fontSize: '0.9rem',
+                                                                            lineHeight: '1.5',
+                                                                            boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                                                                            border: isAdminMsg ? 'none' : '1px solid #e2e8f0'
+                                                                        }}>
+                                                                            {msg.message_text}
+                                                                        </div>
+                                                                        <div style={{
+                                                                            fontSize: '0.7rem',
+                                                                            color: '#64748b',
+                                                                            marginTop: '4px',
+                                                                            textAlign: isAdminMsg ? 'right' : 'left'
+                                                                        }}>
+                                                                            {isAdminMsg ? 'Thủ Thư (Bạn)' : selectedReaderChat.ho_ten} • {msg.created_at ? msg.created_at.slice(11, 16) : ''}
+                                                                        </div>
+                                                                    </div>
+                                                                );
+                                                            })
+                                                        )}
+                                                    </div>
+
+                                                    {/* REPLY INPUT FORM */}
+                                                    <form onSubmit={handleSendAdminChatMessage} style={{padding: '16px 20px', borderTop: '1px solid #e2e8f0', background: '#ffffff', display: 'flex', gap: '12px'}}>
+                                                        <input 
+                                                            type="text" 
+                                                            className="form-control" 
+                                                            placeholder={`Trả lời độc giả ${selectedReaderChat.ho_ten}...`} 
+                                                            value={adminChatInput} 
+                                                            onChange={e => setAdminChatInput(e.target.value)} 
+                                                            style={{flex: 1}}
+                                                        />
+                                                        <button type="submit" className="btn-rent" style={{padding: '10px 20px', fontSize: '0.9rem'}}>
+                                                            <i className="fas fa-paper-plane"></i> Gửi Phản Hồi
+                                                        </button>
+                                                    </form>
+                                                </>
+                                            ) : (
+                                                <div style={{flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#64748b', fontSize: '0.95rem'}}>
+                                                    👈 Vui lòng chọn một cuộc trò chuyện ở cột bên trái để bắt đầu chat hỗ trợ.
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                        </main>
+                    </div>
+
+                    {/* MODAL THÊM / SỬA SÁCH CÓ TÍCH HỢP GOOGLE BOOKS ISBN API */}
+                    {showBookModal && (
+                        <div className="modal-overlay">
+                            <div className="modal-card">
+                                <div className="modal-header">
+                                    <h3>{editingBook ? 'Chỉnh Sửa Cuốn Sách' : 'Biên Mục Cuốn Sách Mới'}</h3>
+                                    <button className="close-btn" onClick={() => setShowBookModal(false)}>&times;</button>
+                                </div>
+
+                                {/* GOOGLE BOOKS ISBN AUTO-FETCH TOOLBAR */}
+                                <div style={{background: 'linear-gradient(135deg, #eff6ff, #dbeafe)', padding: '14px', borderRadius: '12px', marginBottom: '20px', border: '1px solid #bfdbfe'}}>
+                                    <label style={{fontSize: '0.82rem', fontWeight: 700, color: '#1e40af', display: 'block', marginBottom: '6px'}}>
+                                        ⚡ TỰ ĐỘNG KÉO DỮ LIỆU TỪ GOOGLE BOOKS API QUA ISBN:
+                                    </label>
+                                    <div style={{display: 'flex', gap: '10px'}}>
+                                        <input 
+                                            type="text" 
+                                            className="form-control" 
+                                            placeholder="Nhập mã ISBN (VD: 9780132350884, 9780439708180)..." 
+                                            value={isbnInput}
+                                            onChange={e => setIsbnInput(e.target.value)}
+                                            style={{flex: 1}}
+                                        />
+                                        <button 
+                                            type="button" 
+                                            className="btn-rent" 
+                                            style={{background: '#2563eb', padding: '8px 14px', fontSize: '0.82rem'}} 
+                                            onClick={handleFetchGoogleBooksIsbn}
+                                            disabled={isFetchingIsbn}
+                                        >
+                                            {isFetchingIsbn ? 'Đang kéo...' : '🔍 Fetch Google Books'}
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <form onSubmit={handleSaveBook}>
+                                    <div className="form-grid">
+                                        <div className="form-group">
+                                            <label>Mã Sách Kho (*)</label>
+                                            <input type="text" className="form-control" required value={bookForm.ma_sach} onChange={e => setBookForm({...bookForm, ma_sach: e.target.value})} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Mã ISBN (*)</label>
+                                            <input type="text" className="form-control" value={bookForm.isbn} onChange={e => setBookForm({...bookForm, isbn: e.target.value})} />
+                                        </div>
+                                        <div className="form-group full">
+                                            <label>Tên Cuốn Sách (*)</label>
+                                            <input type="text" className="form-control" required value={bookForm.ten_sach} onChange={e => setBookForm({...bookForm, ten_sach: e.target.value})} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Tác Giả (*)</label>
+                                            <input type="text" className="form-control" required value={bookForm.tac_gia} onChange={e => setBookForm({...bookForm, tac_gia: e.target.value})} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Danh Mục (*)</label>
+                                            <select className="form-control" value={bookForm.category_id} onChange={e => setBookForm({...bookForm, category_id: e.target.value})}>
+                                                {categories.map(c => <option key={c.id} value={c.id}>{c.ten_danh_muc}</option>)}
+                                            </select>
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Nhà Xuất Bản</label>
+                                            <input type="text" className="form-control" value={bookForm.nha_xuat_ban} onChange={e => setBookForm({...bookForm, nha_xuat_ban: e.target.value})} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Giá Bìa (VNĐ) (*)</label>
+                                            <input type="number" className="form-control" required value={bookForm.gia_bia} onChange={e => setBookForm({...bookForm, gia_bia: e.target.value})} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Phí Thuê Theo Ngày (VNĐ)</label>
+                                            <input type="number" className="form-control" value={bookForm.gia_thue_ngay} onChange={e => setBookForm({...bookForm, gia_thue_ngay: e.target.value})} />
+                                        </div>
+                                        <div className="form-group">
+                                            <label>Số Lượng Nhập Kho</label>
+                                            <input type="number" className="form-control" value={bookForm.so_luong} onChange={e => setBookForm({...bookForm, so_luong: e.target.value})} />
+                                        </div>
+                                        <div className="form-group full">
+                                            <label>URL Ảnh Bìa Cuốn Sách</label>
+                                            <input type="text" className="form-control" value={bookForm.hinh_anh} onChange={e => setBookForm({...bookForm, hinh_anh: e.target.value})} />
+                                        </div>
+                                    </div>
+                                    <button type="submit" className="btn-rent" style={{width: '100%', padding: '12px', marginTop: '16px'}}>
+                                        <i className="fas fa-save"></i> Lưu Thông Tin Cuốn Sách
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL THÊM DANH MỤC */}
+                    {showCategoryModal && (
+                        <div className="modal-overlay">
+                            <div className="modal-card" style={{maxWidth: '480px'}}>
+                                <div className="modal-header">
+                                    <h3>Thêm Danh Mục Thể Loại Sách Mới</h3>
+                                    <button className="close-btn" onClick={() => setShowCategoryModal(false)}>&times;</button>
+                                </div>
+                                <form onSubmit={handleSaveCategory}>
+                                    <div className="form-group">
+                                        <label>Mã Danh Mục (*)</label>
+                                        <input type="text" className="form-control" required placeholder="VD: DM-MANGA..." value={categoryForm.ma_danh_muc} onChange={e => setCategoryForm({...categoryForm, ma_danh_muc: e.target.value})} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Tên Thể Loại (*)</label>
+                                        <input type="text" className="form-control" required placeholder="VD: Truyện Tranh Manga..." value={categoryForm.ten_danh_muc} onChange={e => setCategoryForm({...categoryForm, ten_danh_muc: e.target.value})} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Mô Tả Danh Mục</label>
+                                        <textarea rows="2" className="form-control" value={categoryForm.mo_ta} onChange={e => setCategoryForm({...categoryForm, mo_ta: e.target.value})}></textarea>
+                                    </div>
+                                    <button type="submit" className="btn-rent" style={{width: '100%', padding: '12px'}}>Lưu Danh Mục Mới</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL TẠO BẢN SAO MÃ VẠCH BARCODE */}
+                    {showBarcodeModal && (
+                        <div className="modal-overlay">
+                            <div className="modal-card" style={{maxWidth: '480px'}}>
+                                <div className="modal-header">
+                                    <h3>Tạo Bản Sao Mã Vạch Barcode Mới</h3>
+                                    <button className="close-btn" onClick={() => setShowBarcodeModal(false)}>&times;</button>
+                                </div>
+                                <form onSubmit={handleSaveBarcodeCopy}>
+                                    <div className="form-group">
+                                        <label>Chọn Sách Gốc (*)</label>
+                                        <select className="form-control" value={barcodeForm.book_id} onChange={e => setBarcodeForm({...barcodeForm, book_id: e.target.value})}>
+                                            {books.map(b => <option key={b.id} value={b.id}>{b.ten_sach} ({b.ma_sach})</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Mã Vạch Barcode (*)</label>
+                                        <input type="text" className="form-control" required placeholder="VD: BC987013235088405" value={barcodeForm.barcode} onChange={e => setBarcodeForm({...barcodeForm, barcode: e.target.value})} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Vị Trí Kệ Kho Trưng Bày</label>
+                                        <input type="text" className="form-control" value={barcodeForm.tu_ke_kho} onChange={e => setBarcodeForm({...barcodeForm, tu_ke_kho: e.target.value})} />
+                                    </div>
+                                    <button type="submit" className="btn-rent" style={{width: '100%', padding: '12px'}}>Lưu Bản Sao Mã Vạch Kho</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL CẤP THẺ ĐỘC GIẢ MỚI */}
+                    {showIssueCardModal && (
+                        <div className="modal-overlay">
+                            <div className="modal-card" style={{maxWidth: '480px'}}>
+                                <div className="modal-header">
+                                    <h3>Cấp Thẻ Độc Giả Kỹ Thuật Số Mới</h3>
+                                    <button className="close-btn" onClick={() => setShowIssueCardModal(false)}>&times;</button>
+                                </div>
+                                <form onSubmit={handleIssueMemberCard}>
+                                    <div className="form-group">
+                                        <label>Họ Và Tên Độc Giả (*)</label>
+                                        <input type="text" className="form-control" required value={issueCardForm.ho_ten} onChange={e => setIssueCardForm({...issueCardForm, ho_ten: e.target.value})} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Email Liên Hệ (*)</label>
+                                        <input type="email" className="form-control" required value={issueCardForm.email} onChange={e => setIssueCardForm({...issueCardForm, email: e.target.value})} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Số Điện Thoại (*)</label>
+                                        <input type="text" className="form-control" required value={issueCardForm.so_dien_thoai} onChange={e => setIssueCardForm({...issueCardForm, so_dien_thoai: e.target.value})} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Hạng Thẻ Thành Viên</label>
+                                        <select className="form-control" value={issueCardForm.loai_doc_gia} onChange={e => setIssueCardForm({...issueCardForm, loai_doc_gia: e.target.value})}>
+                                            <option value="Thẻ VIP Gold">Thẻ VIP Gold (+500k ví)</option>
+                                            <option value="Thẻ Bạch Kim">Thẻ Bạch Kim (+1 tr ví)</option>
+                                            <option value="Thẻ Tiêu Chuẩn">Thẻ Tiêu Chuẩn (+200k ví)</option>
+                                        </select>
+                                    </div>
+                                    <button type="submit" className="btn-rent" style={{width: '100%', padding: '12px', background: '#10b981'}}>Cấp Thẻ & Khởi Tạo Ví Độc Giả</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL NẠP TIỀN VÍ THỦ CÔNG */}
+                    {showTopupModal && (
+                        <div className="modal-overlay">
+                            <div className="modal-card" style={{maxWidth: '400px'}}>
+                                <div className="modal-header">
+                                    <h3>Nạp Tiền Ví Cho Độc Giả: {showTopupModal.ho_ten}</h3>
+                                    <button className="close-btn" onClick={() => setShowTopupModal(null)}>&times;</button>
+                                </div>
+                                <form onSubmit={handleManualTopup}>
+                                    <div className="form-group">
+                                        <label>Nhập Số Tiền Muốn Cộng Vào Ví (VNĐ):</label>
+                                        <input type="number" className="form-control" required value={topupAmount} onChange={e => setTopupAmount(e.target.value)} style={{fontSize: '1.1rem', fontWeight: 'bold', color: '#10b981'}} />
+                                    </div>
+                                    <button type="submit" className="btn-rent" style={{width: '100%', padding: '12px', background: '#10b981'}}>Xác Nhận Cộng Tiền Vào Ví</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL ĐĂNG NHẬP ADMIN */}
+                    {showAdminLogin && (
+                        <div className="modal-overlay">
+                            <div className="modal-card" style={{maxWidth: '400px'}}>
+                                <div className="modal-header">
+                                    <h3>Đăng Nhập Quản Trị Hệ Thống</h3>
+                                </div>
+                                <form onSubmit={handleAdminLogin}>
+                                    <div className="form-group">
+                                        <label>Tên Đăng Nhập (*)</label>
+                                        <input type="text" className="form-control" required value={adminLoginForm.username} onChange={e => setAdminLoginForm({...adminLoginForm, username: e.target.value})} />
+                                    </div>
+                                    <div className="form-group">
+                                        <label>Mật Khẩu (*)</label>
+                                        <input type="password" className="form-control" required value={adminLoginForm.password} onChange={e => setAdminLoginForm({...adminLoginForm, password: e.target.value})} />
+                                    </div>
+                                    <button type="submit" className="btn-rent" style={{width: '100%', padding: '12px'}}>Đăng Nhập Admin</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                </div>
+            );
+        }
+
+        try {
+            if (typeof ReactDOM.createRoot === 'function') {
+                const root = ReactDOM.createRoot(document.getElementById('root'));
+                root.render(<AdminApp />);
+            } else {
+                ReactDOM.render(<AdminApp />, document.getElementById('root'));
+            }
+        } catch (e) {
+            console.error('Mount error:', e);
+            document.getElementById('root').innerHTML = '<div style="padding: 30px; text-align: center; color: #ef4444; font-family: sans-serif;"><h3>⚠️ Lỗi Khởi Chạy:</h3><p>' + e.message + '</p></div>';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,2111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thư Viện Số & Cho Thuê Sách Enterprise - Cổng Độc Giả</title>
+    
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- React 18 & Babel Local Assets -->
+    <script src="assets/react.development.js"></script>
+    <script src="assets/react-dom.development.js"></script>
+    <script src="assets/babel.min.js"></script>
+    <script>
+        window.addEventListener('error', function(e) {
+            console.error('Global Error caught:', e);
+            var root = document.getElementById('root');
+            if (root && root.innerHTML.includes('Đang Khởi Chạy')) {
+                root.innerHTML = '<div style="padding: 40px; text-align: center; font-family: system-ui, sans-serif;"><div style="background: #fee2e2; border: 1px solid #fca5a5; color: #991b1b; padding: 20px; border-radius: 12px; max-width: 600px; margin: 0 auto; text-align: left;"><h3 style="margin-top:0;">⚠️ Lỗi Khởi Chạy Trình Duyệt:</h3><p><b>' + (e.message || 'Lỗi tải Script') + '</b></p><p style="font-size:0.85rem; color:#b91c1c;">Vui lòng nhấn tổ hợp phím <b>Ctrl + F5</b> hoặc thử mở trên cửa sổ Ẩn danh (Incognito Window) để tải lại bản mới nhất.</p></div></div>';
+            }
+        });
+    </script>
+
+    <!-- Custom Modern Soft Pastel UI CSS -->
+    <link rel="stylesheet" href="library_style.css">
+
+    <style>
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15,23,42,0.65);
+            backdrop-filter: blur(6px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 2000; padding: 20px;
+        }
+        .modal-card {
+            background: #ffffff;
+            border-radius: 20px;
+            width: 100%; max-width: 680px;
+            max-height: 90vh; overflow-y: auto;
+            padding: 28px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+        .filter-bar-advanced {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 18px 24px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 24px;
+            display: flex;
+            gap: 14px;
+            flex-wrap: wrap;
+            align-items: center;
+            box-shadow: var(--shadow-soft);
+        }
+        .filter-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .filter-item label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        .section-title-box {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px; margin-top: 10px;
+        }
+        .section-title-box h2 {
+            font-size: 1.35rem; font-weight: 800; color: var(--text-primary);
+            display: flex; align-items: center; gap: 10px;
+        }
+        .book-detail-header {
+            display: flex; gap: 20px; margin-bottom: 20px;
+        }
+        .book-detail-cover {
+            width: 140px; height: 195px; object-fit: cover; border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+        }
+        .meta-tag {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+            background: #eff6ff; color: #2563eb; margin-right: 6px; margin-bottom: 6px;
+        }
+        .review-card {
+            background: #f8fafc; border-radius: 12px; padding: 12px 16px; margin-bottom: 10px;
+        }
+        .star-rating { color: #f59e0b; font-size: 0.9rem; }
+        
+        /* PDF READER CONTAINER STYLES */
+        .pdf-viewer-container {
+            background: #334155;
+            border-radius: 12px;
+            padding: 20px;
+            color: #fff;
+            min-height: 420px;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .pdf-page-sheet {
+            background: #ffffff;
+            color: #0f172a;
+            width: 100%; max-width: 540px;
+            min-height: 480px;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            font-family: 'Inter', serif;
+            line-height: 1.7;
+            font-size: 0.95rem;
+            transition: transform 0.2s ease;
+        }
+        .notif-badge {
+            position: absolute; top: -4px; right: -4px;
+            background: #ef4444; color: #fff; border-radius: 50%;
+            width: 18px; height: 18px; font-size: 0.7rem; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .notif-dropdown {
+            position: absolute; top: 50px; right: 0;
+            width: 320px; background: #ffffff; border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15); border: 1px solid #e2e8f0;
+            z-index: 3000; padding: 16px; color: #1e293b;
+        }
+    </style>
+</head>
+<body>
+    <div id="root">
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 80vh; font-family: 'Inter', system-ui, sans-serif; color: #3b82f6;">
+            <div style="width: 52px; height: 52px; border: 4px solid #e0f2fe; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 20px;"></div>
+            <h3 style="font-weight: 800; font-size: 1.2rem; color: #1e293b;">Đang Khởi Chạy Thư Viện Số Enterprise...</h3>
+            <p style="color: #64748b; font-size: 0.9rem; margin-top: 6px;">Vui lòng chờ trong giây lát</p>
+        </div>
+        <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+    </div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const API_BASE = 'library_api.php';
+
+        function BookCover({ src, title, author, category, style, className }) {
+            const [imgError, setImgError] = useState(false);
+
+            useEffect(() => {
+                setImgError(false);
+            }, [src]);
+
+            const isDataUri = src && src.startsWith('data:image');
+            
+            if (src && !imgError && !isDataUri) {
+                return (
+                    <img 
+                        src={src} 
+                        className={className} 
+                        style={{
+                            width: '100%',
+                            height: '210px',
+                            objectFit: 'cover',
+                            borderRadius: '12px',
+                            boxShadow: '0 8px 20px rgba(0,0,0,0.12)',
+                            background: '#ffffff',
+                            border: '1px solid #e2e8f0',
+                            display: 'block',
+                            ...style
+                        }} 
+                        alt={title} 
+                        onError={() => setImgError(true)} 
+                    />
+                );
+            }
+
+            let bgGrad = 'linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)';
+            let iconClass = 'fas fa-book-open';
+            let catBadge = 'THƯ VIỆN SỐ';
+
+            const cleanCat = String(category || '');
+            if (cleanCat.includes('Truyện') || cleanCat.includes('Manga') || cleanCat.includes('Comic')) {
+                bgGrad = 'linear-gradient(135deg, #db2777 0%, #831843 100%)';
+                iconClass = 'fas fa-paint-brush';
+                catBadge = 'MANGA & COMIC';
+            } else if (cleanCat.includes('Công Nghệ') || cleanCat.includes('Lập Trình') || cleanCat.includes('IT')) {
+                bgGrad = 'linear-gradient(135deg, #0f172a 0%, #0284c7 100%)';
+                iconClass = 'fas fa-laptop-code';
+                catBadge = 'CÔNG NGHỆ IT';
+            } else if (cleanCat.includes('Kỹ Năng') || cleanCat.includes('Kinh Tế')) {
+                bgGrad = 'linear-gradient(135deg, #059669 0%, #047857 100%)';
+                iconClass = 'fas fa-bolt';
+                catBadge = 'KỸ NĂNG & KINH TẾ';
+            } else if (cleanCat.includes('Tiểu Thuyết') || cleanCat.includes('Trinh Thám')) {
+                bgGrad = 'linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%)';
+                iconClass = 'fas fa-search-location';
+                catBadge = 'TIỂU THUYẾT';
+            }
+
+            return (
+                <div 
+                    className={className} 
+                    style={{
+                        background: bgGrad,
+                        borderRadius: '12px',
+                        position: 'relative',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justify: 'space-between',
+                        padding: '16px 12px',
+                        color: '#ffffff',
+                        boxShadow: '0 8px 20px rgba(0,0,0,0.18)',
+                        boxSizing: 'border-box',
+                        overflow: 'hidden',
+                        userSelect: 'none',
+                        ...style
+                    }}
+                >
+                    <div style={{
+                        position: 'absolute', top: 0, left: 0, bottom: 0, width: '10px',
+                        background: 'linear-gradient(to right, rgba(255,255,255,0.4), rgba(0,0,0,0.15))'
+                    }}></div>
+
+                    <div style={{
+                        position: 'absolute', top: '8px', left: '16px', right: '8px', bottom: '8px',
+                        border: '1px solid rgba(255,255,255,0.25)', borderRadius: '6px', pointerEvents: 'none'
+                    }}></div>
+
+                    <div style={{
+                        background: 'rgba(255,255,255,0.2)',
+                        backdropFilter: 'blur(4px)',
+                        padding: '3px 8px',
+                        borderRadius: '10px',
+                        fontSize: '0.62rem',
+                        fontWeight: 800,
+                        letterSpacing: '0.5px',
+                        textTransform: 'uppercase',
+                        marginTop: '2px',
+                        maxWidth: '85%',
+                        overflow: 'hidden',
+                        whiteSpace: 'nowrap',
+                        textOverflow: 'ellipsis'
+                    }}>
+                        {catBadge}
+                    </div>
+
+                    <div style={{fontSize: '1.8rem', margin: '4px 0', opacity: 0.95}}>
+                        <i className={iconClass}></i>
+                    </div>
+
+                    <div style={{
+                        fontWeight: 800,
+                        fontSize: '0.82rem',
+                        textAlign: 'center',
+                        lineHeight: 1.25,
+                        textShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        overflow: 'hidden',
+                        width: '100%',
+                        padding: '0 4px'
+                    }}>
+                        {title}
+                    </div>
+
+                    <div style={{
+                        fontSize: '0.68rem',
+                        opacity: 0.9,
+                        fontWeight: 600,
+                        textAlign: 'center',
+                        borderTop: '1px solid rgba(255,255,255,0.25)',
+                        paddingTop: '4px',
+                        width: '100%',
+                        marginTop: '4px',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis'
+                    }}>
+                        {author || 'Tác giả'}
+                    </div>
+                </div>
+            );
+        }
+
+        function getSVGBookCover(title, author, category) {
+            const cleanTitle = String(title || 'Sách Thư Viện').replace(/[<>&"]/g, '');
+            const cleanAuthor = String(author || 'Tác giả').replace(/[<>&"]/g, '');
+            const cleanCategory = String(category || 'Sách').replace(/[<>&"]/g, '');
+
+            let bgGrad = ['#3b82f6', '#1d4ed8'];
+            let icon = '📖';
+            let catBadge = 'THƯ VIỆN SỐ';
+
+            if (cleanCategory.includes('Truyện') || cleanCategory.includes('Manga') || cleanCategory.includes('Comic')) {
+                bgGrad = ['#ec4899', '#831843'];
+                icon = '🎨';
+                catBadge = 'MANGA & COMIC';
+            } else if (cleanCategory.includes('Công Nghệ') || cleanCategory.includes('Lập Trình') || cleanCategory.includes('IT')) {
+                bgGrad = ['#0f172a', '#0284c7'];
+                icon = '💻';
+                catBadge = 'CÔNG NGHỆ IT';
+            } else if (cleanCategory.includes('Kỹ Năng') || cleanCategory.includes('Kinh Tế')) {
+                bgGrad = ['#10b981', '#047857'];
+                icon = '⚡';
+                catBadge = 'KỸ NĂNG & KINH TẾ';
+            } else if (cleanCategory.includes('Tiểu Thuyết') || cleanCategory.includes('Trinh Thám')) {
+                bgGrad = ['#8b5cf6', '#4c1d95'];
+                icon = '🔍';
+                catBadge = 'TIỂU THUYẾT';
+            }
+
+            const words = cleanTitle.split(' ');
+            const lines = [];
+            let currentLine = '';
+            words.forEach(w => {
+                if ((currentLine + ' ' + w).length > 16) {
+                    if (currentLine) lines.push(currentLine.trim());
+                    currentLine = w;
+                } else {
+                    currentLine += ' ' + w;
+                }
+            });
+            if (currentLine.trim()) lines.push(currentLine.trim());
+            const finalLines = lines.slice(0, 4);
+
+            const titleY = 200 - (finalLines.length * 10);
+            const titleXml = finalLines.map((l, idx) => `<text x="150" y="${titleY + (idx * 24)}" fill="#ffffff" font-size="15" font-weight="bold" font-family="sans-serif" text-anchor="middle">${l}</text>`).join('');
+
+            const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="300" height="420" viewBox="0 0 300 420">
+                <defs>
+                    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="${bgGrad[0]}"/>
+                        <stop offset="100%" stop-color="${bgGrad[1]}"/>
+                    </linearGradient>
+                    <linearGradient id="spine" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="#ffffff" stop-opacity="0.35"/>
+                        <stop offset="100%" stop-color="#000000" stop-opacity="0.2"/>
+                    </linearGradient>
+                </defs>
+                <rect width="300" height="420" rx="12" fill="url(#bg)"/>
+                <rect x="0" y="0" width="18" height="420" fill="url(#spine)"/>
+                <rect x="30" y="24" width="240" height="372" rx="8" fill="none" stroke="#ffffff" stroke-opacity="0.25" stroke-width="2"/>
+                <rect x="45" y="45" width="140" height="24" rx="12" fill="#ffffff" fill-opacity="0.2"/>
+                <text x="115" y="61" fill="#ffffff" font-size="11" font-weight="bold" font-family="sans-serif" text-anchor="middle" letter-spacing="1">${catBadge}</text>
+                <text x="150" y="135" font-size="48" text-anchor="middle">${icon}</text>
+                ${titleXml}
+                <line x1="60" y1="340" x2="240" y2="340" stroke="#ffffff" stroke-opacity="0.3" stroke-width="1"/>
+                <text x="150" y="365" fill="#f8fafc" font-size="12" font-weight="600" font-family="sans-serif" text-anchor="middle">Tác giả: ${cleanAuthor.slice(0, 24)}</text>
+                <text x="150" y="390" fill="#93c5fd" font-size="10" font-family="sans-serif" text-anchor="middle">★ THƯ VIỆN SỐ ENTERPRISE ★</text>
+            </svg>`;
+
+            return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg)));
+        }
+
+        function handleCoverError(e, title, author, category) {
+            e.target.onerror = null;
+            e.target.src = getSVGBookCover(title, author, category);
+        }
+
+        function ReaderApp() {
+            // Main Tabs: 'home', 'catalog', 'elibrary', 'events', 'manga_services', 'my_account'
+            const [activeMainTab, setActiveMainTab] = useState('home');
+
+            // Search & Advanced Filter state
+            const [searchQuery, setSearchQuery] = useState('');
+            const [selectedCategory, setSelectedCategory] = useState('Tất cả');
+            const [filterYear, setFilterYear] = useState('Tất cả');
+            const [filterLanguage, setFilterLanguage] = useState('Tất cả');
+            const [filterStatus, setFilterStatus] = useState('all');
+            const [sortBy, setSortBy] = useState('newest');
+
+            // Core Data states
+            const [books, setBooks] = useState([]);
+            const [categories, setCategories] = useState([]);
+            const [currentReader, setCurrentReader] = useState(null);
+            const [walletInfo, setWalletInfo] = useState(null);
+            const [myOrders, setMyOrders] = useState([]);
+            const [myReservations, setMyReservations] = useState([]);
+            const [mangaServices, setMangaServices] = useState([]);
+            const [myMangaOrders, setMyMangaOrders] = useState([]);
+
+            // Enterprise Feature Data states
+            const [digitalDocs, setDigitalDocs] = useState([]);
+            const [events, setEvents] = useState([]);
+            const [recommendations, setRecommendations] = useState([]);
+            const [notifications, setNotifications] = useState([]);
+            const [showNotifDrawer, setShowNotifDrawer] = useState(false);
+
+            // LIVE CHAT WITH ADMIN STATE
+            const [showLiveChat, setShowLiveChat] = useState(false);
+            const [chatMessages, setChatMessages] = useState([]);
+            const [chatInput, setChatInput] = useState('');
+
+            // PDF Reader Modal state
+            const [activePdfDoc, setActivePdfDoc] = useState(null);
+            const [pdfPage, setPdfPage] = useState(1);
+            const [pdfZoom, setPdfZoom] = useState(100);
+
+            // VietQR Payment Modal state
+            const [showVietQrModal, setShowVietQrModal] = useState(false);
+            const [topupAmountInput, setTopupAmountInput] = useState(200000);
+
+            // Book Donation Modal state
+            const [showDonationModal, setShowDonationModal] = useState(false);
+            const [donationForm, setDonationForm] = useState({
+                ten_sach: '', tac_gia: '', me_ta: '', danh_muc: 'Tiểu thuyết', tinh_trang: 'Mới 95%', ghi_chu_lien_he: 'Đà Nẵng'
+            });
+
+            // Detail Modal state
+            const [detailBook, setDetailBook] = useState(null);
+            const [bookReviews, setBookReviews] = useState([]);
+            const [newReviewStars, setNewReviewStars] = useState(5);
+            const [newReviewComment, setNewReviewComment] = useState('');
+
+            // Book Rental Modal
+            const [checkoutBook, setCheckoutBook] = useState(null);
+            const [rentDays, setRentDays] = useState(7);
+            const [deliveryMethod, setDeliveryMethod] = useState('Giao tận nơi');
+
+            // Manga Order Modal
+            const [orderService, setOrderService] = useState(null);
+            const [selectedTier, setSelectedTier] = useState('Gói Tiêu Chuẩn');
+            const [orderNote, setOrderNote] = useState('');
+
+            // Auth Modals
+            const [showLoginModal, setShowLoginModal] = useState(false);
+            const [showRegModal, setShowRegModal] = useState(false);
+            const [loginForm, setLoginForm] = useState({ username: 'khainguyen@gmail.com', password: '123' });
+            const [regForm, setRegForm] = useState({ ho_ten: '', email: '', so_dien_thoai: '', password: '', dia_chi: 'Đà Nẵng' });
+
+            // AUDIOBOOK PLAYER STATE
+            const [audiobooks, setAudiobooks] = useState([]);
+            const [playingTrack, setPlayingTrack] = useState(null);
+            const [isPlaying, setIsPlaying] = useState(false);
+            const [audioSpeed, setAudioSpeed] = useState(1.0);
+            const [selectedChapter, setSelectedChapter] = useState(0);
+
+            // AI SUMMARIZER STATE
+            const [showAiModal, setShowAiModal] = useState(false);
+            const [aiBookTitle, setAiBookTitle] = useState('');
+            const [aiSummary, setAiSummary] = useState(null);
+            const [aiLoading, setAiLoading] = useState(false);
+            const [aiChatInput, setAiChatInput] = useState('');
+            const [aiChatLog, setAiChatLog] = useState([]);
+
+            useEffect(() => {
+                const savedUser = localStorage.getItem('reader_user');
+                if (savedUser) {
+                    try { setCurrentReader(JSON.parse(savedUser)); } catch (e) {}
+                }
+                fetchCategories();
+                fetchBooks();
+                fetchMangaServices();
+                fetchDigitalDocs();
+                fetchEvents();
+                fetchAudiobooks();
+            }, []);
+
+            const fetchAudiobooks = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_audiobooks`);
+                    const json = await res.json();
+                    if (json.status === 'success') {
+                        setAudiobooks(json.data.audiobooks);
+                        if (json.data.audiobooks.length > 0 && !playingTrack) {
+                            setPlayingTrack(json.data.audiobooks[0]);
+                        }
+                    }
+                } catch (e) { console.error(e); }
+            };
+
+            const handlePlayAudiobook = (track) => {
+                if (playingTrack && playingTrack.id === track.id) {
+                    if (isPlaying) {
+                        if ('speechSynthesis' in window) window.speechSynthesis.pause();
+                        setIsPlaying(false);
+                    } else {
+                        if ('speechSynthesis' in window && window.speechSynthesis.paused) {
+                            window.speechSynthesis.resume();
+                        } else {
+                            speakSample(track.sample_text);
+                        }
+                        setIsPlaying(true);
+                    }
+                } else {
+                    setPlayingTrack(track);
+                    setIsPlaying(true);
+                    speakSample(track.sample_text);
+                }
+            };
+
+            const speakSample = (text) => {
+                if (!('speechSynthesis' in window)) return;
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'vi-VN';
+                utterance.rate = audioSpeed;
+                utterance.onend = () => setIsPlaying(false);
+                utterance.onerror = () => setIsPlaying(false);
+                window.speechSynthesis.speak(utterance);
+            };
+
+            const handleOpenAiSummary = async (bookTitle) => {
+                setAiBookTitle(bookTitle);
+                setShowAiModal(true);
+                setAiLoading(true);
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_ai_summary&book_title=${encodeURIComponent(bookTitle)}`);
+                    const json = await res.json();
+                    if (json.status === 'success') {
+                        setAiSummary(json.data.summary);
+                        setAiChatLog([
+                            { sender: 'ai', text: `🤖 Chào bạn! Mình là Trợ Lý AI của Thư Viện Số. Cuốn sách "${bookTitle}" thật tuyệt vời! Bạn có thắc mắc gì cần giải đáp không?` }
+                        ]);
+                    }
+                } catch (e) { alert('Lỗi tải tóm tắt AI'); }
+                finally { setAiLoading(false); }
+            };
+
+            const handleSendAiChat = (e) => {
+                e.preventDefault();
+                if (!aiChatInput.trim()) return;
+                const userMsg = aiChatInput.trim();
+                setAiChatLog(prev => [...prev, { sender: 'user', text: userMsg }]);
+                setAiChatInput('');
+                setTimeout(() => {
+                    let reply = `Dựa trên phân tích cuốn sách "${aiBookTitle}", bài học quan trọng nhất là bạn nên tập trung vào quy trình và hành động nhỏ mỗi ngày.`;
+                    if (userMsg.toLowerCase().includes('áp dụng') || userMsg.toLowerCase().includes('làm sao')) {
+                        reply = `Để áp dụng thành công: Hãy chọn 1 mục tiêu đơn giản (dưới 2 phút) và thực hiện ngay sau một thói quen cố định sẵn có!`;
+                    } else if (userMsg.toLowerCase().includes('tác giả') || userMsg.toLowerCase().includes('ai viết')) {
+                        reply = `Tác giả cuốn sách là chuyên gia hàng đầu, giúp kết hợp khoa học tâm lý học và tư duy thực tiễn.`;
+                    }
+                    setAiChatLog(prev => [...prev, { sender: 'ai', text: reply }]);
+                }, 500);
+            };
+
+            useEffect(() => {
+                fetchBooks();
+            }, [searchQuery, selectedCategory, filterYear, filterLanguage, filterStatus, sortBy]);
+
+            useEffect(() => {
+                if (currentReader) {
+                    fetchWallet(currentReader.id);
+                    fetchMyOrders(currentReader.id);
+                    fetchMyReservations(currentReader.id);
+                    fetchMyMangaOrders(currentReader.id);
+                    fetchRecommendations(currentReader.id);
+                    fetchNotifications(currentReader.id);
+                }
+            }, [currentReader]);
+
+            // LIVE CHAT REAL-TIME POLLING EFFECT
+            useEffect(() => {
+                let interval;
+                if (showLiveChat && currentReader) {
+                    fetchChatMessages(currentReader.id);
+                    interval = setInterval(() => {
+                        fetchChatMessages(currentReader.id);
+                    }, 3000);
+                }
+                return () => { if (interval) clearInterval(interval); };
+            }, [showLiveChat, currentReader]);
+
+            const fetchChatMessages = async (readerId) => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_chat_messages&reader_id=${readerId}`);
+                    const json = await res.json();
+                    if (json.status === 'success') setChatMessages(json.data.messages || []);
+                } catch (e) { console.error(e); }
+            };
+
+            const handleSendChatMessage = async (e) => {
+                e.preventDefault();
+                if (!currentReader) return;
+                if (!chatInput.trim()) return;
+
+                try {
+                    const res = await fetch(`${API_BASE}?action=send_chat_message`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            reader_id: currentReader.id,
+                            sender_type: 'reader',
+                            message_text: chatInput.trim()
+                        })
+                    });
+                    const json = await res.json();
+                    if (json.status === 'success') {
+                        setChatInput('');
+                        setChatMessages(json.data.messages || []);
+                    }
+                } catch (e) { alert('Lỗi gửi tin nhắn'); }
+            };
+
+            const fetchCategories = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_categories`);
+                    const json = await res.json();
+                    if (json.status === 'success') setCategories(json.data.categories);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchBooks = async () => {
+                try {
+                    const query = `${API_BASE}?action=get_books&search=${encodeURIComponent(searchQuery)}&category_id=${encodeURIComponent(selectedCategory)}&nam_xuat_ban=${encodeURIComponent(filterYear)}&ngon_ngu=${encodeURIComponent(filterLanguage)}&trang_thai=${filterStatus}&sort=${sortBy}`;
+                    const res = await fetch(query);
+                    const json = await res.json();
+                    if (json.status === 'success') setBooks(json.data.books);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchMangaServices = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_manga_services`);
+                    const json = await res.json();
+                    if (json.status === 'success') setMangaServices(json.data.services);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchDigitalDocs = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_digital_documents`);
+                    const json = await res.json();
+                    if (json.status === 'success') setDigitalDocs(json.data.digital_documents);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchEvents = async () => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_events`);
+                    const json = await res.json();
+                    if (json.status === 'success') setEvents(json.data.events);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchRecommendations = async (readerId) => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_recommendations&reader_id=${readerId}`);
+                    const json = await res.json();
+                    if (json.status === 'success') setRecommendations(json.data.recommendations);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchNotifications = async (readerId) => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_notifications&reader_id=${readerId}`);
+                    const json = await res.json();
+                    if (json.status === 'success') setNotifications(json.data.notifications);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchMyMangaOrders = async (readerId) => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_manga_orders&reader_id=${readerId}`);
+                    const json = await res.json();
+                    if (json.status === 'success') setMyMangaOrders(json.data.manga_orders);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchWallet = async (readerId) => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=wallet_info&reader_id=${readerId}`);
+                    const json = await res.json();
+                    if (json.status === 'success') setWalletInfo(json.data.wallet);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchMyOrders = async (readerId) => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_orders&reader_id=${readerId}`);
+                    const json = await res.json();
+                    if (json.status === 'success') setMyOrders(json.data.borrows);
+                } catch (e) { console.error(e); }
+            };
+
+            const fetchMyReservations = async (readerId) => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_my_reservations&reader_id=${readerId}`);
+                    const json = await res.json();
+                    if (json.status === 'success') setMyReservations(json.data.reservations);
+                } catch (e) { console.error(e); }
+            };
+
+            // Event registration handler
+            const handleRegisterEvent = async (eventId) => {
+                if (!currentReader) {
+                    setShowLoginModal(true);
+                    return alert('Vui lòng đăng nhập để đăng ký tham gia sự kiện!');
+                }
+                try {
+                    const res = await fetch(`${API_BASE}?action=register_event`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ event_id: eventId, reader_id: currentReader.id })
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') fetchEvents();
+                } catch (e) { alert('Lỗi đăng ký sự kiện'); }
+            };
+
+            // Submit book donation handler
+            const handleSubmitDonation = async (e) => {
+                e.preventDefault();
+                if (!currentReader) {
+                    setShowLoginModal(true);
+                    return alert('Vui lòng đăng nhập để quyên góp sách!');
+                }
+                try {
+                    const res = await fetch(`${API_BASE}?action=submit_book_donation`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ ...donationForm, reader_id: currentReader.id })
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') {
+                        setShowDonationModal(false);
+                        setDonationForm({ ten_sach: '', tac_gia: '', me_ta: '', danh_muc: 'Tiểu thuyết', tinh_trang: 'Mới 95%', ghi_chu_lien_he: 'Đà Nẵng' });
+                    }
+                } catch (e) { alert('Lỗi quyên góp sách'); }
+            };
+
+            // Open Book Detail Modal
+            const handleOpenBookDetails = async (book) => {
+                setDetailBook(book);
+                try {
+                    const res = await fetch(`${API_BASE}?action=get_book_details&id=${book.id}`);
+                    const json = await res.json();
+                    if (json.status === 'success') {
+                        setDetailBook(json.data.book);
+                        setBookReviews(json.data.reviews || []);
+                    }
+                } catch (e) { console.error(e); }
+            };
+
+            // Submit Review & Rating
+            const handleAddReview = async (e) => {
+                e.preventDefault();
+                if (!currentReader) {
+                    setShowLoginModal(true);
+                    return alert('Vui lòng đăng nhập để gửi đánh giá!');
+                }
+                if (!newReviewComment.trim()) return alert('Vui lòng nhập nội dung đánh giá!');
+
+                try {
+                    const res = await fetch(`${API_BASE}?action=add_book_review`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            book_id: detailBook.id,
+                            reader_id: currentReader.id,
+                            rating_stars: newReviewStars,
+                            comment_text: newReviewComment
+                        })
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') {
+                        setNewReviewComment('');
+                        handleOpenBookDetails(detailBook);
+                    }
+                } catch (e) { alert('Lỗi gửi đánh giá!'); }
+            };
+
+            // Reserve Hold Handler
+            const handleReserveBook = async (book) => {
+                if (!currentReader) {
+                    setShowLoginModal(true);
+                    return alert('Vui lòng đăng nhập để đặt giữ chỗ sách!');
+                }
+                try {
+                    const res = await fetch(`${API_BASE}?action=reserve_book`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            book_id: book.id,
+                            reader_id: currentReader.id
+                        })
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') {
+                        fetchMyReservations(currentReader.id);
+                        if (detailBook) setDetailBook(null);
+                        setActiveMainTab('my_account');
+                    }
+                } catch (e) { alert('Lỗi đặt giữ chỗ sách'); }
+            };
+
+            // Auth Handlers
+            const handleReaderLogin = async (e) => {
+                e.preventDefault();
+                try {
+                    const res = await fetch(`${API_BASE}?action=reader_login`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(loginForm)
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') {
+                        setCurrentReader(json.data.reader);
+                        localStorage.setItem('reader_user', JSON.stringify(json.data.reader));
+                        setShowLoginModal(false);
+                    }
+                } catch (e) { alert('Lỗi đăng nhập'); }
+            };
+
+            const handleReaderRegister = async (e) => {
+                e.preventDefault();
+                try {
+                    const res = await fetch(`${API_BASE}?action=reader_register`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(regForm)
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') {
+                        setShowRegModal(false);
+                        setShowLoginModal(true);
+                    }
+                } catch (e) { alert('Lỗi đăng ký'); }
+            };
+
+            const handleLogout = () => {
+                setCurrentReader(null);
+                setWalletInfo(null);
+                setMyOrders([]);
+                setMyReservations([]);
+                setNotifications([]);
+                localStorage.removeItem('reader_user');
+                alert('Đã đăng xuất tài khoản.');
+            };
+
+            // Checkout Rental Handler
+            const handleConfirmBookCheckout = async () => {
+                if (!currentReader) {
+                    setShowLoginModal(true);
+                    return alert('Vui lòng đăng nhập để đặt thuê sách!');
+                }
+                if (!checkoutBook) return;
+
+                const startDate = new Date().toISOString().split('T')[0];
+                const endDateObj = new Date();
+                endDateObj.setDate(endDateObj.getDate() + parseInt(rentDays));
+                const endDate = endDateObj.toISOString().split('T')[0];
+
+                try {
+                    const res = await fetch(`${API_BASE}?action=client_checkout`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            reader_id: currentReader.id,
+                            book_id: checkoutBook.id,
+                            ngay_bat_dau: startDate,
+                            ngay_ket_thuc: endDate,
+                            phuong_thuc_nhan: deliveryMethod
+                        })
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') {
+                        setCheckoutBook(null);
+                        fetchWallet(currentReader.id);
+                        fetchMyOrders(currentReader.id);
+                        fetchBooks();
+                        setActiveMainTab('my_account');
+                    }
+                } catch (e) { alert('Lỗi đặt thuê sách'); }
+            };
+
+            // Extend Rental Handler
+            const handleExtendRental = async (orderId) => {
+                try {
+                    const res = await fetch(`${API_BASE}?action=client_extend_rental`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id: orderId })
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') fetchMyOrders(currentReader.id);
+                } catch (e) { alert('Lỗi gia hạn'); }
+            };
+
+            // Order Manga Service
+            const handleConfirmMangaOrder = async () => {
+                if (!currentReader) {
+                    setShowLoginModal(true);
+                    return alert('Vui lòng đăng nhập để đặt vẽ Manga!');
+                }
+                if (!orderService) return;
+
+                try {
+                    const res = await fetch(`${API_BASE}?action=order_manga_service`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            reader_id: currentReader.id,
+                            service_id: orderService.id,
+                            package_tier: selectedTier,
+                            note: orderNote
+                        })
+                    });
+                    const json = await res.json();
+                    alert(json.message);
+                    if (json.status === 'success') {
+                        setOrderService(null);
+                        fetchWallet(currentReader.id);
+                        fetchMyMangaOrders(currentReader.id);
+                        setActiveMainTab('my_account');
+                    }
+                } catch (e) { alert('Lỗi đặt dịch vụ vẽ'); }
+            };
+
+            // Topup Handler (VietQR Simulation)
+            const handleConfirmVietQrTopup = async () => {
+                if (!currentReader) return;
+                const amount = Number(topupAmountInput);
+                if (isNaN(amount) || amount <= 0) return alert('Vui lòng nhập số tiền hợp lệ!');
+
+                try {
+                    const res = await fetch(`${API_BASE}?action=wallet_topup`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ reader_id: currentReader.id, so_tien: amount })
+                    });
+                    const json = await res.json();
+                    alert(json.message + ' (Cổng VNPAY/VietQR xác nhận thành công!)');
+                    if (json.status === 'success') {
+                        setShowVietQrModal(false);
+                        fetchWallet(currentReader.id);
+                    }
+                } catch (e) { alert('Lỗi nạp tiền'); }
+            };
+
+            return (
+                <div>
+                    {/* TOP SOFT PASTEL HEADER */}
+                    <header className="fl-header" style={{boxShadow: '0 4px 20px rgba(0,0,0,0.06)'}}>
+                        <div className="fl-nav-container">
+                            <a href="#" className="fl-brand" onClick={() => setActiveMainTab('home')}>
+                                <i className="fas fa-book-reader" style={{color: '#3b82f6', fontSize: '1.6rem'}}></i>
+                                <span style={{fontWeight: 800}}>Thư Viện Số Enterprise</span>
+                            </a>
+
+                            <div className="fl-search-bar" style={{flex: 1, maxWidth: '380px'}}>
+                                <input 
+                                    type="text" 
+                                    placeholder="🔍 Tra cứu Tên sách, Tác giả, Mã ISBN, Kệ kho..." 
+                                    value={searchQuery}
+                                    onChange={e => {
+                                        setSearchQuery(e.target.value);
+                                        if (activeMainTab !== 'catalog') setActiveMainTab('catalog');
+                                    }}
+                                />
+                                <i className="fas fa-search"></i>
+                            </div>
+
+                            <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                <button className={`btn-tab ${activeMainTab === 'home' ? 'active' : ''}`} onClick={() => setActiveMainTab('home')}>
+                                    <i className="fas fa-home"></i> Trang Chủ
+                                </button>
+                                <button className={`btn-tab ${activeMainTab === 'catalog' ? 'active' : ''}`} onClick={() => setActiveMainTab('catalog')}>
+                                    <i className="fas fa-search-plus"></i> Kho Sách ({books.length})
+                                </button>
+                                <button className={`btn-tab ${activeMainTab === 'elibrary' ? 'active' : ''}`} onClick={() => setActiveMainTab('elibrary')}>
+                                    <i className="fas fa-file-pdf" style={{color: '#ef4444'}}></i> Thư Viện Số ({digitalDocs.length})
+                                </button>
+                                <button className={`btn-tab ${activeMainTab === 'events' ? 'active' : ''}`} onClick={() => setActiveMainTab('events')}>
+                                    <i className="fas fa-calendar-star" style={{color: '#f59e0b'}}></i> Sự Kiện ({events.length})
+                                </button>
+                                <button className={`btn-tab ${activeMainTab === 'manga_services' ? 'active' : ''}`} onClick={() => setActiveMainTab('manga_services')}>
+                                    <i className="fas fa-paint-brush"></i> Sàn Vẽ Manga ({mangaServices.length})
+                                </button>
+                                {currentReader && (
+                                    <button className={`btn-tab ${activeMainTab === 'my_account' ? 'active' : ''}`} onClick={() => setActiveMainTab('my_account')}>
+                                        <i className="fas fa-user-circle"></i> Tủ Sách Của Tôi ({myOrders.length})
+                                    </button>
+                                )}
+
+                                {/* NOTIFICATION BELL */}
+                                {currentReader && (
+                                    <div style={{position: 'relative'}}>
+                                        <button className="btn-tab" style={{position: 'relative', padding: '8px 12px'}} onClick={() => setShowNotifDrawer(!showNotifDrawer)}>
+                                            <i className="fas fa-bell" style={{color: '#f59e0b'}}></i>
+                                            {notifications.length > 0 && <span className="notif-badge">{notifications.length}</span>}
+                                        </button>
+                                        {showNotifDrawer && (
+                                            <div className="notif-dropdown">
+                                                <h4 style={{fontSize: '0.9rem', fontWeight: 800, marginBottom: '10px', display: 'flex', justifyContent: 'space-between'}}>
+                                                    <span>🔔 Thông Báo Độc Giả</span>
+                                                    <span style={{fontSize: '0.75rem', color: '#3b82f6'}}>{notifications.length} mới</span>
+                                                </h4>
+                                                <div style={{maxHeight: '260px', overflowY: 'auto'}}>
+                                                    {notifications.length === 0 ? (
+                                                        <p style={{fontSize: '0.8rem', color: '#64748b', textAlign: 'center'}}>Không có thông báo mới</p>
+                                                    ) : (
+                                                        notifications.map(n => (
+                                                            <div key={n.id} style={{padding: '8px 0', borderBottom: '1px solid #f1f5f9'}}>
+                                                                <p style={{fontSize: '0.82rem', fontWeight: 700, margin: 0, color: '#1e293b'}}>{n.title}</p>
+                                                                <p style={{fontSize: '0.78rem', color: '#64748b', margin: '2px 0'}}>{n.message}</p>
+                                                                <small style={{fontSize: '0.7rem', color: '#94a3b8'}}>{n.created_at}</small>
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                <a href="library_index.html" className="btn-tab" style={{background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', border: '1px solid #a855f7'}} title="Chuyển sang Giao diện Quản trị">
+                                    <i className="fas fa-user-shield" style={{color: '#f59e0b'}}></i> Trang Quản Trị
+                                </a>
+
+                                {currentReader ? (
+                                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                        <div style={{background: 'rgba(255,255,255,0.2)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.85rem', color: '#fff'}}>
+                                            👤 <strong>{currentReader.ho_ten}</strong>
+                                        </div>
+                                        <button className="btn-tab" style={{background: '#fee2e2', color: '#ef4444', padding: '8px 12px'}} onClick={handleLogout} title="Đăng xuất"><i className="fas fa-sign-out-alt"></i></button>
+                                    </div>
+                                ) : (
+                                    <div style={{display: 'flex', gap: '8px'}}>
+                                        <button className="btn-auth" onClick={() => setShowLoginModal(true)}>Đăng Nhập</button>
+                                        <button className="btn-auth" style={{background: '#8b5cf6'}} onClick={() => setShowRegModal(true)}>Đăng Ký (+500k)</button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </header>
+
+                    <div style={{maxWidth: '1280px', margin: '24px auto 48px', padding: '0 24px'}}>
+                        
+                        {/* 1. TRANG CHỦ PHONG PHÚ (HOMEPAGE WITH HERO, RECOMMENDATIONS & LEADERBOARD) */}
+                        {activeMainTab === 'home' && (
+                            <div>
+                                {/* HERO BANNER GRADIENT */}
+                                <div className="hero-banner-enterprise">
+                                    <div className="hero-content">
+                                        <div className="hero-badge-pill">
+                                            <i className="fas fa-crown" style={{color: '#f59e0b'}}></i> THƯ VIỆN SỐ & TIỆM CHO THUÊ TRUYỆN ENTERPRISE v5.0
+                                        </div>
+                                        <h1 className="hero-title">Khám Phá Tri Thức & Không Gian Thuê Truyện Hàng Đầu</h1>
+                                        <p className="hero-subtitle">
+                                            Tra cứu hơn 1,000+ tựa Manga, Truyện tranh Nhật Bản, Trình đọc PDF số hóa trực tuyến và Sàn họa sĩ minh họa Freelancer. 
+                                            Thanh toán VietQR tiện lợi và dịch vụ giao tận nhà 2 tiếng.
+                                        </p>
+                                        <div style={{display: 'flex', gap: '12px', marginTop: '16px'}}>
+                                            <button className="btn-rent" style={{background: '#10b981', padding: '10px 20px'}} onClick={() => setShowDonationModal(true)}>
+                                                <i className="fas fa-gift"></i> Quyên Góp Sách Cũ Đổi Điểm Ví
+                                            </button>
+                                            <button className="btn-rent secondary" style={{background: 'rgba(255,255,255,0.2)', color: '#fff', border: '1px solid #fff', padding: '10px 20px'}} onClick={() => setActiveMainTab('elibrary')}>
+                                                <i className="fas fa-file-pdf"></i> Đọc Sách PDF Online
+                                            </button>
+                                        </div>
+                                        <div className="hero-stats-row" style={{marginTop: '20px'}}>
+                                            <div className="hero-stat-item">
+                                                <h4>1,000+</h4>
+                                                <p>Đầu Sách & Manga</p>
+                                            </div>
+                                            <div className="hero-stat-item">
+                                                <h4>99.5%</h4>
+                                                <p>Sách Khả Dụng</p>
+                                            </div>
+                                            <div className="hero-stat-item">
+                                                <h4>2,500+</h4>
+                                                <p>Độc Giả VIP</p>
+                                            </div>
+                                            <div className="hero-stat-item">
+                                                <h4>⚡ 2 Tiếng</h4>
+                                                <p>Giao Sách Tận Nơi</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* CHỦ ĐỀ HOT / QUICK CATEGORY PILLS */}
+                                <div style={{display: 'flex', gap: '10px', overflowX: 'auto', paddingBottom: '12px', marginBottom: '24px'}}>
+                                    <button 
+                                        className={`btn-rent ${selectedCategory === 'Tất cả' ? '' : 'secondary'}`} 
+                                        style={{borderRadius: '25px', padding: '10px 20px', fontSize: '0.88rem'}}
+                                        onClick={() => { setSelectedCategory('Tất cả'); setActiveMainTab('catalog'); }}
+                                    >
+                                        📚 Tất Cả Thể Loại
+                                    </button>
+                                    {categories.map(cat => (
+                                        <button 
+                                            key={cat.id} 
+                                            className="btn-rent secondary" 
+                                            style={{borderRadius: '25px', padding: '10px 20px', fontSize: '0.88rem', background: '#fff', border: '1px solid #cbd5e1', color: '#1e293b'}}
+                                            onClick={() => { setSelectedCategory(cat.id); setActiveMainTab('catalog'); }}
+                                        >
+                                            📌 {cat.ten_danh_muc} ({cat.total_books || 5})
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* SMART ALGORITHMIC RECOMMENDATIONS FOR USER */}
+                                {currentReader && recommendations.length > 0 && (
+                                    <div style={{background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', borderRadius: '20px', padding: '24px', marginBottom: '36px', border: '1px solid #bfdbfe'}}>
+                                        <div className="section-title-box" style={{marginTop: 0, marginBottom: '16px'}}>
+                                            <h2><i className="fas fa-robot" style={{color: '#2563eb'}}></i> Gợi Ý Thông Minh Dành Cho Bạn ({currentReader.ho_ten})</h2>
+                                            <span style={{fontSize: '0.8rem', color: '#1e40af', fontWeight: 600}}>AI Thuật Toán Dựa Trên Sở Thích Đọc</span>
+                                        </div>
+                                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: '16px'}}>
+                                             {recommendations.slice(0, 4).map(rec => (
+                                                 <div key={rec.id} className="book-card-enterprise" style={{background: '#fff', padding: '12px'}}>
+                                                     <BookCover src={rec.hinh_anh} title={rec.ten_sach} author={rec.tac_gia} category={rec.ten_danh_muc} style={{width: '100%', height: '140px', marginBottom: '10px'}} />
+                                                     <h4 style={{fontSize: '0.9rem', fontWeight: 800, color: '#1e293b', marginBottom: '4px'}}>{rec.ten_sach}</h4>
+                                                     <p style={{fontSize: '0.78rem', color: '#64748b', marginBottom: '8px'}}>Tác giả: {rec.tac_gia}</p>
+                                                     <button className="btn-rent" style={{padding: '6px 12px', fontSize: '0.78rem', width: '100%'}} onClick={() => handleOpenBookDetails(rec)}>
+                                                         <i className="fas fa-eye"></i> Xem Chi Tiết
+                                                     </button>
+                                                 </div>
+                                             ))}
+                                         </div>
+                                     </div>
+                                 )}
+
+                                 {/* SECTION 1: SÁCH MỚI NHẬP NỔI BẬT */}
+                                 <div className="section-title-box">
+                                     <h2><i className="fas fa-sparkles" style={{color: '#f59e0b'}}></i> Sách Mới Nhập & Đăng Ký Thuê Nổi Bật</h2>
+                                     <button className="btn-tab" style={{color: '#2563eb', fontWeight: 700}} onClick={() => setActiveMainTab('catalog')}>Xem Tất Cả Sách <i className="fas fa-arrow-right"></i></button>
+                                 </div>
+
+                                 <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px', marginBottom: '40px'}}>
+                                     {books.slice(0, 8).map(book => (
+                                         <div key={book.id} className="book-card-enterprise">
+                                             <div className="book-cover-wrapper">
+                                                 <BookCover src={book.hinh_anh} title={book.ten_sach} author={book.tac_gia} category={book.ten_danh_muc} className="book-cover-img" />
+                                                <span className={`floating-badge ${book.co_san > 0 ? 'badge-success' : 'badge-danger'}`}>
+                                                    {book.co_san > 0 ? `Còn ${book.co_san} bản` : 'Hết hàng'}
+                                                </span>
+                                                <span className="badge-location"><i className="fas fa-map-marker-alt"></i> {book.tu_ke_kho}</span>
+                                            </div>
+
+                                            <div style={{flexGrow: 1, display: 'flex', flexDirection: 'column'}}>
+                                                <h3 style={{fontSize: '0.95rem', fontWeight: 800, marginBottom: '6px', color: '#1e293b', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden'}}>
+                                                    {book.ten_sach}
+                                                </h3>
+                                                <p style={{fontSize: '0.82rem', color: '#64748b', marginBottom: '8px'}}><i className="fas fa-pen-nib"></i> Tác giả: {book.tac_gia}</p>
+
+                                                <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px'}}>
+                                                    <div className="star-rating">
+                                                        <i className="fas fa-star"></i> {Number(book.rating_score || 5).toFixed(1)} <span style={{color: '#94a3b8', fontSize: '0.75rem'}}>({book.review_count || 3} đánh giá)</span>
+                                                    </div>
+                                                    <span style={{fontSize: '0.78rem', color: '#2563eb', fontWeight: 700}}>{book.ten_danh_muc}</span>
+                                                </div>
+
+                                                <div className="stock-progress-track">
+                                                    <div className="stock-progress-fill" style={{width: `${Math.min(100, (book.co_san / (book.so_luong || 5)) * 100)}%`}}></div>
+                                                </div>
+
+                                                <div style={{background: '#f8fafc', padding: '10px 12px', borderRadius: '12px', margin: '10px 0'}}>
+                                                    <div style={{fontSize: '0.82rem', color: '#64748b'}}>
+                                                        Phí thuê: <strong style={{color: '#2563eb', fontSize: '0.95rem'}}>{Number(book.gia_thue_ngay).toLocaleString('vi-VN')} ₫</strong>/ngày
+                                                    </div>
+                                                    <div style={{fontSize: '0.75rem', color: '#94a3b8', marginTop: '2px'}}>
+                                                        Cọc giữ sách (80%): {Number(book.gia_bia * 0.8).toLocaleString('vi-VN')} ₫
+                                                    </div>
+                                                </div>
+
+                                                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: 'auto'}}>
+                                                    <button className="btn-rent secondary" style={{padding: '8px', fontSize: '0.8rem'}} onClick={() => handleOpenBookDetails(book)}>
+                                                        <i className="fas fa-info-circle"></i> Chi Tiết
+                                                    </button>
+                                                    {book.co_san > 0 ? (
+                                                        <button className="btn-rent" style={{padding: '8px', fontSize: '0.8rem'}} onClick={() => setCheckoutBook(book)}>
+                                                            <i className="fas fa-shopping-bag"></i> Mượn Ngay
+                                                        </button>
+                                                    ) : (
+                                                        <button className="btn-rent" style={{padding: '8px', fontSize: '0.8rem', background: '#f59e0b'}} onClick={() => handleReserveBook(book)}>
+                                                            <i className="fas fa-bookmark"></i> Giữ Chỗ
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 2. TRANG TRA CỨU & BỘ LỌC NÂNG CAO (CATALOG & FILTER PAGE) */}
+                        {activeMainTab === 'catalog' && (
+                            <div>
+                                <div className="filter-bar-advanced">
+                                    <div className="filter-item" style={{flex: 2, minWidth: '220px'}}>
+                                        <label><i className="fas fa-search"></i> Từ Khóa Tra Cứu</label>
+                                        <input 
+                                            type="text" 
+                                            className="form-control" 
+                                            placeholder="Tên sách, tác giả, mã ISBN..." 
+                                            value={searchQuery}
+                                            onChange={e => setSearchQuery(e.target.value)}
+                                        />
+                                    </div>
+
+                                    <div className="filter-item" style={{flex: 1, minWidth: '150px'}}>
+                                        <label><i className="fas fa-folder"></i> Thể Loại Sách</label>
+                                        <select className="form-control" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)}>
+                                            <option value="Tất cả">Tất cả thể loại</option>
+                                            {categories.map(c => (
+                                                <option key={c.id} value={c.id}>{c.ten_danh_muc}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="filter-item">
+                                        <label><i className="fas fa-calendar-alt"></i> Năm Xuất Bản</label>
+                                        <select className="form-control" value={filterYear} onChange={e => setFilterYear(e.target.value)}>
+                                            <option value="Tất cả">Tất cả năm</option>
+                                            <option value="2023">Năm 2023</option>
+                                            <option value="2022">Năm 2022</option>
+                                            <option value="2021">Năm 2021</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="filter-item">
+                                        <label><i className="fas fa-sort-amount-down"></i> Sắp Xếp</label>
+                                        <select className="form-control" value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                                            <option value="newest">Sách mới nhất</option>
+                                            <option value="most_borrowed">Mượn nhiều nhất</option>
+                                            <option value="name">Tên sách (A-Z)</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div className="section-title-box">
+                                    <h2><i className="fas fa-books" style={{color: '#2563eb'}}></i> Kho Sách Tra Cứu ({books.length} kết quả)</h2>
+                                </div>
+
+                                <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '20px'}}>
+                                    {books.map(book => (
+                                        <div key={book.id} className="book-card-enterprise">
+                                            <div className="book-cover-wrapper">
+                                                 <BookCover src={book.hinh_anh} title={book.ten_sach} author={book.tac_gia} category={book.ten_danh_muc} className="book-cover-img" />
+                                                <span className={`floating-badge ${book.co_san > 0 ? 'badge-success' : 'badge-danger'}`}>
+                                                    {book.co_san > 0 ? `Còn ${book.co_san} bản` : 'Hết hàng'}
+                                                </span>
+                                            </div>
+
+                                            <div style={{flexGrow: 1, display: 'flex', flexDirection: 'column'}}>
+                                                <h3 style={{fontSize: '0.95rem', fontWeight: 800, marginBottom: '6px', color: '#1e293b'}}>
+                                                    {book.ten_sach}
+                                                </h3>
+                                                <p style={{fontSize: '0.82rem', color: '#64748b', marginBottom: '8px'}}>Tác giả: {book.tac_gia}</p>
+                                                <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: 'auto'}}>
+                                                    <button className="btn-rent secondary" style={{padding: '8px', fontSize: '0.8rem'}} onClick={() => handleOpenBookDetails(book)}>
+                                                        <i className="fas fa-info-circle"></i> Chi Tiết
+                                                    </button>
+                                                    <button className="btn-rent" style={{padding: '8px', fontSize: '0.8rem'}} onClick={() => setCheckoutBook(book)}>
+                                                        <i className="fas fa-shopping-bag"></i> Mượn Ngay
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 3. TRANG THƯ VIỆN SỐ (E-LIBRARY ONLINE PDF / EPUB VIEWER) */}
+                        {activeMainTab === 'elibrary' && (
+                            <div>
+                                <div className="hero-banner-enterprise" style={{background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)', marginBottom: '28px'}}>
+                                    <div className="hero-content">
+                                        <div className="hero-badge-pill" style={{background: 'rgba(239, 68, 68, 0.2)', color: '#fca5a5'}}>
+                                            📄 KHO TÀI LIỆU SỐ HÓA & TRÌNH ĐỌC PDF TRỰC TUYẾN
+                                        </div>
+                                        <h1 className="hero-title">Trình Xem PDF Online & Tài Liệu Số Bản Quyền</h1>
+                                        <p className="hero-subtitle">Đọc trực tiếp sách giáo trình, tài liệu công nghệ và Manga số hóa ngay trên trình duyệt mà không cần tải về.</p>
+                                    </div>
+                                </div>
+
+                                <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px'}}>
+                                    {digitalDocs.map(doc => (
+                                        <div key={doc.id} className="book-card-enterprise" style={{padding: '16px'}}>
+                                            <div style={{display: 'flex', gap: '14px', alignItems: 'center', marginBottom: '12px'}}>
+                                                <BookCover src={doc.hinh_anh} title={doc.ten_sach} style={{width: '65px', height: '90px', borderRadius: '8px', flexShrink: 0}} />
+                                                <div>
+                                                    <span className="badge badge-info" style={{marginBottom: '4px'}}>{doc.min_role_download || 'PDF Bản Quyền HD'}</span>
+                                                    <h4 style={{fontSize: '0.92rem', fontWeight: 800, color: '#1e293b', marginBottom: '4px', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden'}}>{doc.ten_sach || doc.title}</h4>
+                                                    <p style={{fontSize: '0.78rem', color: '#64748b'}}><i className="fas fa-pen-nib"></i> {doc.tac_gia || 'Tác giả'}</p>
+                                                </div>
+                                            </div>
+
+                                            <p style={{fontSize: '0.78rem', color: '#475569', marginBottom: '12px', lineClamp: 2, display: '-webkit-box', WebkitBoxOrient: 'vertical', overflow: 'hidden'}}>{doc.mo_ta}</p>
+
+                                            <div style={{fontSize: '0.78rem', color: '#64748b', marginBottom: '14px', display: 'flex', flexWrap: 'wrap', gap: '12px', background: '#f8fafc', padding: '8px 12px', borderRadius: '8px'}}>
+                                                <span><i className="fas fa-eye" style={{color: '#3b82f6'}}></i> {doc.view_count || 120} Lượt xem</span>
+                                                <span><i className="fas fa-download" style={{color: '#10b981'}}></i> {doc.download_count || 45} Lượt tải</span>
+                                                <span style={{color: '#ef4444', fontWeight: 700}}><i className="fas fa-file-pdf"></i> PDF HD</span>
+                                            </div>
+
+                                            <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginTop: 'auto'}}>
+                                                <button className="btn-rent" style={{padding: '9px', fontSize: '0.8rem', background: '#3b82f6'}} onClick={() => { setActivePdfDoc(doc); setPdfPage(1); }}>
+                                                    <i className="fas fa-book-open"></i> Đọc PDF Online
+                                                </button>
+                                                <a href={doc.file_pdf_url || doc.file_path} download className="btn-rent secondary" style={{padding: '9px', fontSize: '0.8rem', textAlign: 'center', textDecoration: 'none', background: '#f1f5f9', color: '#1e293b', border: '1px solid #cbd5e1'}}>
+                                                    <i className="fas fa-download"></i> Tải PDF Mềm
+                                                </a>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 4. TRANG SỰ KIỆN & CÂU LẠC BỘ (EVENTS & BOOK CLUB) */}
+                        {activeMainTab === 'events' && (
+                            <div>
+                                <div className="section-title-box">
+                                    <h2><i className="fas fa-calendar-star" style={{color: '#f59e0b'}}></i> Sự Kiện Thư Viện & Đăng Ký Câu Lạc Bộ Đọc Sách</h2>
+                                </div>
+
+                                <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '24px'}}>
+                                    {events.map(ev => (
+                                        <div key={ev.id} className="book-card-enterprise" style={{padding: '0', overflow: 'hidden'}}>
+                                            <img src={ev.banner_image} style={{width: '100%', height: '180px', objectFit: 'cover'}} alt="" />
+                                            <div style={{padding: '20px'}}>
+                                                <span className="badge badge-warning" style={{marginBottom: '8px'}}>{ev.status}</span>
+                                                <h3 style={{fontSize: '1.1rem', fontWeight: 800, marginBottom: '8px', color: '#1e293b'}}>{ev.title}</h3>
+                                                <p style={{fontSize: '0.82rem', color: '#64748b', marginBottom: '6px'}}><i className="fas fa-clock"></i> Thời gian: <strong>{ev.event_date}</strong></p>
+                                                <p style={{fontSize: '0.82rem', color: '#64748b', marginBottom: '6px'}}><i className="fas fa-map-marker-alt"></i> Địa điểm: <strong>{ev.location}</strong></p>
+                                                <p style={{fontSize: '0.82rem', color: '#64748b', marginBottom: '14px'}}><i className="fas fa-user-tie"></i> Diễn giả/Host: {ev.speaker}</p>
+
+                                                <p style={{fontSize: '0.85rem', color: '#475569', marginBottom: '14px', lineHeight: 1.5}}>{ev.description}</p>
+
+                                                <div style={{background: '#f8fafc', padding: '10px 14px', borderRadius: '10px', marginBottom: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                                    <span style={{fontSize: '0.8rem', color: '#64748b'}}>Số chỗ đăng ký:</span>
+                                                    <strong style={{color: '#2563eb'}}>{ev.registered_count} / {ev.max_participants} Độc Giả</strong>
+                                                </div>
+
+                                                <button className="btn-rent" style={{width: '100%', padding: '12px', background: '#f59e0b'}} onClick={() => handleRegisterEvent(ev.id)}>
+                                                    <i className="fas fa-ticket-alt"></i> Đăng Ký Tham Gia Ngay
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* 5. SÀN VẼ MANGA FREELANCER (MANGA SERVICES PAGE) */}
+                        {activeMainTab === 'manga_services' && (
+                            <div>
+                                <div className="hero-banner-enterprise" style={{background: 'linear-gradient(135deg, #4c1d95 0%, #7c3aed 50%, #c026d3 100%)', marginBottom: '28px'}}>
+                                    <div className="hero-content">
+                                        <div className="hero-badge-pill" style={{background: 'rgba(255,255,255,0.2)'}}>
+                                            🎨 CHỢ TRUYỆN TRANH & HỌA SĨ FREELANCER (FASTLANCE STYLE)
+                                        </div>
+                                        <h1 className="hero-title">Đặt Họa Sĩ Vẽ Manga, Webtoon & Minh Họa Theo Yêu Cầu</h1>
+                                        <p className="hero-subtitle">Kết nối trực tiếp với 50+ họa sĩ truyện tranh chuyên nghiệp. Đảm bảo chất lượng xuất bản 300DPI, bàn giao nhanh 24-48 giờ qua Ví nội bộ.</p>
+                                    </div>
+                                </div>
+
+                                <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: '24px'}}>
+                                    {mangaServices.map(serv => (
+                                        <div key={serv.id} className="book-card-enterprise" style={{padding: '0', overflow: 'hidden'}}>
+                                            <img src={serv.portfolio_image} style={{width: '100%', height: '180px', objectFit: 'cover'}} alt={serv.title} />
+                                            <div style={{padding: '18px'}}>
+                                                <div style={{display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px'}}>
+                                                    <img src={serv.freelancer_avatar} style={{width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover'}} alt={serv.freelancer_name} />
+                                                    <div>
+                                                        <h4 style={{fontSize: '0.9rem', fontWeight: 800}}>{serv.freelancer_name}</h4>
+                                                        <span className="fl-badge-seller fl-badge-toprated">{serv.freelancer_badge}</span>
+                                                    </div>
+                                                </div>
+                                                <p style={{fontSize: '0.9rem', fontWeight: 700, color: '#1e293b', height: '42px', overflow: 'hidden'}}>{serv.title}</p>
+                                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px', paddingTop: '10px', borderTop: '1px solid #f1f5f9'}}>
+                                                    <span style={{fontSize: '0.85rem', color: '#f59e0b', fontWeight: 700}}><i className="fas fa-star"></i> {serv.rating_score} ({serv.review_count})</span>
+                                                    <span style={{fontSize: '1rem', fontWeight: 800, color: '#2563eb'}}>Từ {Number(serv.starting_price).toLocaleString('vi-VN')} ₫</span>
+                                                </div>
+                                                <button className="btn-rent" style={{width: '100%', marginTop: '14px', background: '#8b5cf6', padding: '12px'}} onClick={() => setOrderService(serv)}>
+                                                    <i className="fas fa-paper-plane"></i> Đặt Vẽ Với Họa Sĩ
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+
+                        {/* 6. TỦ SÁCH CỦA TÔI & THẺ THÀNH VIÊN 3D WITH DYNAMIC QR CODE */}
+                        {activeMainTab === 'my_account' && (
+                            <div>
+                                {currentReader ? (
+                                    <div>
+                                        {/* THẺ THÀNH VIÊN KỸ THUẬT SỐ 3D CARD WITH DYNAMIC QR & BARCODE */}
+                                        <div style={{display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '24px', marginBottom: '32px'}}>
+                                            <div className="digital-card-3d">
+                                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px'}}>
+                                                    <span style={{fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1px', color: '#94a3b8', fontWeight: 700}}>THẺ ĐỘC GIẢ KỸ THUẬT SỐ</span>
+                                                    <span style={{background: '#f59e0b', color: '#78350f', padding: '2px 8px', borderRadius: '10px', fontSize: '0.7rem', fontWeight: 800}}>{currentReader.loai_doc_gia || 'VIP Gold'}</span>
+                                                </div>
+                                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px'}}>
+                                                    <div className="card-chip-sim"></div>
+                                                    {/* DYNAMIC QR CODE */}
+                                                    <img 
+                                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=70x70&data=LIBRARY_CARD_${currentReader.ma_doc_gia}`} 
+                                                        style={{width: '65px', height: '65px', borderRadius: '6px', background: '#fff', padding: '4px'}} 
+                                                        alt="QR" 
+                                                    />
+                                                </div>
+                                                <h3 style={{fontSize: '1.2rem', fontWeight: 800, letterSpacing: '1px', marginBottom: '6px'}}>{walletInfo ? walletInfo.ma_doc_gia : currentReader.ma_doc_gia}</h3>
+                                                <h4 style={{fontSize: '1rem', fontWeight: 700, marginBottom: '16px'}}>{currentReader.ho_ten}</h4>
+                                                
+                                                {/* BARCODE REPRESENTATION */}
+                                                <div style={{background: '#ffffff', padding: '6px', borderRadius: '4px', textAlign: 'center', marginBottom: '12px'}}>
+                                                    <div style={{fontSize: '1.2rem', fontFamily: 'monospace', letterSpacing: '4px', color: '#000', fontWeight: 'bold'}}>
+                                                        ||||| ||| ||||||| |||||
+                                                    </div>
+                                                    <small style={{fontSize: '0.65rem', color: '#334155'}}>{currentReader.ma_doc_gia}</small>
+                                                </div>
+
+                                                <div style={{display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: '#cbd5e1'}}>
+                                                    <span>HẠN THẺ: {currentReader.han_the || '2029-12-31'}</span>
+                                                    <span>STATUS: ACTIVE</span>
+                                                </div>
+                                            </div>
+
+                                            <div style={{background: '#ffffff', borderRadius: '20px', padding: '24px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', justify: 'center', boxShadow: 'var(--shadow-soft)'}}>
+                                                <h3 style={{fontSize: '1.1rem', fontWeight: 800, marginBottom: '16px', color: '#1e293b'}}><i className="fas fa-wallet" style={{color: '#2563eb'}}></i> Quản Lý Số Dư Ví Nội Bộ Độc Giả</h3>
+                                                
+                                                <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '20px'}}>
+                                                    <div style={{background: '#f8fafc', padding: '16px', borderRadius: '14px', border: '1px solid #e2e8f0'}}>
+                                                        <p style={{fontSize: '0.75rem', color: '#64748b', fontWeight: 700}}>TỔNG SỐ DƯ VÍ</p>
+                                                        <h3 style={{fontSize: '1.3rem', fontWeight: 800, color: '#2563eb', marginTop: '4px'}}>{walletInfo ? Number(walletInfo.so_du_vi).toLocaleString('vi-VN') : 500000} ₫</h3>
+                                                    </div>
+                                                    <div style={{background: '#fffbeb', padding: '16px', borderRadius: '14px', border: '1px solid #fef3c7'}}>
+                                                        <p style={{fontSize: '0.75rem', color: '#b45309', fontWeight: 700}}>🔒 CỌC ĐÓNG BĂNG</p>
+                                                        <h3 style={{fontSize: '1.3rem', fontWeight: 800, color: '#d97706', marginTop: '4px'}}>{walletInfo ? Number(walletInfo.tien_coc_dong_bang).toLocaleString('vi-VN') : 0} ₫</h3>
+                                                    </div>
+                                                    <div style={{background: '#ecfdf5', padding: '16px', borderRadius: '14px', border: '1px solid #a7f3d0'}}>
+                                                        <p style={{fontSize: '0.75rem', color: '#047857', fontWeight: 700}}>KHẢ DỤNG THUÊ</p>
+                                                        <h3 style={{fontSize: '1.3rem', fontWeight: 800, color: '#10b981', marginTop: '4px'}}>{walletInfo ? Number(walletInfo.so_du_kha_dung).toLocaleString('vi-VN') : 500000} ₫</h3>
+                                                    </div>
+                                                </div>
+
+                                                <button className="btn-rent" style={{width: '220px', background: '#10b981', padding: '12px'}} onClick={() => setShowVietQrModal(true)}>
+                                                    <i className="fas fa-qrcode"></i> Nạp Tiền VietQR / MoMo
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* DANH SÁCH SÁCH ĐANG MƯỢN */}
+                                        <h3 style={{fontSize: '1.15rem', fontWeight: 800, marginBottom: '16px', color: '#059669'}}><i className="fas fa-book-reader"></i> Sách Đang Mượn & Lịch Sử Thuê ({myOrders.length})</h3>
+                                        <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px'}}>
+                                            {myOrders.map(ord => (
+                                                <div key={ord.id} className="book-card-enterprise" style={{padding: '18px'}}>
+                                                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px'}}>
+                                                        <strong style={{fontSize: '1rem', color: 'var(--primary)'}}>{ord.ma_don}</strong>
+                                                        <span className={`badge ${ord.trang_thai === 'Hoàn tất' ? 'badge-success' : ord.trang_thai === 'Quá hạn' ? 'badge-danger' : 'badge-warning'}`}>
+                                                            {ord.trang_thai}
+                                                        </span>
+                                                    </div>
+                                                    <p style={{fontSize: '0.95rem', fontWeight: 800, marginBottom: '8px'}}>{ord.ten_sach}</p>
+                                                    <p style={{fontSize: '0.82rem', color: '#64748b', marginBottom: '4px'}}><i className="fas fa-calendar-alt"></i> Ngày mượn: {ord.ngay_bat_dau}</p>
+                                                    <p style={{fontSize: '0.82rem', color: '#64748b', marginBottom: '12px'}}><i className="fas fa-clock"></i> Hạn trả sách: <strong style={{color: '#2563eb'}}>{ord.ngay_ket_thuc}</strong></p>
+
+                                                    {ord.trang_thai !== 'Hoàn tất' && (
+                                                        <button className="btn-rent secondary" style={{width: '100%', padding: '10px'}} onClick={() => handleExtendRental(ord.id)}>
+                                                            <i className="fas fa-sync"></i> Gia Hạn Thuê Sách (+7 Ngày)
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div style={{textAlign: 'center', padding: '60px 20px', background: '#fff', borderRadius: '20px', border: '1px solid #e2e8f0'}}>
+                                        <i className="fas fa-user-lock" style={{fontSize: '3rem', color: '#3b82f6', marginBottom: '16px'}}></i>
+                                        <h3 style={{fontSize: '1.2rem', fontWeight: 800}}>Bạn Chưa Đăng Nhập Tài Khoản</h3>
+                                        <p style={{color: '#64748b', margin: '8px 0 20px'}}>Vui lòng đăng nhập để xem Tủ sách cá nhân, Số dư Ví nội bộ và tiến trình mượn sách.</p>
+                                        <button className="btn-rent" style={{width: '200px'}} onClick={() => setShowLoginModal(true)}>Đăng Nhập Ngay</button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                    </div>
+
+                    {/* FLOATING LIVE CHAT WIDGET BUTTON WITH ADMIN */}
+                    <div style={{position: 'fixed', bottom: '24px', right: '24px', zIndex: 4000}}>
+                        <button 
+                            style={{
+                                background: 'linear-gradient(135deg, #2563eb, #7c3aed)',
+                                color: '#ffffff',
+                                border: 'none',
+                                borderRadius: '30px',
+                                padding: '12px 20px',
+                                fontSize: '0.92rem',
+                                fontWeight: 800,
+                                boxShadow: '0 10px 25px rgba(37,99,235,0.4)',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px'
+                            }}
+                            onClick={() => {
+                                if (!currentReader) { setShowLoginModal(true); return alert('Vui lòng đăng nhập để chat trực tiếp với Thủ thư!'); }
+                                setShowLiveChat(!showLiveChat);
+                                if (!showLiveChat) fetchChatMessages(currentReader.id);
+                            }}
+                        >
+                            <i className="fas fa-comments" style={{fontSize: '1.2rem'}}></i> Chat Hỗ Trợ 24/7
+                        </button>
+
+                        {showLiveChat && currentReader && (
+                            <div style={{
+                                position: 'absolute', bottom: '60px', right: '0',
+                                width: '360px', height: '480px',
+                                background: '#ffffff', borderRadius: '20px',
+                                boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+                                border: '1px solid #cbd5e1',
+                                display: 'flex', flexDirection: 'column',
+                                overflow: 'hidden'
+                            }}>
+                                {/* CHAT HEADER */}
+                                <div style={{background: 'linear-gradient(135deg, #2563eb, #1e40af)', color: '#fff', padding: '14px 18px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                    <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                                        <div style={{width: '36px', height: '36px', borderRadius: '50%', background: '#fff', color: '#2563eb', display: 'flex', alignItems: 'center', justify: 'center', fontWeight: 800}}>
+                                            🛡️
+                                        </div>
+                                        <div>
+                                            <h4 style={{fontSize: '0.9rem', fontWeight: 800, margin: 0}}>Thủ Thư Thư Viện 24/7</h4>
+                                            <small style={{fontSize: '0.72rem', opacity: 0.9}}>🟢 Sẵn sàng giải đáp</small>
+                                        </div>
+                                    </div>
+                                    <button style={{background: 'none', border: 'none', color: '#fff', fontSize: '1.4rem', cursor: 'pointer'}} onClick={() => setShowLiveChat(false)}>&times;</button>
+                                </div>
+
+                                {/* CHAT MESSAGES CONTAINER */}
+                                <div style={{flex: 1, padding: '16px', overflowY: 'auto', background: '#f8fafc', display: 'flex', flexDirection: 'column', gap: '10px'}}>
+                                    {chatMessages.length === 0 ? (
+                                        <p style={{fontSize: '0.82rem', color: '#64748b', textAlign: 'center', margin: 'auto'}}>Hãy gửi tin nhắn đầu tiên cho Thủ thư!</p>
+                                    ) : (
+                                        chatMessages.map(msg => (
+                                            <div key={msg.id} style={{display: 'flex', flexDirection: 'column', alignItems: msg.sender_type === 'reader' ? 'flex-end' : 'flex-start'}}>
+                                                <div style={{
+                                                    maxWidth: '80%',
+                                                    padding: '10px 14px',
+                                                    borderRadius: msg.sender_type === 'reader' ? '16px 16px 2px 16px' : '16px 16px 16px 2px',
+                                                    background: msg.sender_type === 'reader' ? '#2563eb' : '#ffffff',
+                                                    color: msg.sender_type === 'reader' ? '#ffffff' : '#1e293b',
+                                                    border: msg.sender_type === 'reader' ? 'none' : '1px solid #e2e8f0',
+                                                    boxShadow: '0 2px 6px rgba(0,0,0,0.05)',
+                                                    fontSize: '0.85rem'
+                                                }}>
+                                                    {msg.message_text}
+                                                </div>
+                                                <small style={{fontSize: '0.65rem', color: '#94a3b8', marginTop: '2px'}}>{msg.created_at || 'Vừa xong'}</small>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+
+                                {/* CHAT INPUT FORM */}
+                                <form onSubmit={handleSendChatMessage} style={{padding: '12px', background: '#fff', borderTop: '1px solid #e2e8f0', display: 'flex', gap: '8px'}}>
+                                    <input 
+                                        type="text" 
+                                        className="form-control" 
+                                        placeholder="Nhập câu hỏi cho Thủ thư..." 
+                                        value={chatInput}
+                                        onChange={e => setChatInput(e.target.value)}
+                                        style={{borderRadius: '20px', padding: '8px 14px', fontSize: '0.85rem', flex: 1}}
+                                    />
+                                    <button type="submit" className="btn-rent" style={{borderRadius: '20px', padding: '8px 16px', background: '#2563eb', fontSize: '0.85rem'}}>
+                                        <i className="fas fa-paper-plane"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* MODAL TRÌNH ĐỌC SÁCH PDF ONLINE */}
+                    {activePdfDoc && (
+                        <div className="modal-overlay">
+                            <div className="modal-card" style={{maxWidth: '800px'}}>
+                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px'}}>
+                                    <div>
+                                        <h3 style={{fontSize: '1.1rem', fontWeight: 800}}><i className="fas fa-file-pdf" style={{color: '#ef4444'}}></i> Trình Xem PDF Online: {activePdfDoc.title}</h3>
+                                        <span style={{fontSize: '0.8rem', color: '#64748b'}}>Phân quyền: {activePdfDoc.access_level}</span>
+                                    </div>
+                                    <button style={{background: 'none', border: 'none', fontSize: '1.4rem', cursor: 'pointer'}} onClick={() => setActivePdfDoc(null)}>&times;</button>
+                                </div>
+
+                                {/* PDF TOOLBAR */}
+                                <div style={{background: '#1e293b', color: '#fff', padding: '10px 16px', borderRadius: '10px 10px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                    <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
+                                        <button style={{background: '#334155', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer'}} disabled={pdfPage <= 1} onClick={() => setPdfPage(pdfPage - 1)}>
+                                            <i className="fas fa-chevron-left"></i> Trang Trước
+                                        </button>
+                                        <span style={{fontSize: '0.85rem'}}>Trang <strong>{pdfPage}</strong> / {activePdfDoc.page_count || 45}</span>
+                                        <button style={{background: '#334155', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer'}} disabled={pdfPage >= (activePdfDoc.page_count || 45)} onClick={() => setPdfPage(pdfPage + 1)}>
+                                            Trang Sau <i className="fas fa-chevron-right"></i>
+                                        </button>
+                                    </div>
+
+                                    <div style={{display: 'flex', gap: '8px', alignItems: 'center'}}>
+                                        <button style={{background: '#334155', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer'}} onClick={() => setPdfZoom(Math.max(50, pdfZoom - 20))}>
+                                            <i className="fas fa-search-minus"></i>
+                                        </button>
+                                        <span style={{fontSize: '0.85rem'}}>{pdfZoom}%</span>
+                                        <button style={{background: '#334155', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: '6px', cursor: 'pointer'}} onClick={() => setPdfZoom(Math.min(200, pdfZoom + 20))}>
+                                            <i className="fas fa-search-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* PDF CANVAS CONTENT SIMULATION */}
+                                <div className="pdf-viewer-container" style={{borderRadius: '0 0 10px 10px'}}>
+                                    <div className="pdf-page-sheet" style={{transform: `scale(${pdfZoom / 100})`, transformOrigin: 'top center'}}>
+                                        <div style={{textAlign: 'center', borderBottom: '2px solid #e2e8f0', paddingBottom: '12px', marginBottom: '20px'}}>
+                                            <h2 style={{fontSize: '1.3rem', color: '#1e293b'}}>{activePdfDoc.title}</h2>
+                                            <p style={{fontSize: '0.8rem', color: '#64748b'}}>Tài Liệu Số Hóa Thư Viện Enterprise - Trang {pdfPage}</p>
+                                        </div>
+
+                                        <p style={{marginBottom: '14px'}}>
+                                            <strong>Chương {pdfPage}: Tổng quan về kiến trúc và phương pháp luận</strong>
+                                        </p>
+                                        <p style={{marginBottom: '12px'}}>
+                                            Trong hệ thống quản lý thư viện hiện đại, việc tối ưu hóa luồng dữ liệu mượn trả và tích hợp các phương thức số hóa như PDF online đóng vai trò vô cùng quan trọng...
+                                        </p>
+                                        <p style={{marginBottom: '12px'}}>
+                                            Mô hình phân quyền 3 tầng đảm bảo tính bảo mật tối đa khi thao tác giữa giao diện người dùng độc giả và bảng điều khiển quản trị.
+                                        </p>
+                                        <div style={{background: '#f8fafc', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #3b82f6', marginTop: '20px'}}>
+                                            <em>"Tri thức là chìa khóa mở ra tương lai. Thư viện số Enterprise cam kết mang lại trải nghiệm đọc sách tiện lợi và hiện đại nhất."</em>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL CỔNG THANH TOÁN VIETQR / MOMO */}
+                    {showVietQrModal && (
+                        <div className="modal-overlay">
+                            <div className="modal-card" style={{maxWidth: '460px', textAlign: 'center'}}>
+                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+                                    <h3 style={{fontSize: '1.15rem', fontWeight: 800}}><i className="fas fa-qrcode" style={{color: '#2563eb'}}></i> Thanh Toán VietQR / VNPAY / MoMo</h3>
+                                    <button style={{background: 'none', border: 'none', fontSize: '1.4rem', cursor: 'pointer'}} onClick={() => setShowVietQrModal(false)}>&times;</button>
+                                </div>
+
+                                <div style={{marginBottom: '16px'}}>
+                                    <label style={{fontSize: '0.85rem', fontWeight: 700, display: 'block', marginBottom: '6px', textAlign: 'left'}}>Nhập Số Tiền Muốn Nạp (VNĐ):</label>
+                                    <input 
+                                        type="number" 
+                                        className="form-control" 
+                                        value={topupAmountInput} 
+                                        onChange={e => setTopupAmountInput(e.target.value)}
+                                        style={{fontSize: '1.1rem', fontWeight: 'bold', color: '#2563eb', textAlign: 'center'}}
+                                    />
+                                </div>
+
+                                <div style={{background: '#f8fafc', padding: '20px', borderRadius: '16px', border: '1px solid #e2e8f0', marginBottom: '20px'}}>
+                                    <img 
+                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=VIETQR_MBBANK_99999_${currentReader ? currentReader.ma_doc_gia : 'DG001'}_${topupAmountInput}`} 
+                                        style={{width: '180px', height: '180px', borderRadius: '12px', boxShadow: '0 8px 16px rgba(0,0,0,0.1)'}} 
+                                        alt="VietQR Code" 
+                                    />
+                                    <div style={{marginTop: '14px', fontSize: '0.85rem', color: '#1e293b'}}>
+                                        <p style={{margin: '4px 0'}}>Ngân hàng: <strong>MBBANK - Ngân Hàng Quân Đội</strong></p>
+                                        <p style={{margin: '4px 0'}}>STK: <strong>9999 8888 6666</strong></p>
+                                        <p style={{margin: '4px 0'}}>Chủ TK: <strong>THU VIEN SO ENTERPRISE</strong></p>
+                                        <p style={{margin: '4px 0', color: '#ef4444', fontWeight: 700}}>Nội dung: NAP {currentReader ? currentReader.ma_doc_gia : 'DG001'}</p>
+                                    </div>
+                                </div>
+
+                                <button className="btn-rent" style={{width: '100%', padding: '14px', background: '#10b981', fontSize: '1rem'}} onClick={handleConfirmVietQrTopup}>
+                                    <i className="fas fa-check-circle"></i> Xác Nhận Đã Chuyển Khoản VNPAY / VietQR
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL QUYÊN GÓP SÁCH CỦ */}
+                    {showDonationModal && (
+                        <div className="modal-overlay">
+                            <div className="modal-card" style={{maxWidth: '520px'}}>
+                                <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
+                                    <h3 style={{fontSize: '1.15rem', fontWeight: 800}}><i className="fas fa-gift" style={{color: '#10b981'}}></i> Đăng Ký Quyên Góp Sách Cũ Đổi Điểm Ví</h3>
+                                    <button style={{background: 'none', border: 'none', fontSize: '1.4rem', cursor: 'pointer'}} onClick={() => setShowDonationModal(false)}>&times;</button>
+                                </div>
+
+                                <form onSubmit={handleSubmitDonation}>
+                                    <div style={{marginBottom: '12px'}}>
+                                        <label style={{display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px'}}>Tên Cuốn Sách Quyên Góp (*)</label>
+                                        <input type="text" className="form-control" required value={donationForm.ten_sach} onChange={e => setDonationForm({...donationForm, ten_sach: e.target.value})} placeholder="VD: Nhà Giả Kim, Tam Quốc Diễn Nghĩa..." />
+                                    </div>
+                                    <div style={{marginBottom: '12px'}}>
+                                        <label style={{display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px'}}>Tác Giả (*)</label>
+                                        <input type="text" className="form-control" required value={donationForm.tac_gia} onChange={e => setDonationForm({...donationForm, tac_gia: e.target.value})} placeholder="VD: Paulo Coelho..." />
+                                    </div>
+                                    <div style={{display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px'}}>
+                                        <div>
+                                            <label style={{display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px'}}>Thể Loại</label>
+                                            <select className="form-control" value={donationForm.danh_muc} onChange={e => setDonationForm({...donationForm, danh_muc: e.target.value})}>
+                                                <option value="Tiểu thuyết">Tiểu thuyết</option>
+                                                <option value="Công nghệ thông tin">Công nghệ thông tin</option>
+                                                <option value="Truyện tranh Manga">Truyện tranh Manga</option>
+                                                <option value="Kỹ năng sống">Kỹ năng sống</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label style={{display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px'}}>Tình Trạng Sách</label>
+                                            <select className="form-control" value={donationForm.tinh_trang} onChange={e => setDonationForm({...donationForm, tinh_trang: e.target.value})}>
+                                                <option value="Mới 99%">Mới 99% (Rất mới)</option>
+                                                <option value="Mới 90%">Mới 90% (Cũ nhẹ)</option>
+                                                <option value="Cũ vừa">Cũ vừa (Đủ trang)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div style={{marginBottom: '16px'}}>
+                                        <label style={{display: 'block', fontSize: '0.85rem', fontWeight: 700, marginBottom: '4px'}}>Ghi Chú / Địa Chỉ Nhận Sách Quyên Góp (*)</label>
+                                        <textarea rows="2" className="form-control" value={donationForm.ghi_chu_lien_he} onChange={e => setDonationForm({...donationForm, ghi_chu_lien_he: e.target.value})} placeholder="Nhập địa chỉ của bạn để Thủ thư đến nhận sách tận nhà..."></textarea>
+                                    </div>
+
+                                    <button type="submit" className="btn-rent" style={{width: '100%', padding: '12px', background: '#10b981'}}>
+                                        <i className="fas fa-paper-plane"></i> Gửi Đăng Ký Quyên Góp Sách
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL TRANG CHI TIẾT SÁCH & ĐÁNH GIÁ */}
+                    {detailBook && (
+                        <div className="modal-overlay">
+                            <div className="modal-card">
+                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px'}}>
+                                    <h3 style={{fontSize: '1.2rem', fontWeight: 800}}>Thông Tin Chi Tiết Cuốn Sách</h3>
+                                    <button style={{background: 'none', border: 'none', fontSize: '1.4rem', cursor: 'pointer'}} onClick={() => setDetailBook(null)}>&times;</button>
+                                </div>
+
+                                <div className="book-detail-header">
+                                    <BookCover src={detailBook.hinh_anh} title={detailBook.ten_sach} author={detailBook.tac_gia} category={detailBook.ten_danh_muc} className="book-detail-cover" />
+                                    <div>
+                                        <h3 style={{fontSize: '1.15rem', fontWeight: 800, marginBottom: '6px'}}>{detailBook.ten_sach}</h3>
+                                        <p style={{fontSize: '0.85rem', color: '#64748b', marginBottom: '10px'}}><i className="fas fa-pen-nib"></i> Tác giả: <strong>{detailBook.tac_gia}</strong></p>
+                                        <div style={{marginBottom: '10px'}}>
+                                            <span className="meta-tag"><i className="fas fa-folder"></i> {detailBook.ten_danh_muc}</span>
+                                            <span className="meta-tag"><i className="fas fa-map-marker-alt"></i> Vị trí: {detailBook.tu_ke_kho || 'Kệ Manga-A1'}</span>
+                                            <span className="meta-tag"><i className="fas fa-barcode"></i> ISBN: {detailBook.isbn || 'ISBN-987-124-1'}</span>
+                                        </div>
+                                        <div style={{fontSize: '0.9rem', color: '#1e293b', marginBottom: '6px'}}>
+                                            Phí thuê theo ngày: <strong style={{color: '#2563eb', fontSize: '1.1rem'}}>{Number(detailBook.gia_thue_ngay).toLocaleString('vi-VN')} ₫</strong>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div style={{display: 'flex', gap: '12px', marginTop: '20px'}}>
+                                    {detailBook.co_san > 0 ? (
+                                        <button className="btn-rent" style={{flex: 1, padding: '12px'}} onClick={() => { setCheckoutBook(detailBook); setDetailBook(null); }}>
+                                            <i className="fas fa-shopping-bag"></i> Thuê Sách Ngay Qua Ví
+                                        </button>
+                                    ) : (
+                                        <button className="btn-rent" style={{flex: 1, padding: '12px', background: '#f59e0b'}} onClick={() => handleReserveBook(detailBook)}>
+                                            <i className="fas fa-bookmark"></i> Đặt Giữ Chỗ Trước
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL THUÊ SÁCH */}
+                    {checkoutBook && (
+                        <div className="modal-overlay">
+                            <div className="modal-card" style={{maxWidth: '480px'}}>
+                                <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
+                                    <h3 style={{fontSize: '1.15rem', fontWeight: 800}}>Xác Nhận Đặt Thuê Sách Qua Ví</h3>
+                                    <button style={{background: 'none', border: 'none', fontSize: '1.4rem', cursor: 'pointer'}} onClick={() => setCheckoutBook(null)}>&times;</button>
+                                </div>
+
+                                <div style={{marginBottom: '14px'}}>
+                                    <label style={{fontSize: '0.85rem', fontWeight: 700, display: 'block', marginBottom: '6px'}}>Chọn Số Ngày Thuê Sách:</label>
+                                    <select className="form-control" value={rentDays} onChange={e => setRentDays(e.target.value)}>
+                                        <option value="3">Thuê 3 ngày (Đọc nhanh)</option>
+                                        <option value="7">Thuê 7 ngày (1 tuần - Khuyên dùng)</option>
+                                        <option value="14">Thuê 14 ngày (2 tuần)</option>
+                                    </select>
+                                </div>
+
+                                <button className="btn-rent" style={{width: '100%', padding: '14px', fontSize: '1rem', background: '#10b981'}} onClick={handleConfirmBookCheckout}>
+                                    <i className="fas fa-check-circle"></i> Xác Nhận Đặt Thuê Qua Ví Nội Bộ
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL ĐĂNG NHẬP ĐỘC GIẢ */}
+                    {showLoginModal && (
+                        <div className="modal-overlay">
+                            <div className="modal-card" style={{maxWidth: '420px'}}>
+                                <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
+                                    <h3 style={{fontSize: '1.1rem', fontWeight: 800}}>Đăng Nhập Tài Khoản Độc Giả</h3>
+                                    <button style={{background: 'none', border: 'none', fontSize: '1.4rem', cursor: 'pointer'}} onClick={() => setShowLoginModal(false)}>&times;</button>
+                                </div>
+                                <form onSubmit={handleReaderLogin}>
+                                    <div style={{marginBottom: '12px'}}>
+                                        <label style={{display: 'block', fontSize: '0.85rem', fontWeight: 700}}>Email hoặc SĐT (*)</label>
+                                        <input type="text" style={{width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1'}} required value={loginForm.username} onChange={e => setLoginForm({...loginForm, username: e.target.value})} />
+                                    </div>
+                                    <div style={{marginBottom: '16px'}}>
+                                        <label style={{display: 'block', fontSize: '0.85rem', fontWeight: 700}}>Mật Khẩu (*)</label>
+                                        <input type="password" style={{width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1'}} required value={loginForm.password} onChange={e => setLoginForm({...loginForm, password: e.target.value})} />
+                                    </div>
+                                    <button type="submit" className="btn-auth" style={{width: '100%', padding: '12px'}}><i className="fas fa-sign-in-alt"></i> Đăng Nhập Ngay</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* MODAL ĐĂNG KÝ ĐỘC GIẢ */}
+                    {showRegModal && (
+                        <div className="modal-overlay">
+                            <div className="modal-card" style={{maxWidth: '440px'}}>
+                                <div style={{display: 'flex', justifyContent: 'space-between', marginBottom: '16px'}}>
+                                    <h3 style={{fontSize: '1.1rem', fontWeight: 800}}>Đăng Ký Tài Khoản Độc Giả Mới</h3>
+                                    <button style={{background: 'none', border: 'none', fontSize: '1.4rem', cursor: 'pointer'}} onClick={() => setShowRegModal(false)}>&times;</button>
+                                </div>
+                                <form onSubmit={handleReaderRegister}>
+                                    <div style={{marginBottom: '10px'}}>
+                                        <label style={{display: 'block', fontSize: '0.8rem', fontWeight: 700}}>Họ và Tên (*)</label>
+                                        <input type="text" style={{width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1'}} required value={regForm.ho_ten} onChange={e => setRegForm({...regForm, ho_ten: e.target.value})} />
+                                    </div>
+                                    <div style={{marginBottom: '10px'}}>
+                                        <label style={{display: 'block', fontSize: '0.8rem', fontWeight: 700}}>Email (*)</label>
+                                        <input type="email" style={{width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1'}} required value={regForm.email} onChange={e => setRegForm({...regForm, email: e.target.value})} />
+                                    </div>
+                                    <div style={{marginBottom: '16px'}}>
+                                        <label style={{display: 'block', fontSize: '0.8rem', fontWeight: 700}}>Mật Khẩu (*)</label>
+                                        <input type="password" style={{width: '100%', padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1'}} required value={regForm.password} onChange={e => setRegForm({...regForm, password: e.target.value})} />
+                                    </div>
+                                    <button type="submit" className="btn-auth" style={{width: '100%', padding: '12px', background: '#8b5cf6'}}><i className="fas fa-user-check"></i> Đăng Ký & Nhận Bonus 500k Ví</button>
+                                </form>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* FLOATING LIVE CHAT BUTTON & WINDOW */}
+                    <div style={{position: 'fixed', bottom: '24px', right: '24px', zIndex: 2500}}>
+                        {!showLiveChat ? (
+                            <button 
+                                onClick={() => {
+                                    if (!currentReader) return alert('Vui lòng đăng nhập tài khoản Độc giả để sử dụng tính năng Chat hỗ trợ!');
+                                    setShowLiveChat(true);
+                                }}
+                                style={{
+                                    background: 'linear-gradient(135deg, #2563eb, #3b82f6)',
+                                    color: '#ffffff',
+                                    border: 'none',
+                                    borderRadius: '30px',
+                                    padding: '14px 22px',
+                                    fontWeight: 700,
+                                    fontSize: '0.92rem',
+                                    boxShadow: '0 10px 25px rgba(37, 99, 235, 0.4)',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '10px',
+                                    transition: 'transform 0.2s'
+                                }}
+                            >
+                                <i className="fas fa-comments" style={{fontSize: '1.2rem'}}></i>
+                                <span>💬 Chat Hỗ Trợ 24/7</span>
+                            </button>
+                        ) : (
+                            <div style={{
+                                width: '360px',
+                                height: '500px',
+                                background: '#ffffff',
+                                borderRadius: '20px',
+                                boxShadow: '0 20px 50px rgba(15, 23, 42, 0.25)',
+                                border: '1px solid #e2e8f0',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                overflow: 'hidden'
+                            }}>
+                                {/* CHAT HEADER */}
+                                <div style={{
+                                    background: 'linear-gradient(135deg, #1e293b, #2563eb)',
+                                    color: '#ffffff',
+                                    padding: '16px 20px',
+                                    display: 'flex',
+                                    justify: 'space-between',
+                                    alignItems: 'center'
+                                }}>
+                                    <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+                                        <div style={{position: 'relative'}}>
+                                            <div style={{width: '36px', height: '36px', borderRadius: '50%', background: '#ffffff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.9rem'}}>
+                                                TT
+                                            </div>
+                                            <span style={{position: 'absolute', bottom: 0, right: 0, width: '10px', height: '10px', background: '#10b981', borderRadius: '50%', border: '2px solid #fff'}}></span>
+                                        </div>
+                                        <div>
+                                            <h4 style={{fontSize: '0.95rem', fontWeight: 700, margin: 0, color: '#fff'}}>Thủ Thư Thư Viện 24/7</h4>
+                                            <span style={{fontSize: '0.72rem', color: '#93c5fd'}}>Trực tuyến • Phản hồi tức thì</span>
+                                        </div>
+                                    </div>
+                                    <button 
+                                        onClick={() => setShowLiveChat(false)}
+                                        style={{background: 'none', border: 'none', color: '#fff', fontSize: '1.2rem', cursor: 'pointer', opacity: 0.8}}
+                                    >
+                                        &times;
+                                    </button>
+                                </div>
+
+                                {/* CHAT MESSAGES BODY */}
+                                <div style={{
+                                    flex: 1,
+                                    padding: '16px',
+                                    overflowY: 'auto',
+                                    background: '#f8fafc',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    gap: '12px'
+                                }}>
+                                    {chatMessages.length === 0 ? (
+                                        <div style={{textAlign: 'center', color: '#64748b', fontSize: '0.85rem', marginTop: '40px'}}>
+                                            <i className="fas fa-comment-dots" style={{fontSize: '2rem', color: '#cbd5e1', marginBottom: '10px', display: 'block'}}></i>
+                                            Chào bạn! Hãy gửi câu hỏi hoặc thắc mắc về sách, thẻ thư viện để Thủ thư hỗ trợ bạn nhé.
+                                        </div>
+                                    ) : (
+                                        chatMessages.map(msg => {
+                                            const isMe = msg.sender_type === 'reader';
+                                            return (
+                                                <div 
+                                                    key={msg.id} 
+                                                    style={{
+                                                        alignSelf: isMe ? 'flex-end' : 'flex-start',
+                                                        maxWidth: '82%'
+                                                    }}
+                                                >
+                                                    <div style={{
+                                                        background: isMe ? '#2563eb' : '#ffffff',
+                                                        color: isMe ? '#ffffff' : '#1e293b',
+                                                        padding: '10px 14px',
+                                                        borderRadius: isMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                                                        fontSize: '0.86rem',
+                                                        lineHeight: '1.4',
+                                                        boxShadow: isMe ? '0 4px 12px rgba(37,99,235,0.2)' : '0 2px 6px rgba(0,0,0,0.06)',
+                                                        border: isMe ? 'none' : '1px solid #e2e8f0'
+                                                    }}>
+                                                        {msg.message_text}
+                                                    </div>
+                                                    <div style={{
+                                                        fontSize: '0.68rem',
+                                                        color: '#94a3b8',
+                                                        marginTop: '4px',
+                                                        textAlign: isMe ? 'right' : 'left'
+                                                    }}>
+                                                        {isMe ? 'Bạn' : 'Thủ Thư'} • {msg.created_at ? msg.created_at.slice(11, 16) : ''}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    )}
+                                </div>
+
+                                {/* CHAT INPUT FORM */}
+                                <form 
+                                    onSubmit={handleSendChatMessage}
+                                    style={{
+                                        padding: '12px 14px',
+                                        background: '#ffffff',
+                                        borderTop: '1px solid #e2e8f0',
+                                        display: 'flex',
+                                        gap: '8px'
+                                    }}
+                                >
+                                    <input 
+                                        type="text" 
+                                        placeholder="Nhập tin nhắn..." 
+                                        value={chatInput} 
+                                        onChange={e => setChatInput(e.target.value)}
+                                        style={{
+                                            flex: 1,
+                                            padding: '10px 14px',
+                                            borderRadius: '20px',
+                                            border: '1px solid #cbd5e1',
+                                            fontSize: '0.86rem',
+                                            outline: 'none'
+                                        }}
+                                    />
+                                    <button 
+                                        type="submit"
+                                        style={{
+                                            background: '#2563eb',
+                                            color: '#ffffff',
+                                            border: 'none',
+                                            borderRadius: '50%',
+                                            width: '38px',
+                                            height: '38px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
+                                        <i className="fas fa-paper-plane" style={{fontSize: '0.85rem'}}></i>
+                                    </button>
+                                </form>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* AI BOOK SUMMARIZER & CHATBOT MODAL */}
+                    {showAiModal && (
+                            <div className="modal-overlay" onClick={() => setShowAiModal(false)}>
+                                <div className="modal-card" style={{maxWidth: '720px', border: '2px solid #3b82f6'}} onClick={e => e.stopPropagation()}>
+                                    <div className="modal-header" style={{borderBottom: '2px solid #eff6ff'}}>
+                                        <h3 style={{display: 'flex', alignItems: 'center', gap: '10px', color: '#1d4ed8'}}>
+                                            <i className="fas fa-robot" style={{color: '#2563eb', fontSize: '1.4rem'}}></i>
+                                            Trợ Lý AI Tóm Tắt & Hỏi Đáp Sách
+                                        </h3>
+                                        <button className="close-btn" onClick={() => setShowAiModal(false)}>×</button>
+                                    </div>
+
+                                    {aiLoading ? (
+                                        <div style={{textAlign: 'center', padding: '40px 0'}}>
+                                            <div style={{width: '40px', height: '40px', border: '4px solid #e0f2fe', borderTop: '4px solid #3b82f6', borderRadius: '50%', animation: 'spin 0.8s linear infinite', margin: '0 auto 16px'}}></div>
+                                            <p style={{color: '#2563eb', fontWeight: 700}}>🤖 AI đang phân tích toàn bộ nội dung cuốn "{aiBookTitle}"...</p>
+                                        </div>
+                                    ) : aiSummary && (
+                                        <div>
+                                            <div style={{background: 'linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)', borderRadius: '14px', padding: '16px 20px', marginBottom: '20px', border: '1px solid #bfdbfe'}}>
+                                                <h4 style={{fontSize: '1.05rem', fontWeight: 800, color: '#1e40af', marginBottom: '6px'}}>📘 {aiSummary.title}</h4>
+                                                <p style={{fontSize: '0.88rem', color: '#1e3a8a', lineHeight: 1.6, margin: 0}}>{aiSummary.overview}</p>
+                                            </div>
+
+                                            <div style={{marginBottom: '20px'}}>
+                                                <h4 style={{fontSize: '0.9rem', fontWeight: 800, color: '#1e293b', marginBottom: '10px'}}><i className="fas fa-lightbulb" style={{color: '#f59e0b'}}></i> 3 Bài Học Cốt Lõi (Core Takeaways):</h4>
+                                                <div style={{display: 'flex', flexDirection: 'column', gap: '8px'}}>
+                                                    {aiSummary.key_takeaways.map((item, idx) => (
+                                                        <div key={idx} style={{background: '#f8fafc', padding: '10px 14px', borderRadius: '10px', fontSize: '0.85rem', color: '#334155', borderLeft: '4px solid #3b82f6'}}>
+                                                            {item}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            <div style={{marginBottom: '20px'}}>
+                                                <h4 style={{fontSize: '0.9rem', fontWeight: 800, color: '#1e293b', marginBottom: '10px'}}><i className="fas fa-quote-left" style={{color: '#8b5cf6'}}></i> Trích Dẫn Đắt Giá:</h4>
+                                                {aiSummary.quotes.map((q, idx) => (
+                                                    <p key={idx} style={{fontSize: '0.85rem', color: '#4c1d95', fontStyle: 'italic', background: '#f5f3ff', padding: '8px 14px', borderRadius: '8px', borderLeft: '3px solid #8b5cf6', margin: '4px 0'}}>
+                                                        {q}
+                                                    </p>
+                                                ))}
+                                            </div>
+
+                                            {/* AI INTERACTIVE CHAT WINDOW */}
+                                            <div style={{border: '1px solid #e2e8f0', borderRadius: '16px', padding: '16px', background: '#ffffff'}}>
+                                                <h4 style={{fontSize: '0.9rem', fontWeight: 800, color: '#1e293b', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                                    <i className="fas fa-comments" style={{color: '#10b981'}}></i> Hỏi Đáp Trực Tiếp Với AI Về Cuốn Sách Này
+                                                </h4>
+                                                <div style={{maxHeight: '180px', overflowY: 'auto', marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '8px', padding: '8px', background: '#f8fafc', borderRadius: '12px'}}>
+                                                    {aiChatLog.map((chat, idx) => (
+                                                        <div key={idx} style={{alignSelf: chat.sender === 'user' ? 'flex-end' : 'flex-start', maxWidth: '85%', background: chat.sender === 'user' ? '#2563eb' : '#ffffff', color: chat.sender === 'user' ? '#ffffff' : '#1e293b', padding: '8px 14px', borderRadius: '14px', fontSize: '0.83rem', boxShadow: '0 2px 6px rgba(0,0,0,0.05)', border: chat.sender === 'user' ? 'none' : '1px solid #cbd5e1'}}>
+                                                            {chat.text}
+                                                        </div>
+                                                    ))}
+                                                </div>
+
+                                                <form onSubmit={handleSendAiChat} style={{display: 'flex', gap: '8px'}}>
+                                                    <input 
+                                                        type="text" 
+                                                        className="form-control" 
+                                                        placeholder="Đặt câu hỏi cho AI (VD: Áp dụng cuốn sách này như thế nào?)..." 
+                                                        value={aiChatInput}
+                                                        onChange={e => setAiChatInput(e.target.value)}
+                                                        style={{flex: 1, borderRadius: '20px'}}
+                                                    />
+                                                    <button className="btn-rent" style={{borderRadius: '20px', padding: '8px 18px', background: '#2563eb'}} type="submit">
+                                                        <i className="fas fa-paper-plane"></i> Gửi
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+            );
+        }
+
+        try {
+            if (typeof ReactDOM.createRoot === 'function') {
+                const root = ReactDOM.createRoot(document.getElementById('root'));
+                root.render(<ReaderApp />);
+            } else {
+                ReactDOM.render(<ReaderApp />, document.getElementById('root'));
+            }
+        } catch (e) {
+            console.error('Mount error:', e);
+            document.getElementById('root').innerHTML = '<div style="padding: 30px; text-align: center; color: #ef4444; font-family: sans-serif;"><h3>⚠️ Lỗi Khởi Chạy:</h3><p>' + e.message + '</p></div>';
+        }
+    </script>
+</body>
+</html>

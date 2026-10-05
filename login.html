@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LUMIÈRE Hair Studio - Đăng Nhập & Đăng Ký Tài Khoản</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            salon: {
+              bg: '#FBF9F5',
+              surface: '#FFFFFF',
+              card: '#F5F0EB',
+              primary: '#4A6B5D', // Deep sage green
+              primaryHover: '#3D5A4D',
+              secondary: '#C89F82', // Warm taupe/terracotta accent
+              secondaryLight: '#F7F1EC',
+              text: '#1C1917',
+              muted: '#78716C',
+              border: '#E7E0D8'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            serif: ['"Playfair Display"', 'serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- React 18 & Babel CDN -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      background-color: #F8F6F0;
+      color: #1C1917;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .font-serif-accent {
+      font-family: 'Playfair Display', serif;
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-salon-primary/20 selection:text-salon-primary min-h-screen flex items-center justify-center p-4 sm:p-6 md:p-8">
+  <div id="root" class="w-full max-w-5xl"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const DEFAULT_USERS = [
+      { name: 'Nguyễn Bích Phương', phone: '0912345678', password: '123456', email: 'bichphuong@gmail.com' }
+    ];
+
+    const getRegisteredUsers = () => {
+      try {
+        const raw = localStorage.getItem('lumiere_registered_users');
+        return raw ? JSON.parse(raw) : DEFAULT_USERS;
+      } catch (e) {
+        return DEFAULT_USERS;
+      }
+    };
+
+    function AuthApp() {
+      // Role Mode: 'customer' | 'admin'
+      const [roleMode, setRoleMode] = useState('customer');
+
+      // Customer Auth Mode: 'login' | 'register'
+      const [customerAuthMode, setCustomerAuthMode] = useState('login');
+
+      // Forms State
+      const [customerLogin, setCustomerLogin] = useState({ phone: '', password: '' });
+      const [customerRegister, setCustomerRegister] = useState({ name: '', phone: '', email: '', password: '', confirmPassword: '' });
+      const [adminLogin, setAdminLogin] = useState({ username: '', password: '' });
+
+      const [showPassword, setShowPassword] = useState(false);
+      const [errorMsg, setErrorMsg] = useState('');
+      const [toastMsg, setToastMsg] = useState(null);
+
+      useEffect(() => {
+        if (window.lucide) {
+          window.lucide.createIcons();
+        }
+      });
+
+      const showToast = (msg) => {
+        setToastMsg(msg);
+        setTimeout(() => setToastMsg(null), 3000);
+      };
+
+      // Customer Login Submission
+      const handleCustomerLogin = (e) => {
+        e.preventDefault();
+        setErrorMsg('');
+        const phoneClean = customerLogin.phone.trim();
+        const passwordClean = customerLogin.password.trim();
+
+        if (!phoneClean || !passwordClean) {
+          setErrorMsg('Vui lòng điền Số điện thoại và Mật khẩu!');
+          return;
+        }
+
+        const users = getRegisteredUsers();
+        const matchedUser = users.find(u => u.phone === phoneClean && u.password === passwordClean);
+
+        if (matchedUser) {
+          const userObj = {
+            name: matchedUser.name,
+            phone: matchedUser.phone,
+            email: matchedUser.email || '',
+            role: 'customer'
+          };
+
+          sessionStorage.setItem('lumiere_customer_auth', JSON.stringify(userObj));
+          showToast(`🎉 Đăng nhập thành công! Chào mừng ${matchedUser.name}`);
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 1000);
+        } else {
+          const phoneExists = users.some(u => u.phone === phoneClean);
+          if (phoneExists) {
+            setErrorMsg('Mật khẩu không đúng. Vui lòng kiểm tra lại!');
+          } else {
+            const userObj = {
+              name: `Khách Hàng (${phoneClean.slice(-4)})`,
+              phone: phoneClean,
+              email: '',
+              role: 'customer'
+            };
+            sessionStorage.setItem('lumiere_customer_auth', JSON.stringify(userObj));
+            showToast('🎉 Đăng nhập thành công! Đang chuyển hướng...');
+            setTimeout(() => {
+              window.location.href = 'index.html';
+            }, 1000);
+          }
+        }
+      };
+
+      // Customer Registration Submission
+      const handleCustomerRegister = (e) => {
+        e.preventDefault();
+        setErrorMsg('');
+        const nameClean = customerRegister.name.trim();
+        const phoneClean = customerRegister.phone.trim();
+        const passwordClean = customerRegister.password.trim();
+
+        if (!nameClean || !phoneClean || !passwordClean) {
+          setErrorMsg('Vui lòng điền đầy đủ các thông tin bắt buộc (*)!');
+          return;
+        }
+
+        if (passwordClean !== customerRegister.confirmPassword.trim()) {
+          setErrorMsg('Mật khẩu xác nhận không trùng khớp!');
+          return;
+        }
+
+        const users = getRegisteredUsers();
+        if (users.some(u => u.phone === phoneClean)) {
+          setErrorMsg('Số điện thoại này đã được đăng ký! Vui lòng chọn tab Đăng nhập.');
+          return;
+        }
+
+        const newUser = {
+          name: nameClean,
+          phone: phoneClean,
+          email: customerRegister.email.trim(),
+          password: passwordClean
+        };
+
+        const updatedUsers = [...users, newUser];
+        try {
+          localStorage.setItem('lumiere_registered_users', JSON.stringify(updatedUsers));
+        } catch (e) {}
+
+        const authUser = {
+          name: nameClean,
+          phone: phoneClean,
+          email: newUser.email,
+          role: 'customer'
+        };
+
+        sessionStorage.setItem('lumiere_customer_auth', JSON.stringify(authUser));
+        showToast(`🎉 Đăng ký thành công! Chào mừng ${nameClean}`);
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 1000);
+      };
+
+      // Admin Login Submission
+      const handleAdminLogin = (e) => {
+        e.preventDefault();
+        setErrorMsg('');
+        if (adminLogin.username.trim() === 'admin' && adminLogin.password === '123456') {
+          sessionStorage.setItem('lumiere_admin_auth', 'true');
+          showToast('🔓 Đăng nhập Admin thành công! Đang chuyển sang trang Quản trị...');
+          setTimeout(() => {
+            window.location.href = 'admin.html';
+          }, 1000);
+        } else {
+          setErrorMsg('Tên đăng nhập hoặc mật khẩu quản trị không đúng!');
+        }
+      };
+
+      return (
+        <div className="relative">
+          
+          {/* TOAST NOTIFICATION */}
+          {toastMsg && (
+            <div className="fixed top-5 right-5 z-50 bg-stone-900 text-stone-100 px-4 py-3 rounded-2xl shadow-xl text-sm font-medium flex items-center gap-2 animate-bounce">
+              <span>⚡</span>
+              <span>{toastMsg}</span>
+            </div>
+          )}
+
+          <div className="bg-white rounded-3xl border border-stone-200 shadow-2xl overflow-hidden grid md:grid-cols-12 min-h-[580px]">
+            
+            {/* LEFT BANNER COLUMN (Visual aesthetic) */}
+            <div className="hidden md:flex md:col-span-5 relative bg-stone-900 p-8 text-white flex-col justify-between overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1560869713-7d0a29430803?auto=format&fit=crop&q=80&w=800" 
+                alt="Lumiere Hair Studio Ambiance" 
+                className="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-overlay scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-stone-900/40 to-transparent"></div>
+
+              <div className="relative z-10 space-y-3">
+                <div className="w-12 h-12 rounded-full bg-white text-salon-primary flex items-center justify-center font-serif text-xl font-bold shadow-lg">
+                  L
+                </div>
+                <h2 className="font-serif-accent text-2xl font-bold leading-tight">LUMIÈRE Hair Studio</h2>
+                <p className="text-xs text-stone-300">Không gian tạo kiểu & uốn nhuộm thảo mộc 5 sao</p>
+              </div>
+
+              <div className="relative z-10 space-y-4 bg-white/10 backdrop-blur-md p-5 rounded-2xl border border-white/20">
+                <div className="flex items-center gap-1 text-amber-400 text-sm">
+                  ★★★★★
+                </div>
+                <p className="text-xs italic text-stone-100 leading-relaxed">
+                  "Lumière luôn là lựa chọn số 1 của mình mỗi khi uốn sóng lơi và nhuộm nâu trà sữa. Dịch vụ tuyệt vời và thợ cắt cực kỳ tỉ mỉ!"
+                </p>
+                <p className="text-[11px] font-bold text-salon-secondary">— Nguyễn Bích Phương (Khách hàng thân thiết)</p>
+              </div>
+
+              <div className="relative z-10 text-[11px] text-stone-400">
+                © 2026 LUMIÈRE Hair Studio. All rights reserved.
+              </div>
+            </div>
+
+            {/* RIGHT FORM COLUMN */}
+            <div className="md:col-span-7 p-6 sm:p-8 md:p-10 flex flex-col justify-between space-y-6 bg-white">
+              
+              {/* Header Brand */}
+              <div className="text-center md:text-left space-y-1">
+                <div className="md:hidden w-12 h-12 rounded-full bg-salon-primary text-white flex items-center justify-center font-serif text-xl font-bold mx-auto mb-2 shadow-md">
+                  L
+                </div>
+                <h1 className="font-serif-accent text-2xl font-bold text-stone-900">Chào Mừng Quý Khách</h1>
+                <p className="text-xs text-stone-500">Vui lòng đăng nhập hoặc đăng ký tài khoản để giữ lịch hẹn</p>
+              </div>
+
+              {/* TAB SELECTOR: KHÁCH HÀNG VS QUẢN TRỊ */}
+              <div className="bg-salon-bg p-1.5 rounded-2xl border border-salon-border flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => { setRoleMode('customer'); setErrorMsg(''); }}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition ${
+                    roleMode === 'customer'
+                      ? 'bg-salon-primary text-white shadow'
+                      : 'text-stone-600 hover:text-stone-900'
+                  }`}
+                >
+                  👤 Dành Cho Khách Hàng
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setRoleMode('admin'); setErrorMsg(''); }}
+                  className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition ${
+                    roleMode === 'admin'
+                      ? 'bg-salon-primary text-white shadow'
+                      : 'text-stone-600 hover:text-stone-900'
+                  }`}
+                >
+                  🔐 Quản Trị Viên
+                </button>
+              </div>
+
+              {/* ERROR MESSAGE ALERT */}
+              {errorMsg && (
+                <div className="bg-rose-50 text-rose-700 p-3 rounded-xl border border-rose-200 text-xs font-semibold text-center animate-pulse">
+                  ⚠️ {errorMsg}
+                </div>
+              )}
+
+              {/* --- SECTION 1: KHÁCH HÀNG (LOGIN & REGISTER) --- */}
+              {roleMode === 'customer' && (
+                <div className="space-y-5">
+                  
+                  {/* Sub-tab: Login vs Register */}
+                  <div className="flex border-b border-stone-200 text-xs font-semibold">
+                    <button
+                      onClick={() => { setCustomerAuthMode('login'); setErrorMsg(''); }}
+                      className={`flex-1 pb-3 text-center transition border-b-2 ${
+                        customerAuthMode === 'login'
+                          ? 'border-salon-primary text-salon-primary font-bold'
+                          : 'border-transparent text-stone-400 hover:text-stone-700'
+                      }`}
+                    >
+                      Đăng Nhập Khách Hàng
+                    </button>
+                    <button
+                      onClick={() => { setCustomerAuthMode('register'); setErrorMsg(''); }}
+                      className={`flex-1 pb-3 text-center transition border-b-2 ${
+                        customerAuthMode === 'register'
+                          ? 'border-salon-primary text-salon-primary font-bold'
+                          : 'border-transparent text-stone-400 hover:text-stone-700'
+                      }`}
+                    >
+                      Đăng Ký Tài Khoản Mới
+                    </button>
+                  </div>
+
+                  {/* FORM ĐĂNG NHẬP KHÁCH HÀNG */}
+                  {customerAuthMode === 'login' ? (
+                    <form onSubmit={handleCustomerLogin} className="space-y-4 text-xs">
+                      <div className="space-y-1">
+                        <label className="font-semibold text-stone-700">Số Điện Thoại</label>
+                        <input 
+                          type="tel"
+                          required
+                          placeholder="Nhập số điện thoại (ví dụ: 0912345678)"
+                          value={customerLogin.phone}
+                          onChange={(e) => setCustomerLogin({...customerLogin, phone: e.target.value})}
+                          className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 text-sm bg-salon-bg"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-semibold text-stone-700">Mật Khẩu</label>
+                        <div className="relative">
+                          <input 
+                            type={showPassword ? 'text' : 'password'}
+                            required
+                            placeholder="Nhập mật khẩu"
+                            value={customerLogin.password}
+                            onChange={(e) => setCustomerLogin({...customerLogin, password: e.target.value})}
+                            className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 text-sm bg-salon-bg pr-10"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute right-3 top-3.5 text-stone-400 hover:text-stone-700 text-xs font-semibold"
+                          >
+                            {showPassword ? 'Ẩn' : 'Hiện'}
+                          </button>
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full bg-salon-primary hover:bg-salon-primaryHover text-white py-3.5 rounded-2xl font-bold text-sm shadow transition flex items-center justify-center gap-2"
+                      >
+                        <span>Đăng Nhập Khách Hàng</span>
+                        <i data-lucide="arrow-right" className="w-4 h-4"></i>
+                      </button>
+                    </form>
+                  ) : (
+                    /* FORM ĐĂNG KÝ KHÁCH HÀNG */
+                    <form onSubmit={handleCustomerRegister} className="space-y-3 text-xs">
+                      <div className="space-y-1">
+                        <label className="font-semibold text-stone-700">Họ và Tên <span className="text-red-500">*</span></label>
+                        <input 
+                          type="text"
+                          required
+                          placeholder="Nhập họ và tên đầy đủ"
+                          value={customerRegister.name}
+                          onChange={(e) => setCustomerRegister({...customerRegister, name: e.target.value})}
+                          className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-semibold text-stone-700">Số Điện Thoại <span className="text-red-500">*</span></label>
+                        <input 
+                          type="tel"
+                          required
+                          placeholder="Nhập số điện thoại nhận thông báo"
+                          value={customerRegister.phone}
+                          onChange={(e) => setCustomerRegister({...customerRegister, phone: e.target.value})}
+                          className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                        />
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="font-semibold text-stone-700">Email (Không bắt buộc)</label>
+                        <input 
+                          type="email"
+                          placeholder="Ví dụ: khachhang@gmail.com"
+                          value={customerRegister.email}
+                          onChange={(e) => setCustomerRegister({...customerRegister, email: e.target.value})}
+                          className="w-full px-4 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <label className="font-semibold text-stone-700">Mật Khẩu <span className="text-red-500">*</span></label>
+                          <input 
+                            type="password"
+                            required
+                            placeholder="Mật khẩu"
+                            value={customerRegister.password}
+                            onChange={(e) => setCustomerRegister({...customerRegister, password: e.target.value})}
+                            className="w-full px-3 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="font-semibold text-stone-700">Nhập Lại Mật Khẩu</label>
+                          <input 
+                            type="password"
+                            required
+                            placeholder="Xác nhận"
+                            value={customerRegister.confirmPassword}
+                            onChange={(e) => setCustomerRegister({...customerRegister, confirmPassword: e.target.value})}
+                            className="w-full px-3 py-2.5 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 bg-salon-bg"
+                          />
+                        </div>
+                      </div>
+
+                      <button
+                        type="submit"
+                        className="w-full bg-salon-primary hover:bg-salon-primaryHover text-white py-3.5 rounded-2xl font-bold text-sm shadow transition mt-2 flex items-center justify-center gap-2"
+                      >
+                        <span>Tạo Tài Khoản Khách Hàng</span>
+                        <i data-lucide="check-circle" className="w-4 h-4"></i>
+                      </button>
+                    </form>
+                  )}
+
+                </div>
+              )}
+
+              {/* --- SECTION 2: QUẢN TRỊ VIÊN (ADMIN LOGIN) --- */}
+              {roleMode === 'admin' && (
+                <form onSubmit={handleAdminLogin} className="space-y-4 text-xs">
+                  <div className="space-y-1">
+                    <label className="font-semibold text-stone-700">Tên Đăng Nhập Quản Trị</label>
+                    <input 
+                      type="text"
+                      required
+                      placeholder="Tên đăng nhập admin"
+                      value={adminLogin.username}
+                      onChange={(e) => setAdminLogin({...adminLogin, username: e.target.value})}
+                      className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 text-sm bg-salon-bg"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-semibold text-stone-700">Mật Khẩu Quản Trị</label>
+                    <div className="relative">
+                      <input 
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        placeholder="Mật khẩu admin"
+                        value={adminLogin.password}
+                        onChange={(e) => setAdminLogin({...adminLogin, password: e.target.value})}
+                        className="w-full px-4 py-3 rounded-xl border border-stone-200 focus:outline-none focus:ring-2 focus:ring-salon-primary/40 text-sm bg-salon-bg pr-10"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3 top-3.5 text-stone-400 hover:text-stone-700 text-xs font-semibold"
+                      >
+                        {showPassword ? 'Ẩn' : 'Hiện'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full bg-stone-900 hover:bg-stone-800 text-white py-3.5 rounded-2xl font-bold text-sm shadow transition flex items-center justify-center gap-2"
+                  >
+                    <span>Đăng Nhập Quản Trị Viên</span>
+                    <i data-lucide="shield-check" className="w-4 h-4"></i>
+                  </button>
+                </form>
+              )}
+
+              {/* Back to Client Site Link */}
+              <div className="pt-3 border-t border-stone-100 text-center">
+                <a href="index.html" className="text-xs text-stone-500 hover:text-stone-900 font-semibold hover:underline flex items-center justify-center gap-1">
+                  <span>← Trở về trang Đặt Lịch Salon</span>
+                </a>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const rootElement = document.getElementById('root');
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(<AuthApp />);
+  </script>
+</body>
+</html>

@@ -1,0 +1,344 @@
+{
+    "services": [
+        {
+            "id": "cut-women",
+            "name": "Cắt & Tạo Kiểu Nữ",
+            "category": "Cắt & Tạo Kiểu",
+            "duration": "45 phút",
+            "minutes": 45,
+            "price": 250000,
+            "description": "Tư vấn dáng mặt, cắt tỉa layer chuyên sâu & sấy tạo kiểu bồng bềnh tự nhiên.",
+            "badge": "Phổ biến",
+            "image": "https:\/\/images.unsplash.com\/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=600"
+        },
+        {
+            "id": "cut-men",
+            "name": "Cắt & Styling Nam Premium",
+            "category": "Cắt & Tạo Kiểu",
+            "duration": "30 phút",
+            "minutes": 30,
+            "price": 160000,
+            "description": "Cắt tạo phom chuẩn nam tính, cạo viền sắc nét & sấy vuốt sáp tạo kiểu cao cấp.",
+            "badge": "Yêu thích",
+            "image": "https:\/\/images.unsplash.com\/photo-1503951914875-452162b0f3f1?auto=format&fit=crop&q=80&w=600"
+        },
+        {
+            "id": "perm-korean",
+            "name": "Uốn Sóng Lơi Hàn Quốc",
+            "category": "Uốn & Nhuộm",
+            "duration": "120 phút",
+            "minutes": 120,
+            "price": 850000,
+            "description": "Kỹ thuật uốn xoăn sóng lơi tự nhiên, không khô xơ, giữ nếp lâu dài.",
+            "badge": "Hot Trend 2026",
+            "image": "https:\/\/images.unsplash.com\/photo-1605497788044-5a32c7078486?auto=format&fit=crop&q=80&w=600"
+        },
+        {
+            "id": "color-premium",
+            "name": "Nhuộm Màu Thời Trang Premium",
+            "category": "Uốn & Nhuộm",
+            "duration": "90 phút",
+            "minutes": 90,
+            "price": 650000,
+            "description": "Sử dụng thuốc nhuộm thảo mộc chứa dưỡng chất, màu lên chuẩn bóng khỏe.",
+            "badge": "Khuyên dùng",
+            "image": "https:\/\/images.unsplash.com\/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=600"
+        },
+        {
+            "id": "keratin-treatment",
+            "name": "Phục Hồi Keratin Chuyên Sâu",
+            "category": "Chăm Sóc & Phục Hồi",
+            "duration": "60 phút",
+            "minutes": 60,
+            "price": 520000,
+            "description": "Bổ sung Keratin và Collagen tự nhiên tái tạo cấu trúc tóc hư tổn nặng.",
+            "badge": "Cứu rỗi tóc",
+            "image": "https:\/\/images.unsplash.com\/photo-1519699047748-de8e457a634e?auto=format&fit=crop&q=80&w=600"
+        },
+        {
+            "id": "head-spa",
+            "name": "Gội Đầu Dưỡng Sinh Thảo Dược",
+            "category": "Chăm Sóc & Phục Hồi",
+            "duration": "45 phút",
+            "minutes": 45,
+            "price": 180000,
+            "description": "Gội thảo mộc thiên nhiên kết hợp massage ấn huyệt cổ vai gáy giảm căng thẳng.",
+            "badge": "Thư giãn",
+            "image": "https:\/\/images.unsplash.com\/photo-1540555700478-4be289fbecef?auto=format&fit=crop&q=80&w=600"
+        }
+    ],
+    "hairstyles": [
+        {
+            "id": "style-layer-female",
+            "name": "Cắt Layer Bồng Bềnh Nữ",
+            "category": "Tóc Nữ",
+            "image": "https:\/\/images.unsplash.com\/photo-1562322140-8baeececf3df?auto=format&fit=crop&q=80&w=400",
+            "tag": "Hot Trend",
+            "desc": "Cắt tỉa tầng ôm trọn khuôn mặt, tạo độ phồng dịu dàng tự nhiên"
+        },
+        {
+            "id": "style-wavy-loi",
+            "name": "Uốn Sóng Lơi Sóng Nước",
+            "category": "Tóc Nữ",
+            "image": "https:\/\/images.unsplash.com\/photo-1519699047748-de8e457a634e?auto=format&fit=crop&q=80&w=400",
+            "tag": "Xu Hướng 2026",
+            "desc": "Nếp sóng xoăn nhẹ nhàng tự nhiên như không uốn"
+        },
+        {
+            "id": "style-hippie",
+            "name": "Uốn Hippie Retro Cổ Điển",
+            "category": "Tóc Nữ",
+            "image": "https:\/\/images.unsplash.com\/photo-1605497788044-5a32c7078486?auto=format&fit=crop&q=80&w=400",
+            "tag": "Cá Tính",
+            "desc": "Xoăn xù mì bồng bềnh mang phong cách Vintage tự do"
+        },
+        {
+            "id": "style-bob-chic",
+            "name": "Cắt Bob Ngắn Thanh Lịch",
+            "category": "Tóc Nữ",
+            "image": "https:\/\/images.unsplash.com\/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=400",
+            "tag": "Thanh Lịch",
+            "desc": "Mái tóc ngắn ôm gáy phom dáng tối giản hiện đại"
+        },
+        {
+            "id": "style-sidepart",
+            "name": "Side Part 7\/3 Hàn Quốc",
+            "category": "Tóc Nam",
+            "image": "https:\/\/images.unsplash.com\/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&q=80&w=400",
+            "tag": "Lịch Lãm",
+            "desc": "Tạo phồng chân tóc nhẹ nhàng, lịch sự công sở & đi chơi"
+        },
+        {
+            "id": "style-undercut",
+            "name": "Undercut High Fade Modern",
+            "category": "Tóc Nam",
+            "image": "https:\/\/images.unsplash.com\/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=400",
+            "tag": "Cắt Ngắn Gọn",
+            "desc": "Cắt sát hai bên sắc nét, vuốt phồng đỉnh đầu cá tính"
+        }
+    ],
+    "haircolors": [
+        {
+            "id": "color-none",
+            "name": "Giữ Màu Tóc Tự Nhiên \/ Không Nhuộm",
+            "hex": "#2B2725",
+            "badge": "Nguyên Bản",
+            "desc": "Chỉ thực hiện dịch vụ cắt\/uốn\/chăm sóc phục hồi",
+            "image": "https:\/\/images.unsplash.com\/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=400"
+        },
+        {
+            "id": "color-milktea",
+            "name": "Nâu Trà Sữa (Milk Tea)",
+            "hex": "#D2B48C",
+            "badge": "Hot Trend 2026",
+            "desc": "Tông màu siêu sáng da, trẻ trung bồng bềnh thu hút",
+            "image": "https:\/\/images.unsplash.com\/photo-1522337360788-8b13dee7a37e?auto=format&fit=crop&q=80&w=400"
+        },
+        {
+            "id": "color-ash-brown",
+            "name": "Nâu Lạnh Khói (Ash Brown)",
+            "hex": "#8B8580",
+            "badge": "Tôn Da Sáng",
+            "desc": "Sắc khói huyền bí tây tây, không tẩy tóc vẫn đẹp",
+            "image": "https:\/\/images.unsplash.com\/photo-1519699047748-de8e457a634e?auto=format&fit=crop&q=80&w=400"
+        },
+        {
+            "id": "color-chestnut",
+            "name": "Nâu Hạt Dẻ Trầm (Chestnut)",
+            "hex": "#5C4033",
+            "badge": "Công Sở \/ Học Sinh",
+            "desc": "Thanh lịch dịu dàng, tự nhiên hợp mọi trang phục",
+            "image": "https:\/\/images.unsplash.com\/photo-1560869713-7d0a29430803?auto=format&fit=crop&q=80&w=400"
+        },
+        {
+            "id": "color-balayage-ash",
+            "name": "Balayage Khói Bạch Kim",
+            "hex": "#C0C0C0",
+            "badge": "Nghệ Thuật Cao Cấp",
+            "desc": "Kỹ thuật nhuộm chuyển sắc loang ngọn tóc độc bản",
+            "image": "https:\/\/images.unsplash.com\/photo-1595476108010-b4d1f102b1b1?auto=format&fit=crop&q=80&w=400"
+        },
+        {
+            "id": "color-rose-pink",
+            "name": "Hồng Ánh Kim (Rose Gold)",
+            "hex": "#B76E79",
+            "badge": "Nổi Bật Cá Tính",
+            "desc": "Tông màu nổi bật, thời thượng phong cách Idol",
+            "image": "https:\/\/images.unsplash.com\/photo-1605497788044-5a32c7078486?auto=format&fit=crop&q=80&w=400"
+        },
+        {
+            "id": "color-blue-black",
+            "name": "Xanh Đen Âm Trầm (Blue Black)",
+            "hex": "#1C2833",
+            "badge": "Bí Ẩn Sành Điệu",
+            "desc": "Trầm ẩn trong nhà, ánh xanh rực rỡ khi ra nắng",
+            "image": "https:\/\/images.unsplash.com\/photo-1622286342621-4bd786c2447c?auto=format&fit=crop&q=80&w=400"
+        }
+    ],
+    "stylists": [
+        {
+            "id": "any",
+            "name": "Bất Kỳ Thợ Nào",
+            "role": "Sắp xếp thợ sẵn sàng nhanh nhất",
+            "experience": "Linh hoạt",
+            "rating": 5,
+            "reviews": 450,
+            "avatar": "https:\/\/images.unsplash.com\/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300",
+            "specialty": "Tiết kiệm thời gian chờ",
+            "isAny": true
+        },
+        {
+            "id": "alex-tran",
+            "name": "Alex Trần",
+            "role": "Master Stylist",
+            "experience": "10 năm kinh nghiệm",
+            "rating": 4.9,
+            "reviews": 320,
+            "avatar": "https:\/\/images.unsplash.com\/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=300",
+            "specialty": "Chuyên gia Uốn Sóng & Nhuộm Balayage"
+        },
+        {
+            "id": "minh-anh",
+            "name": "Minh Anh",
+            "role": "Senior Hair Artist",
+            "experience": "7 năm kinh nghiệm",
+            "rating": 4.8,
+            "reviews": 245,
+            "avatar": "https:\/\/images.unsplash.com\/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=300",
+            "specialty": "Cắt Layer & Tạo Kiểu Hàn Quốc"
+        },
+        {
+            "id": "david-nguyen",
+            "name": "David Nguyễn",
+            "role": "Barber Specialist",
+            "experience": "8 năm kinh nghiệm",
+            "rating": 4.9,
+            "reviews": 198,
+            "avatar": "https:\/\/images.unsplash.com\/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=300",
+            "specialty": "Undercut, Fade & Cắt Nam Hiện Đại"
+        },
+        {
+            "id": "elena-vu",
+            "name": "Elena Vũ",
+            "role": "Treatment & Spa Expert",
+            "experience": "5 năm kinh nghiệm",
+            "rating": 5,
+            "reviews": 160,
+            "avatar": "https:\/\/images.unsplash.com\/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=300",
+            "specialty": "Phục Hồi Tóc Hư Tổn & Gội Dưỡng Sinh"
+        }
+    ],
+    "reviews": [
+        {
+            "id": 1,
+            "name": "Nguyễn Bích Phương",
+            "role": "Khách hàng thân thiết",
+            "avatar": "https:\/\/images.unsplash.com\/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=150",
+            "content": "Mình chọn nhuộm màu Nâu Trà Sữa với uốn sóng lơi. Tóc mềm mịn cực kỳ, lên màu chuẩn y như hình tư vấn luôn!",
+            "rating": 5,
+            "service": "Uốn Sóng & Nhuộm Trà Sữa"
+        },
+        {
+            "id": 2,
+            "name": "Trần Hoàng Nam",
+            "role": "Khách hàng",
+            "avatar": "https:\/\/images.unsplash.com\/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&q=80&w=150",
+            "content": "Đặt lịch trên mobile chọn kiểu Side Part 7\/3 rất tiện. Anh David cắt rất kĩ, vuốt sáp chuẩn phom Hàn Quốc.",
+            "rating": 5,
+            "service": "Cắt Side Part Nam"
+        },
+        {
+            "id": 3,
+            "name": "Lê Thảo My",
+            "role": "Khách hàng",
+            "avatar": "https:\/\/images.unsplash.com\/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=150",
+            "content": "Kiểu tóc Layer kết hợp phục hồi Keratin làm xong ai cũng khen. Không gian thơm mùi trà thảo mộc rất thư thái.",
+            "rating": 5,
+            "service": "Phục Hồi Keratin"
+        }
+    ],
+    "users": [
+        {
+            "name": "Nguyễn Bích Phương",
+            "phone": "0912345678",
+            "password": "123456",
+            "email": "bichphuong@gmail.com",
+            "role": "customer"
+        },
+        {
+            "name": "Quản Trị Viên",
+            "phone": "admin",
+            "password": "123456",
+            "email": "admin@lumiere.vn",
+            "role": "admin"
+        }
+    ],
+    "appointments": [
+        {
+            "id": "LUMI-7089",
+            "customerName": "Khách Hàng Test PHP",
+            "phone": "0999888777",
+            "services": [
+                "[\" Uốn Sóng Lơi Hàn Quốc\\]"
+            ],
+            "hairstyle": "Cắt Layer Bồng Bềnh",
+            "haircolor": "Nâu Trà Sữa (Milk Tea)",
+            "stylist": "Alex Trần",
+            "date": "Hôm nay",
+            "time": "10:00",
+            "totalPrice": 850000,
+            "status": "Pending",
+            "createdTime": "10:56 - 09\/09"
+        },
+        {
+            "id": "LUMI-8921",
+            "customerName": "Nguyễn Bích Phương",
+            "phone": "0912345678",
+            "services": [
+                "Uốn Sóng Lơi Hàn Quốc",
+                "Nhuộm Màu Thời Trang Premium"
+            ],
+            "hairstyle": "Uốn Sóng Lơi Sóng Nước",
+            "haircolor": "Nâu Trà Sữa (Milk Tea)",
+            "stylist": "Alex Trần",
+            "date": "Hôm nay",
+            "time": "09:30",
+            "totalPrice": 1500000,
+            "status": "Confirmed",
+            "createdTime": "08:15 - Hôm nay"
+        },
+        {
+            "id": "LUMI-7412",
+            "customerName": "Trần Hoàng Nam",
+            "phone": "0987654321",
+            "services": [
+                "Cắt & Styling Nam Premium"
+            ],
+            "hairstyle": "Side Part 7\/3 Hàn Quốc",
+            "haircolor": "Giữ Màu Tóc Tự Nhiên",
+            "stylist": "David Nguyễn",
+            "date": "Hôm nay",
+            "time": "10:30",
+            "totalPrice": 160000,
+            "status": "InProgress",
+            "createdTime": "07:45 - Hôm nay"
+        },
+        {
+            "id": "LUMI-6309",
+            "customerName": "Lê Thảo My",
+            "phone": "0933112233",
+            "services": [
+                "Cắt & Tạo Kiểu Nữ",
+                "Phục Hồi Keratin Chuyên Sâu"
+            ],
+            "hairstyle": "Cắt Layer Bồng Bềnh Nữ",
+            "haircolor": "Nâu Lạnh Khói (Ash Brown)",
+            "stylist": "Minh Anh",
+            "date": "Hôm nay",
+            "time": "14:30",
+            "totalPrice": 770000,
+            "status": "Pending",
+            "createdTime": "09:00 - Hôm nay"
+        }
+    ]
+}

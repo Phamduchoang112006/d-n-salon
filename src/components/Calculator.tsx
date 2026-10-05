@@ -9,9 +9,10 @@ import {
 } from 'react-native';
 import Exercise1 from './Exercise1';
 import Exercise2 from './Exercise2';
+import Calculator3 from './Calculator3';
 
 const Calculator = () => {
-  const [activeTab, setActiveTab] = useState<'ex1' | 'ex2'>('ex1');
+  const [activeTab, setActiveTab] = useState<'ex1' | 'ex2' | 'ex3'>('ex1');
 
   return (
     <SafeAreaView style={styles.container}>
@@ -40,7 +41,7 @@ const Calculator = () => {
                 activeTab === 'ex1' && styles.tabTextActive,
               ]}
             >
-              Bài Tập 1 (Button)
+              Bài 1 (Button)
             </Text>
           </TouchableOpacity>
 
@@ -58,7 +59,25 @@ const Calculator = () => {
                 activeTab === 'ex2' && styles.tabTextActive,
               ]}
             >
-              Bài Tập 2 (Radio)
+              Bài 2 (Radio)
+            </Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.tabButton,
+              activeTab === 'ex3' && styles.tabButtonActive,
+            ]}
+            onPress={() => setActiveTab('ex3')}
+            activeOpacity={0.9}
+          >
+            <Text
+              style={[
+                styles.tabText,
+                activeTab === 'ex3' && styles.tabTextActive,
+              ]}
+            >
+              Radio Template
             </Text>
           </TouchableOpacity>
         </View>
@@ -66,7 +85,13 @@ const Calculator = () => {
 
       {/* Component Content */}
       <View style={styles.contentContainer}>
-        {activeTab === 'ex1' ? <Exercise1 /> : <Exercise2 />}
+        {activeTab === 'ex1' ? (
+          <Exercise1 />
+        ) : activeTab === 'ex2' ? (
+          <Exercise2 />
+        ) : (
+          <Calculator3 />
+        )}
       </View>
     </SafeAreaView>
   );
